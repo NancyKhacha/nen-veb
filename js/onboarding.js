@@ -29,8 +29,7 @@ function Start() {
     <div class="solo">
       <div class="ill big" style="height:170px">Иллюстрация из архива НЭН</div>
       <h1 class="h1">Нет, это нормально</h1>
-      <p class="lead" style="font-size:17px;font-weight:500">Идеальных родителей не бывает, мы проверяли.</p>
-      <p class="lead">Сон и кормления здесь хранятся в телефоне, а не в голове. А что сейчас происходит с ребёнком, рассказывает редакция НЭН.</p>
+      <p class="lead" style="font-size:17px;font-weight:500">Для родителей, которые хотят разобраться, а не соответствовать.</p>
       <div class="sec-title">С чего начнём</div>
       <div class="rows">
         <${Row} title="Ребёнок уже родился" sub="Сон, кормления, прививки, статьи по возрасту" onClick=${pick('born', '/start/rebyonok')} />
