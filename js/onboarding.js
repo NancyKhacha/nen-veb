@@ -30,11 +30,11 @@ function Start() {
       <div class="ill big" style="height:170px">Иллюстрация из архива НЭН</div>
       <h1 class="h1">Нет, это нормально</h1>
       <p class="lead" style="font-size:17px;font-weight:500">Для родителей, которые хотят разобраться, а не соответствовать.</p>
-      <div class="sec-title">С чего начнём</div>
+      <div class="sec-title">Это для вас</div>
       <div class="rows">
-        <${Row} title="Ребёнок уже родился" sub="Сон, кормления, прививки, статьи по возрасту" onClick=${pick('born', '/start/rebyonok')} />
-        <${Row} title="Ждём малыша" sub="Срок, подготовка к роддому, имена" onClick=${pick('expecting', '/start/zhdyom')} />
-        <${Row} title="Планируем родительство" sub="Статьи НЭН и заметки для себя" onClick=${pick('planning')} />
+        <${Row} title="Ребёнок уже родился" sub="и каждый день приносит новые вопросы" onClick=${pick('born', '/start/rebyonok')} />
+        <${Row} title="Ждёте малыша" sub="и советов вокруг больше, чем ответов" onClick=${pick('expecting', '/start/zhdyom')} />
+        <${Row} title="Планируете родительство" sub="и хотите понять, во что ввязываетесь" onClick=${pick('planning')} />
       </div>
       <div class="grow"></div>
       <button class="btn-quiet" onClick=${() => go('/start/perenos')}>Перенести записи с другого телефона</button>
