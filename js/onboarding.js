@@ -30,7 +30,7 @@ function Start() {
       <div class="ill big" style="height:170px">Иллюстрация из архива НЭН</div>
       <h1 class="h1">Нет, это нормально</h1>
       <p class="lead" style="font-size:17px;font-weight:500">Для родителей, которые хотят разобраться, а не соответствовать.</p>
-      <div class="sec-title">Это для вас</div>
+      <div class="sec-title">Это для вас, если</div>
       <div class="rows">
         <${Row} title="Ребёнок уже родился" sub="и каждый день приносит новые вопросы" onClick=${pick('born', '/start/rebyonok')} />
         <${Row} title="Ждёте малыша" sub="и советов вокруг больше, чем ответов" onClick=${pick('expecting', '/start/zhdyom')} />
