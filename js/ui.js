@@ -1,0 +1,174 @@
+// Общие детали экранов — те же, что в Фигме: шапка, строка, карточка, лист, сообщение, меню.
+import { html, useState, useEffect } from './lib.js';
+import { useStore, activeChild, update, isSaved, toggleSaved, usePhoto } from './store.js';
+import { childAgeLine } from './age.js';
+import { go, back } from './router.js';
+import { track } from './stats.js';
+
+// ——— Лист поверх экрана и сообщение внизу ———
+let overlay = { sheet: null, toast: null };
+const olisteners = new Set();
+const emit = () => olisteners.forEach((l) => l({ ...overlay }));
+let toastTimer = null;
+
+export function openSheet(view, props = {}) { overlay.sheet = { view, props }; emit(); }
+export function closeSheet() { overlay.sheet = null; emit(); }
+// toast({ text, actions: [{ label, onClick }] , ms })
+export function toast(t) {
+  clearTimeout(toastTimer);
+  overlay.toast = t;
+  emit();
+  toastTimer = setTimeout(() => { overlay.toast = null; emit(); }, t.ms || 5000);
+}
+export function hideToast() { clearTimeout(toastTimer); overlay.toast = null; emit(); }
+
+export function OverlayHost({ bottomOffset = 0 }) {
+  const [o, setO] = useState({ ...overlay });
+  useEffect(() => { olisteners.add(setO); return () => olisteners.delete(setO); }, []);
+  const S = o.sheet && o.sheet.view;
+  return html`
+    ${o.toast && html`
+      <div class="toast" style=${`bottom:${bottomOffset + 10}px`} role="status">
+        <span class="t">${o.toast.text}</span>
+        ${(o.toast.actions || []).map((a) => html`<button onClick=${() => { hideToast(); a.onClick(); }}>${a.label}</button>`)}
+      </div>`}
+    ${S && html`
+      <div class="dim" onClick=${closeSheet}></div>
+      <div class="sheet" role="dialog">
+        <div class="sheet-handle"></div>
+        <${S} ...${o.sheet.props} />
+      </div>`}
+  `;
+}
+
+// Подтверждение на самом экране: системные окна confirm() на публичной странице не работают
+function ConfirmSheet({ title, text, yes, onYes }) {
+  return html`
+    <div class="h2">${title}</div>
+    ${text && html`<p class="small">${text}</p>`}
+    <button class="btn btn-primary" onClick=${() => { closeSheet(); onYes(); }}>${yes}</button>
+    <button class="btn-quiet" onClick=${closeSheet}>Отмена</button>`;
+}
+export const confirmAction = (props) => openSheet(ConfirmSheet, props);
+
+// ——— Иконки шапки ———
+const Bell = () => html`<svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>`;
+const Heart = () => html`<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>`;
+
+export function Avatar({ child, size = 36 }) {
+  const url = usePhoto(child && child.photo);
+  const letter = child && child.name ? child.name[0] : '';
+  return html`<span class="avatar" style=${`width:${size}px;height:${size}px`}>${url ? html`<img src=${url} alt="" />` : letter}</span>`;
+}
+
+// Шапка вкладок: ребёнок слева; справа «Что нового», «Сохранённое», профиль
+export function Header({ newsDot = false }) {
+  const s = useStore();
+  const child = activeChild(s);
+  let name, line;
+  if (child) { name = child.name || (child.expecting ? 'Малыш' : 'Ребёнок'); line = childAgeLine(child); }
+  else { name = s.stage === 'planning' ? 'Планируем' : 'Ваша семья'; line = 'Добавить ребёнка'; }
+  const onChild = () => { track('шапка:ребёнок'); child ? openSheet(ChildSwitcher) : go('/profil/rebyonok/novyy'); };
+  return html`
+    <div class="hdr">
+      <button class="hdr-child" onClick=${onChild}>
+        <${Avatar} child=${child} />
+        <span style="min-width:0">
+          <div class="hdr-name">${name}</div>
+          <div class="hdr-age">${line}${s.children.length > 1 || child ? ' ▾' : ''}</div>
+        </span>
+      </button>
+      <div class="hdr-icons">
+        <button class="icon-btn" aria-label="Что нового" onClick=${() => { track('шапка:колокольчик'); go('/novoe'); }}><${Bell} />${newsDot && html`<span class="dot"></span>`}</button>
+        <button class="icon-btn" aria-label="Сохранённое" onClick=${() => { track('шапка:сердечко'); go('/sohranyonnoe'); }}><${Heart} /></button>
+        <button class="icon-btn" aria-label="Профиль" onClick=${() => { track('шапка:профиль'); go('/profil'); }}>${(s.parentName || 'Я')[0]}</button>
+      </div>
+    </div>`;
+}
+
+// Лист: карточка ребёнка и переключатель детей
+export function ChildSwitcher() {
+  const s = useStore();
+  const pick = (id) => { update((d) => { d.activeChildId = id; }); closeSheet(); };
+  return html`
+    <div class="h2">Дети</div>
+    <div class="rows">
+      ${s.children.map((c) => html`
+        <button class="row" onClick=${() => pick(c.id)}>
+          <${Avatar} child=${c} />
+          <span class="row-text"><span class="row-title">${c.name || (c.expecting ? 'Малыш' : 'Ребёнок')}</span><span class="row-sub">${childAgeLine(c)}</span></span>
+          ${c.id === (activeChild(s) || {}).id ? html`<span class="row-end">✓</span>` : ''}
+        </button>`)}
+      <button class="row" onClick=${() => { closeSheet(); go('/profil/rebyonok/' + (activeChild(s) || {}).id); }}>
+        <span class="row-text"><span class="row-title">Карточка ребёнка</span><span class="row-sub">Имя, дата, срок рождения, фото</span></span><span class="chev">›</span>
+      </button>
+      <button class="row" onClick=${() => { closeSheet(); go('/profil/rebyonok/novyy'); }}>
+        <span class="row-text"><span class="row-title">+ Добавить ребёнка</span><span class="row-sub">Или малыша, которого ждёте</span></span><span class="chev">›</span>
+      </button>
+    </div>`;
+}
+
+// Шапка внутреннего экрана: «‹ Назад» и заголовок
+export function Back({ title, to, right }) {
+  return html`
+    <div class="back between">
+      <button onClick=${() => (to ? go(to) : back())}>‹ Назад</button>
+      ${right || ''}
+    </div>
+    ${title && html`<h1 class="h1" style="font-size:24px">${title}</h1>`}`;
+}
+
+export const SecTitle = ({ children, more, onMore }) => html`
+  <div class="sec-title"><span>${children}</span>${more && html`<button onClick=${onMore}>${more} ›</button>`}</div>`;
+
+export function Row({ title, sub, end, onClick, chev = true, left }) {
+  return html`
+    <button class="row" onClick=${onClick}>
+      ${left || ''}
+      <span class="row-text"><span class="row-title">${title}</span>${sub && html`<span class="row-sub">${sub}</span>`}</span>
+      ${end && html`<span class="row-end">${end}</span>`}
+      ${chev && html`<span class="chev">›</span>`}
+    </button>`;
+}
+
+export const Ill = ({ text = 'Иллюстрация из архива НЭН', big }) => html`<div class=${'ill' + (big ? ' big' : '')}>${text}</div>`;
+
+export function Pill({ on, children, onClick }) {
+  return html`<button class=${'pill' + (on ? ' on' : '')} onClick=${onClick}>${on ? '✓ ' : ''}${children}</button>`;
+}
+
+// «♡ Сохранить» у любой карточки
+export function SaveButton({ item, label = 'Сохранить' }) {
+  const s = useStore();
+  const on = isSaved(item.kind, item.id);
+  return html`<button onClick=${(e) => { e.stopPropagation(); const added = toggleSaved(item); track('сохранить:' + item.kind); toast({ text: added ? 'Сохранили — всё сохранённое под сердечком' : 'Убрали из сохранённого', ms: 2500 }); }}>${on ? '♥ Сохранено' : '♡ ' + label}</button>`;
+}
+
+// Нижнее меню: четыре вкладки и помощник
+export const TABS = [
+  { path: '/segodnya', label: 'Сегодня' },
+  { path: '/rebyonok', label: 'Ребёнок' },
+  { path: '/dlya-sebya', label: 'Для себя' },
+  { path: '/moy-nen', label: 'Мой НЭН' },
+];
+export function Menu({ tab }) {
+  return html`
+    <nav class="menu">
+      ${TABS.map((t) => html`
+        <button class=${'tab' + (tab === t.path ? ' on' : '')} onClick=${() => { track('вкладка:' + t.label); go(t.path, { replace: true }); }}>
+          <i></i>${t.label}
+        </button>`)}
+      <button class="helper" aria-label="Поиск" onClick=${() => { track('помощник'); go('/poisk'); }}>?</button>
+    </nav>`;
+}
+
+// Поле ввода в рамке, как в Фигме
+export function Field({ label, value, onInput, placeholder, type = 'text', inputmode, hint, err, autofocus }) {
+  return html`
+    <label class=${'field' + (err ? ' err' : '')}>
+      <span class="label">${label}</span>
+      <input type=${type} inputmode=${inputmode} value=${value} placeholder=${placeholder} autofocus=${autofocus}
+        onInput=${(e) => onInput(e.target.value)} />
+      ${hint && html`<span class="hint">${hint}</span>`}
+    </label>`;
+}
