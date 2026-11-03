@@ -36,7 +36,6 @@ function Start() {
         <${Row} title="Ждём малыша" sub="Срок, подготовка к роддому, имена" onClick=${pick('expecting', '/start/zhdyom')} />
         <${Row} title="Планируем родительство" sub="Статьи НЭН и заметки для себя" onClick=${pick('planning')} />
       </div>
-      <p class="small">Всё, что запишете, хранится на этом телефоне. Вход не нужен.</p>
       <div class="grow"></div>
       <button class="btn-quiet" onClick=${() => go('/start/perenos')}>Перенести записи с другого телефона</button>
       <button class="btn-quiet" onClick=${() => go('/start/vhod')}>Вы в Клубе или учитесь в Школе НЭН? Войти</button>
