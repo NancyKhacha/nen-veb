@@ -71,6 +71,12 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // На своём компьютере кэш не включаем: правки видны сразу после обновления страницы.
 const local = ['localhost', '127.0.0.1'].includes(location.hostname);
 if ('serviceWorker' in navigator && !local) {
+  // Пришла новая версия кэша — один раз перезагружаемся, чтобы показать свежее
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (hadController && !reloaded) { reloaded = true; location.reload(); }
+  });
   navigator.serviceWorker.register('sw.js').catch(() => {});
 } else if ('serviceWorker' in navigator) {
   navigator.serviceWorker.getRegistrations().then((rs) => rs.forEach((r) => r.unregister()));

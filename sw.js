@@ -1,6 +1,6 @@
-// Работа без сети: всё, что приложение хоть раз загрузило, берётся из кэша.
-// Новая версия файлов подтягивается в фоне и показывается при следующем открытии.
-const CACHE = 'nen-veb-v1';
+// Работа без сети. Когда сеть есть — всегда свежая версия с сайта (и она же кладётся в кэш);
+// без сети — то, что уже в кэше. Звуки большие и не меняются — их сначала из кэша.
+const CACHE = 'nen-veb-v2';
 const CORE = ['./', 'index.html', 'css/app.css', 'js/app.js', 'vendor/preact-htm.js', 'manifest.webmanifest', 'icon.svg'];
 
 self.addEventListener('install', (e) => {
@@ -14,9 +14,19 @@ self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;
   e.respondWith(
     caches.open(CACHE).then(async (c) => {
-      const hit = await c.match(e.request, { ignoreSearch: true });
-      const net = fetch(e.request).then((r) => { if (r.ok) c.put(e.request, r.clone()); return r; }).catch(() => hit);
-      return hit || net;
+      if (url.pathname.endsWith('.wav')) {
+        const hit = await c.match(e.request);
+        if (hit) return hit;
+      }
+      try {
+        const r = await fetch(e.request, { cache: 'no-cache' });
+        if (r.ok) c.put(e.request, r.clone());
+        return r;
+      } catch (err) {
+        const hit = await c.match(e.request, { ignoreSearch: true });
+        if (hit) return hit;
+        throw err;
+      }
     })
   );
 });
