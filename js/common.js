@@ -36,7 +36,11 @@ const norm = (x) => (x || '').toLowerCase().replace(/ё/g, 'е');
 function Search() {
   const [q, setQ] = useState('');
   const n = norm(q.trim());
-  const res = n.length < 2 ? [] : allItems().filter((it) => norm(it.title + ' ' + (it.sub || '') + ' ' + (it.text || '')).includes(n)).slice(0, 40);
+  const seen = new Set();
+  const res = n.length < 2 ? [] : allItems()
+    .filter((it) => norm(it.title + ' ' + (it.sub || '') + ' ' + (it.text || '')).includes(n))
+    .filter((it) => !seen.has(it.path) && seen.add(it.path))
+    .slice(0, 40);
   return html`
     <div class="screen">
       <${Back} />

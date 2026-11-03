@@ -219,9 +219,9 @@ export function FeedSheet() {
 export function Stepper({ value, step, unit, onChange, min = 0, fmt }) {
   return html`
     <div style="display:flex;align-items:center;gap:12px">
-      <button class="pill" onClick=${() => onChange(Math.max(min, +(value - step).toFixed(2)))}>−${step}</button>
+      <button class="pill" onClick=${() => onChange(Math.max(min, +(value - step).toFixed(2)))}>−${String(step).replace('.', ',')}</button>
       <span class="big-num">${fmt ? fmt(value) : value} ${unit}</span>
-      <button class="pill" onClick=${() => onChange(+(value + step).toFixed(2))}>+${step}</button>
+      <button class="pill" onClick=${() => onChange(+(value + step).toFixed(2))}>+${String(step).replace('.', ',')}</button>
     </div>`;
 }
 
@@ -265,7 +265,9 @@ export function OtherSheet() {
   const s = useStore();
   const child = activeChild(s);
   const m = ageMonths(child, now());
-  const items = [
+  // Болеет — температура или лекарство за последние трое суток: эти записи первыми
+  const sick = child && s.records.some((r) => r.childId === child.id && (r.type === 'temp' || r.type === 'med') && r.start > now() - 3 * 864e5);
+  let items = [
     ['feed-bottle', 'Бутылочка', 'Объём кнопками'],
     ['feed-breast', 'Грудь', 'Таймер с выбранной груди'],
     ['pump', 'Сцеживание', 'Сколько мл'],
@@ -278,6 +280,7 @@ export function OtherSheet() {
     ['walk', 'Прогулка', 'Таймер'],
     ['bath', 'Купание', 'Одним касанием'],
   ];
+  if (sick) items = [...items.filter(([k]) => k === 'temp' || k === 'med'), ...items.filter(([k]) => k !== 'temp' && k !== 'med')];
   return html`
     <div class="h2">Записать</div>
     <div class="rows">

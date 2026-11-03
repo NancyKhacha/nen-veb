@@ -1,13 +1,28 @@
-// Вкладка «Мой НЭН» — заготовка, экраны собираются по Фигме.
-import { html } from '../lib.js';
-import { Header } from '../ui.js';
+// Вкладка «Мой НЭН» — Фигма «35 · V3 · Мой НЭН», бриф docs/razdely/moy-nen.md.
+// Что почитать и что продолжить: статьи НЭН, «Сегодня в НЭН», «Идея на сегодня», Школа и Клуб.
+// Экраны — в папке moy-nen/; читалка /statya/:id — общая для всех вкладок.
+import { homeRoutes } from './moy-nen/home.js';
+import { readerRoutes, articleSearch } from './moy-nen/reader.js';
+import { pochitatRoutes } from './moy-nen/pochitat.js';
+import { kursRoutes } from './moy-nen/kurs.js';
+import { klubRoutes } from './moy-nen/klub.js';
+import { ideyaRoutes } from './moy-nen/ideya.js';
+import { stripHere } from './moy-nen/util.js';
 
-function Home() {
-  return html`<div class="screen"><${Header} /><p class="lead">«Мой НЭН» собирается.</p></div>`;
-}
+// Полоса записи — как на «Сегодня»: с трёх лет на этой вкладке её нет (экран 9).
+// Тёмная тема ночью — как у всех вкладок: отдельного ночного экрана нет.
+const tabbed = (r) => ({ ...r, tab: '/moy-nen', night: true, get strip() { return stripHere(); } });
 
 export const routes = [
-  { path: '/moy-nen', view: Home, tab: '/moy-nen', strip: true, night: false },
-];
+  ...homeRoutes, ...readerRoutes, ...pochitatRoutes, ...kursRoutes, ...klubRoutes, ...ideyaRoutes,
+].map(tabbed);
 
-export function searchItems() { return []; }
+// Поиск: все статьи, курс и Клуб
+export function searchItems() {
+  return [
+    ...articleSearch(),
+    { title: 'Первый год с малышом', sub: 'Школа НЭН · урок на каждый месяц', path: '/moy-nen/kurs', text: 'курс школа уроки первый год' },
+    { title: 'Клуб НЭН', sub: 'Эфиры, записи, подарки партнёров, встречи', path: '/moy-nen/klub', text: 'клуб эфир вопрос карта участника подарки' },
+    { title: 'Идея на сегодня', sub: 'Семейная кухня · рецепт дня', path: '/moy-nen/ideya', text: 'рецепт кухня ужин готовить идея' },
+  ];
+}

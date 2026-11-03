@@ -9,7 +9,7 @@ import { EditSheet } from '../../strip.js';
 import { go } from '../../router.js';
 import { track } from '../../stats.js';
 import { bornChild, nameOf, Seg, WeekStrip, DotRow, dayTitle, plansOn, doneTasksOn, tasksOf, addTask, setTask, removeTask, timeOf,
-  recTitle, recTime, dayTotal, durNoPad, openVaccine, vaccineSub, monthsWord, cap } from './util.js';
+  recTitle, recTime, dayTotal, durNoPad, openVaccine, vaccineSub, monthsWord, cap , NotBorn } from './util.js';
 
 const to = (d, extra = '') => go(`/rebyonok/dnevnik?den=${dayKey(d)}${extra}`);
 
@@ -180,7 +180,7 @@ function MonthView({ child, query }) {
 function Diary({ query }) {
   const s = useStore();
   const child = bornChild(s);
-  if (!child) return html`<div class="screen"><${Header} /><h1 class="h1">Дневник</h1><p class="lead">Дневник начнётся, когда малыш родится: сон, кормления, прогулки и планы — по дням.</p></div>`;
+  if (!child) return html`<${NotBorn} title="Дневник" text="Дневник начнётся, когда малыш родится: сон, кормления, прогулки и планы — по дням." />`;
   if (query.vid === 'son') return html`<${SleepWeek} query=${{ den: query.den }} />`;
   const vid = query.vid === 'nedelya' ? 'week' : query.vid === 'mesyac' ? 'month' : 'day';
   const d = query.den ? fromKey(query.den) : startOfDay(now());
@@ -217,7 +217,7 @@ function SleepChart({ bars, norm, max }) {
 function SleepWeek({ query }) {
   const s = useStore();
   const child = bornChild(s);
-  if (!child) return html`<div class="screen"><${Header} /><h1 class="h1">Сон</h1><p class="lead">Сон по дням появится, когда малыш родится.</p></div>`;
+  if (!child) return html`<${NotBorn} title="Сон" text="Сон по дням появится, когда малыш родится." />`;
   const t = now();
   const today = startOfDay(t);
   const vid = query.vid === 'mesyac' ? 'month' : 'week';

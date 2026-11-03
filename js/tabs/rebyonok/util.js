@@ -7,7 +7,7 @@ import { recordsOf, hasRecords, daySummary, describe, SIDE, DIAPER, POTTY } from
 import { VACCINES, vaccineDate } from '../../content/reference.js';
 import { go } from '../../router.js';
 import { track } from '../../stats.js';
-import { openSheet, closeSheet, toast, Pill } from '../../ui.js';
+import { openSheet, closeSheet, toast, Pill, Header } from '../../ui.js';
 
 // ——— Своё пространство в хранилище: s.rebyonok ———
 // ms: { childId: { cdcId: { st: 'no', at } } } — «Ещё нет» (а «Видели» — в s.done['cdc:<child>:<id>'])
@@ -34,7 +34,7 @@ export const dayTitle = (t, today = now()) => {
   const tail = d === 0 ? ' · сегодня' : d === -1 ? ' · вчера' : d === 1 ? ' · завтра' : '';
   return `${weekdayLong(t)}, ${dateLong(t)}${tail}`;
 };
-export const fmtNum = (v, digits = 1) => (v == null || v === '' || isNaN(+v) ? '' : (+v).toFixed(digits).replace(/\.0$/, '').replace('.', ','));
+export const fmtNum = (v, digits = 1) => (v == null || v === '' || isNaN(+v) ? '' : String(parseFloat((+v).toFixed(digits))).replace('.', ','));
 
 // ——— Переключатель «День · Неделя · Месяц» ———
 export function Seg({ items, value, onChange }) {
@@ -184,7 +184,7 @@ export function vaccineGroups(child, s = getState()) {
   const by = new Map();
   for (const it of VACCINES.items) {
     if (it.riskGroup) continue;
-    const k = String(it.age);
+    const k = it.disease === 'flu' ? 'flu' : String(it.age);
     if (!by.has(k)) by.set(k, []);
     by.get(k).push(it);
   }
@@ -199,7 +199,7 @@ export function vaccineGroups(child, s = getState()) {
     else if (items.length === 1) title = vaccineName(items[0]);
     else {
       const ords = [...new Set(items.map((it) => it.dose.split(' ')[0]))];
-      const tail = ords.length === 1 && ORD[ords[0]] ? ', ' + ORD[ords[0]] : '';
+      const tail = ords.length === 1 && ORD[ords[0]] ? ', ' + ORD[ords[0]] : items.every((it) => it.dose.includes('ревакцинация')) ? ', ревакцинация' : '';
       title = cap(join(items.map((it) => SHORT[it.disease]))) + tail;
     }
     return { key: items.map((x) => x.id).join('+'), items, ids: items.map((x) => x.id), due, ageText: items[0].ageText, title, done, doneAt, planned: planned || null, age: items[0].age };
@@ -212,6 +212,7 @@ export function dueVaccineGroups(child, s = getState(), t = now()) {
 export function lastDoneVaccine(child, s = getState()) {
   return vaccineGroups(child, s).filter((g) => g.done).sort((a, b) => b.doneAt - a.doneAt)[0] || null;
 }
+export const inAge = (txt) => (/^(в|на|с)\s/.test(txt) ? txt : 'в ' + txt);
 export const doneWord = (g) => (g.items.length > 1 ? 'Сделаны' : 'Сделана');
 export function vaccineSub(child, g, t = now()) {
   if (g.done) {
@@ -220,7 +221,7 @@ export function vaccineSub(child, g, t = now()) {
   }
   if (g.planned) return `Записались на ${dateLong(g.planned.when)}${timeOf(g.planned.when) ? ', ' + timeOf(g.planned.when) : ''} · напомним накануне`;
   if (g.age === 0) return 'Отметьте, если сделали';
-  return `По календарю — в ${g.ageText.replace(/^с /, '')}. Записаться и отметить`;
+  return `По календарю — ${inAge(g.ageText)}. Записаться и отметить`;
 }
 
 // Лист прививки: «Сделана» с днём или «Записались» с днём
@@ -231,7 +232,7 @@ export function VaccineSheet({ childId, gkey }) {
   const [mode, setMode] = useState(g && g.planned ? 'planned' : 'done');
   const [day, setDay] = useState(startOfDay(now()));
   const [other, setOther] = useState(false);
-  const [time, setTime] = useState('');
+  const [time, setTime] = useState(g && g.planned ? hhmm(g.planned.when).padStart(5, '0') : '10:00');
   if (!g) return html`<div class="h2">Прививка</div><button class="btn btn-gray" onClick=${closeSheet}>Закрыть</button>`;
   const t = now();
   const doneDays = [[startOfDay(t), 'Сегодня'], [startOfDay(t) - DAY, 'Вчера']];
@@ -254,7 +255,7 @@ export function VaccineSheet({ childId, gkey }) {
   };
   return html`
     <div class="h2">${g.title}</div>
-    <div class="small">По календарю — ${g.ageText}${isPreterm(child) ? ' · по дате рождения' : ''}</div>
+    <div class="small">По календарю — ${inAge(g.ageText)}${isPreterm(child) ? ' · по дате рождения' : ''}</div>
     ${g.items.length > 1 && html`<div class="tiny">${g.items.map((it) => vaccineName(it)).join(' · ')}</div>`}
     <div class="pills">
       <${Pill} on=${mode === 'done'} onClick=${() => { setMode('done'); setDay(startOfDay(t)); }}>${doneWord(g)}<//>
@@ -315,8 +316,9 @@ export function measureLine(r, sep = ' · ') {
   const p = [];
   if (d.weight) p.push(`${fmtNum(d.weight, 2)} кг`);
   if (d.height) p.push(`${fmtNum(d.height, 1)} см`);
+  // На дашборде — «5,6 кг и 58 см», голова — только в «Росте»
+  if (sep === ' и ') return p.length ? p.join(' и ') : `голова ${fmtNum(d.head, 1)} см`;
   if (d.head) p.push(`голова ${fmtNum(d.head, 1)} см`);
-  if (sep === ' и ' && p.length > 1 && !d.head) return p.join(' и ');
   return p.join(sep);
 }
 
@@ -370,7 +372,7 @@ export function memory(child, s = getState(), t = now()) {
 export function monthBirthday(child, t = now()) {
   const a = new Date(child.dob), b = new Date(t);
   const { months, totalDays } = diffYMD(child.dob, t);
-  if (totalDays < 20 || months < 1) return null;
+  if (totalDays < 20 || months < 1 || months >= 36) return null;
   const last = new Date(b.getFullYear(), b.getMonth() + 1, 0).getDate();
   if (b.getDate() !== Math.min(a.getDate(), last)) return null;
   return months;
@@ -381,4 +383,20 @@ export function ageWords(months) {
   const y = Math.floor(months / 12), r = months % 12;
   const ys = y === 1 ? 'год' : y < 5 ? `${W[y]} года` : `${W[y]} лет`;
   return r ? `${ys} и ${W[r]}` : ys;
+}
+
+// Раздел, пока малыш не родился или ребёнка нет: не тупик — что сделать сейчас
+export function NotBorn({ title, text }) {
+  const s = getState();
+  const c = activeChild(s);
+  return html`
+    <div class="screen">
+      <${Header} />
+      <h1 class="h1">${title}</h1>
+      <p class="lead">${text}</p>
+      ${c && c.expecting
+        ? html`<button class="btn btn-primary" onClick=${() => go('/profil/rebyonok/' + c.id)}>Малыш родился</button>`
+        : html`<button class="btn btn-primary" onClick=${() => go('/profil/rebyonok/novyy')}>Добавить ребёнка</button>`}
+      <button class="btn btn-gray" onClick=${() => go('/rebyonok')}>К «Ребёнку»</button>
+    </div>`;
 }

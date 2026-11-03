@@ -5,7 +5,7 @@ import { DAY, startOfDay, dayKey, weekdayShort, weekdayLong, dateWithWeekday, hh
 import { Row, SecTitle, Ill, Pill, Field, SaveButton, openSheet, closeSheet, toast } from '../../ui.js';
 import { go } from '../../router.js';
 import { track } from '../../stats.js';
-import { selectWear, WEAR_ADVICE, WEAR_SOURCES, WEAR_WEATHER, WEAR_MODES } from '../../content/segodnya-wear.js';
+import { selectWear, WEAR_SOURCES, WEAR_WEATHER, WEAR_MODES } from '../../content/segodnya-wear.js';
 import { ROUTES, seg, lowerFirst, whenLine, articleByUrl, shortUrl, diseasesOf } from './logic.js';
 import { weatherLine, describeCode, staleLabel, WeatherIcon, isOffline } from './weather.js';
 
@@ -63,7 +63,7 @@ export function DayCard({ card }) {
   const Main = html`
     ${card.ill !== false && html`<${Ill} />`}
     <div class="tiny">${card.label}</div>
-    <div class="h2">${card.title}</div>
+    <div class=${'h2' + (card.title.length > 80 ? ' sg-long' : '')}>${card.title}</div>
     ${card.text && html`<p class="p sg-text">${card.text}</p>`}
     ${card.source && html`<div class="tiny">По материалу НЭН · ${shortUrl(card.source)}</div>`}`;
   return html`
@@ -235,7 +235,7 @@ export function CheckupSheet({ item, childId }) {
     <div class="h2">${item.title}</div>
     <div class="small">${item.sub.replace(/\. Записаться и отметить$/, '.')}</div>
     <button class="btn btn-primary" onClick=${() => setStep('plan')}>Записались</button>
-    <button class="btn btn-gray" onClick=${() => { setSeg((g) => { g.checkups = { ...(g.checkups || {}), [item.checkup]: now() }; }); track('сегодня:осмотр-был'); closeSheet(); toast({ text: 'Отметили', ms: 2000 }); }}>Уже были</button>
+    <button class="btn btn-gray" onClick=${() => { const age = Number(item.checkup.slice(1)); update((st) => { st.rebyonok = st.rebyonok || {}; const c = (st.rebyonok.checkups = st.rebyonok.checkups || {}); c[childId] = { ...(c[childId] || {}), [age]: now() }; }); track('сегодня:осмотр-был'); closeSheet(); toast({ text: 'Отметили', ms: 2000 }); }}>Уже были</button>
     <button class="btn-quiet" onClick=${() => { closeSheet(); go(ROUTES.health); }}>Здоровье ребёнка</button>`;
 }
 

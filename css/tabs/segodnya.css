@@ -1,1 +1,49 @@
-/* Вкладка segodnya: детали, которых нет в app.css. */
+/* Вкладка «Сегодня»: детали, которых нет в app.css. Всё — по голым экранам Фигмы, страница 32. */
+
+/* Строки под итогом: ориентир, обещание на завтра, ориентир первых недель */
+.sg .sg-note { display: block; width: 100%; text-align: left; color: var(--ink); font-size: 14px; line-height: 1.45; }
+.sg .sg-hint { color: var(--ink); }
+.sg .sg-date { margin-top: 4px; }
+.sg .sg-night { padding: 8px 0; }
+
+/* Близнецы: «Саша · Женя · Оба» под шапкой */
+.sg .sg-twins { margin-top: -4px; }
+
+/* Карточка дня — одна большая */
+.sg-day { padding: 12px; gap: 6px; }
+.sg-day-main { display: flex; flex-direction: column; gap: 6px; text-align: left; width: 100%; }
+.sg-day .ill { height: 132px; margin-bottom: 6px; }
+.sg-day .h2 { font-size: 20px; line-height: 1.25; }
+.sg-day .h2.sg-long { font-size: 17px; line-height: 1.35; }
+.sg-day .sg-text { font-size: 15px; line-height: 1.4; }
+.sg-actions { flex-wrap: wrap; align-items: baseline; row-gap: 10px; column-gap: 20px; padding-top: 6px; }
+.sg-actions .sg-dismiss { margin-left: auto; font-size: 13px; font-weight: 500; color: var(--muted); }
+.sg-done .sg-actions button:first-child { color: var(--muted); }
+
+/* Лента «Для вас»: заголовок карточки в пять строк, не больше */
+.sg .feed-card .t { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Погода (wf/Погода): иконка, температура и ветер, город мелко */
+.sg-weather { flex-direction: row; align-items: center; gap: 12px; padding: 14px 16px; }
+.sg-wicon { width: 38px; height: 38px; flex: none; stroke: var(--ink); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.sg-wtext { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.sg-wear { font-size: 13px; font-weight: 600; white-space: nowrap; }
+.sg-advice { display: flex; flex-direction: column; gap: 6px; font-size: 15px; }
+
+/* Колокольчик: точка у нового */
+.sg-new-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--orange); flex: none; }
+.sg-new-dot.off { background: transparent; }
+
+/* Факт «Нет, это нормально» */
+.sg .sg-fact-title { font-size: 24px; }
+.sg .sg-fact-title.sg-long { font-size: 20px; line-height: 1.35; }
+
+/* Подготовка к роддому: отметки */
+.sg-check { width: 26px; height: 26px; border-radius: 8px; border: 1.5px solid var(--faint); display: grid; place-items: center; flex: none; font-size: 14px; font-weight: 700; }
+.sg-check.on { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+
+/* Близнецы: короткие плашки «Саша спит · 35 мин · Закончить» */
+.sg-mini-plaques { display: flex; flex-direction: column; gap: 8px; }
+.sg-mini { flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 10px 10px 16px; border-radius: 16px; }
+.sg-mini .plaque-title { font-size: 15px; }
+.sg-mini .btn { width: auto; flex: none; }

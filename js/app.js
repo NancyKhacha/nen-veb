@@ -10,7 +10,7 @@ import { trackOpen } from './stats.js';
 import { onboardingRoutes } from './onboarding.js';
 import { commonRoutes, setTabModules } from './common.js';
 import { profileRoutes } from './profile.js';
-import { Header } from './ui.js';
+import { Header, setNewsCheck } from './ui.js';
 
 // Вкладки грузятся по отдельности: ошибка в одной не роняет остальные
 const TABS = [['segodnya', '/segodnya', 'Сегодня'], ['rebyonok', '/rebyonok', 'Ребёнок'], ['dlya-sebya', '/dlya-sebya', 'Для себя'], ['moy-nen', '/moy-nen', 'Мой НЭН']];
@@ -23,6 +23,8 @@ const mods = await Promise.all(TABS.map(async ([file, path, label]) => {
   }
 }));
 setTabModules(mods);
+const news = mods.find((m) => m.hasNews);
+if (news) setNewsCheck(news.hasNews);
 
 addRoutes(onboardingRoutes);
 mods.forEach((m) => addRoutes(m.routes || []));

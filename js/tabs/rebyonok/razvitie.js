@@ -9,7 +9,7 @@ import { activitiesFor, activityById, activityOfDay } from '../../content/activi
 import { SKILLS, CARE, ACT_EARLY, FAQ } from '../../content/rebyonok-spravka.js';
 import { go } from '../../router.js';
 import { track } from '../../stats.js';
-import { R, rUpdate, forChild, bornChild, nameOf, Seg, FeedCard, isOffline, tasksOf, cap } from './util.js';
+import { R, rUpdate, forChild, bornChild, nameOf, Seg, FeedCard, isOffline, tasksOf, cap , NotBorn } from './util.js';
 import { openNewMoment } from './momenty.js';
 
 // Листы CDC по возрасту и подписи к ним
@@ -98,14 +98,17 @@ function Development({ query }) {
   const s = useStore();
   const [pick, setPick] = useState(null);
   const child = bornChild(s);
-  if (!child) return html`<div class="screen"><${Header} /><h1 class="h1">Развитие</h1><p class="lead">Ориентиры и занятия появятся, когда малыш родится.</p></div>`;
+  if (!child) return html`<${NotBorn} title="Развитие" text="Ориентиры и занятия появятся, когда малыш родится." />`;
   const t = now();
   const m = ageMonths(child, t);
   const cur = currentSheet(Math.max(0, m));
   const idx = SHEETS.indexOf(cur);
   const tabs = SHEETS.slice(idx, idx + 3);
   const sh = SHEETS.find((x) => x.key === (pick || query.list)) || cur;
-  const items = [...sh.items].sort((a, b) => (seenAt(child, a.id, s) ? 1 : 0) - (seenAt(child, b.id, s) ? 1 : 0) || (seenAt(child, b.id, s) || 0) - (seenAt(child, a.id, s) || 0));
+  // Сначала два ещё не отмеченных, потом последние отметки с датой — история, а не оценка
+  const unseen = sh.items.filter((it) => !seenAt(child, it.id, s));
+  const seenList = sh.items.filter((it) => seenAt(child, it.id, s)).sort((a, b) => seenAt(child, b.id, s) - seenAt(child, a.id, s));
+  const items = [...unseen.slice(0, 2), ...seenList, ...unseen.slice(2)];
   const no = SHEETS.flatMap((x) => x.items).filter((it) => notYet(child, it.id, s)).length;
   const qs = (forChild(R(s).questions, child.id) || []).length || 0;
   const visit = tasksOf(child, s).filter((x) => !x.done && x.kind === 'doctor' && x.when >= startOfDay(t)).sort((a, b) => a.when - b.when)[0];
@@ -171,13 +174,13 @@ function AllMilestones({ params }) {
 function Activities() {
   const s = useStore();
   const child = bornChild(s);
-  if (!child) return html`<div class="screen"><${Back} title="Занятия" to="/rebyonok" /></div>`;
+  if (!child) return html`<${NotBorn} title="Занятия" text="Раздел откроется, когда малыш родится." />`;
   const cards = activityCards(child, s, 100);
   return html`
     <div class="screen">
       <${Header} />
       <h1 class="h1">Занятия</h1>
-      <p class="small">Для возраста ${nameOf(child)} — ${cards.length}. Сделанное отмечено.</p>
+      <p class="small">Для этого возраста — ${cards.length}. Сделанное отмечено, на сегодня — первым.</p>
       <div class="rows">${cards.map(({ a, label }) => html`<${Row} key=${a.id} title=${a.title} sub=${label} onClick=${() => go('/rebyonok/zanyatie/' + a.id)} />`)}</div>
     </div>`;
 }
@@ -215,7 +218,7 @@ function Memo() {
   const s = useStore();
   const child = bornChild(s);
   const [q, setQ] = useState('');
-  if (!child) return html`<div class="screen"><${Back} title="Заметка для педиатра" to="/rebyonok" /></div>`;
+  if (!child) return html`<${NotBorn} title="Заметка для педиатра" text="Раздел откроется, когда малыш родится." />`;
   const t = now();
   const sh = currentSheet(Math.max(0, ageMonths(child, t)));
   const yes = sh.items.filter((it) => seenAt(child, it.id, s));
@@ -258,7 +261,7 @@ function Observations() {
   const s = useStore();
   const child = bornChild(s);
   const [text, setText] = useState('');
-  if (!child) return html`<div class="screen"><${Back} title="Наблюдения" to="/rebyonok" /></div>`;
+  if (!child) return html`<${NotBorn} title="Наблюдения" text="Раздел откроется, когда малыш родится." />`;
   const raw = forChild(R(s).obs, child.id);
   const list = Array.isArray(raw) ? raw : [];
   const add = () => { const id = uid(); rUpdate((r) => { r.obs = r.obs || {}; r.obs[child.id] = [{ id, text: text.trim(), at: now() }, ...(r.obs[child.id] || [])]; }); setText(''); track('развитие:наблюдение'); toast({ text: 'Записали', actions: [{ label: 'Отменить', onClick: () => rUpdate((r) => { r.obs[child.id] = r.obs[child.id].filter((x) => x.id !== id); }) }] }); };

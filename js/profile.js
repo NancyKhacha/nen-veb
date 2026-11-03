@@ -177,6 +177,11 @@ function Research() {
         <${Pill} on=${s.demo.club} onClick=${() => update((d) => { d.demo = { ...d.demo, club: !d.demo.club }; })}>В Клубе<//>
         <${Pill} on=${s.demo.offline} onClick=${() => update((d) => { d.demo = { ...d.demo, offline: !d.demo.offline }; })}>Без сети<//>
       </div>
+      <p class="small">Редкие состояния — посмотреть, как выглядят:</p>
+      <div class="pills">
+        <button class="pill" onClick=${() => go('/moy-nen?sostoyanie=pusto')}>«Мой НЭН»: пусто</button>
+        <button class="pill" onClick=${() => go('/moy-nen?sostoyanie=pervyy-zapusk')}>Первый запуск без сети</button>
+      </div>
       <${SecTitle}>Начать заново<//>
       <button class="btn btn-gray" onClick=${() => confirmAction({ title: 'Стереть всё?', text: 'Записи, дети и заметки на этом телефоне удалятся, приложение начнётся с первого экрана.', yes: 'Стереть всё', onYes: () => { resetAll(); resetStats(); go('/start', { replace: true }); } })}>Стереть всё и начать с первого экрана</button>
     </div>`;

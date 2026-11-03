@@ -97,7 +97,9 @@ export function readingFor(s, t = now()) {
     return { list, band: ageBand(m), forWhom: `Для ${gen(name) || name}, ${ageShort(c, t)}`, more: `Ещё для ${ageBand(m)}` };
   }
   const stage = c && c.expecting ? 'expecting' : s.stage === 'planning' ? 'planning' : 'expecting';
-  const list = articlesFor({ stage }).sort(byDate);
+  // сначала — для этого этапа, потом — для всех родителей
+  const all = articlesFor({ stage });
+  const list = [...all.filter((a) => a.fromM !== -3).sort(byDate), ...all.filter((a) => a.fromM === -3).sort(byDate)];
   const who = stage === 'planning' ? 'тех, кто планирует малыша' : 'тех, кто ждёт малыша';
   return { list, band: null, forWhom: `Для ${who}`, more: `Ещё для ${who}` };
 }
@@ -113,17 +115,17 @@ export const ideaToday = (t = now()) => ideaOfDay(dayKey(t));
 // Строка статьи, как в Фигме: заголовок и подзаголовок из второй половины названия
 const cap1 = (x) => x.charAt(0).toUpperCase() + x.slice(1);
 export function splitTitle(title) {
-  let m;
-  if ((m = /^(.{12,}?)\s+(\([^)]+\))$/.exec(title))) return [m[1], m[2]];
-  if ((m = /^(.{12,}?): (.{8,})$/.exec(title))) return [m[1], cap1(m[2])];
-  if ((m = /^(.{12,}?[^.]{3})\. (.{8,})$/.exec(title))) return [m[1], cap1(m[2])];
-  if ((m = /^(.{12,}?\?) (.{8,})$/.exec(title))) return [m[1], cap1(m[2])];
-  if ((m = /^(.{12,}?) — ([^—]{6,})$/.exec(title))) return [m[1], cap1(m[2])];
+  const balanced = (x) => (x.match(/«/g) || []).length === (x.match(/»/g) || []).length && (x.match(/\(/g) || []).length === (x.match(/\)/g) || []).length;
+  const pats = [/^(.{12,}?[?!.…]») (.{8,})$/, /^(.{12,}?)\s+(\([^)]+\))$/, /^(.{12,}?): (.{8,})$/, /^(.{12,}?[^.]{3})\. (.{8,})$/, /^(.{12,}?[?!]+) (.{8,})$/, /^(.{12,}?) — ([^—]{6,})$/];
+  for (const re of pats) {
+    const m = re.exec(title);
+    if (m && balanced(m[1])) return [m[1], m[2].startsWith('(') ? m[2] : cap1(m[2])];
+  }
   return [title, 'Статья НЭН'];
 }
 export function openArticle(a, from) { track('мой-нэн:' + from); go('/statya/' + a.id); }
-export function ArticleRow({ a, from = 'статья', sub }) {
-  const [t, st] = splitTitle(a.title);
+export function ArticleRow({ a, from = 'статья', sub, full }) {
+  const [t, st] = full ? [a.title, 'Статья НЭН'] : splitTitle(a.title);
   return html`<${Row} title=${t} sub=${sub || st} onClick=${() => openArticle(a, from)} />`;
 }
 export const savedItem = (a) => ({ kind: 'article', id: a.id, title: a.title, sub: 'Статья НЭН', route: '/statya/' + a.id, url: a.url, lead: a.lead });
@@ -204,7 +206,7 @@ export function Inner({ title, eyebrow }) {
   return html`
     <${Header} />
     <div class="mn-back"><button onClick=${() => back('/moy-nen')}>‹ Назад</button></div>
-    ${eyebrow && html`<div class="mn-eyebrow">${eyebrow}</div>`}
+    ${eyebrow && html`<div class="sec-title mn-kicker">${eyebrow}</div>`}
     ${title && html`<h1 class="h1">${title}</h1>`}`;
 }
 // Ссылка на сайт: открывается в браузере; без сети — бледная

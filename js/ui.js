@@ -1,9 +1,10 @@
 // Общие детали экранов — те же, что в Фигме: шапка, строка, карточка, лист, сообщение, меню.
 import { html, useState, useEffect } from './lib.js';
-import { useStore, activeChild, update, isSaved, toggleSaved, usePhoto } from './store.js';
+import { useStore, activeChild, update, isSaved, toggleSaved, usePhoto, now } from './store.js';
 import { childAgeLine } from './age.js';
 import { go, back } from './router.js';
 import { track } from './stats.js';
+import { usePlayer } from './player.js';
 
 // ——— Лист поверх экрана и сообщение внизу ———
 let overlay = { sheet: null, toast: null };
@@ -26,9 +27,11 @@ export function OverlayHost({ bottomOffset = 0 }) {
   const [o, setO] = useState({ ...overlay });
   useEffect(() => { olisteners.add(setO); return () => olisteners.delete(setO); }, []);
   const S = o.sheet && o.sheet.view;
+  const p = usePlayer();
+  bottomOffset += p ? 64 : 0; // мини-плеер над полосой записи
   return html`
     ${o.toast && html`
-      <div class="toast" style=${`bottom:${bottomOffset + 10}px`} role="status">
+      <div class="toast" style=${o.sheet ? 'top:calc(10px + var(--safe-t))' : `bottom:${bottomOffset + 10}px`} role="status">
         <span class="t">${o.toast.text}</span>
         ${(o.toast.actions || []).map((a) => html`<button onClick=${() => { hideToast(); a.onClick(); }}>${a.label}</button>`)}
       </div>`}
@@ -61,12 +64,19 @@ export function Avatar({ child, size = 36 }) {
   return html`<span class="avatar" style=${`width:${size}px;height:${size}px`}>${url ? html`<img src=${url} alt="" />` : letter}</span>`;
 }
 
+// Есть ли новое под колокольчиком — считает «Сегодня», каркас передаёт сюда
+let newsCheck = null;
+export function setNewsCheck(fn) { newsCheck = fn; }
+
 // Шапка вкладок: ребёнок слева; справа «Что нового», «Сохранённое», профиль
-export function Header({ newsDot = false }) {
+export function Header({ newsDot }) {
   const s = useStore();
   const child = activeChild(s);
+  if (newsDot === undefined) { try { newsDot = newsCheck ? newsCheck(s, now()) : false; } catch (e) { newsDot = false; } }
   let name, line;
-  if (child) { name = child.name || (child.expecting ? 'Малыш' : 'Ребёнок'); line = childAgeLine(child); }
+  const twin = child && s.bothTwins && child.twinOf ? s.children.find((c) => c.id === child.twinOf) : null;
+  if (twin) { name = `${child.name} и ${twin.name}`; line = childAgeLine(child); }
+  else if (child) { name = child.name || (child.expecting ? 'Малыш' : 'Ребёнок'); line = childAgeLine(child); }
   else { name = s.stage === 'planning' ? 'Планируем' : 'Ваша семья'; line = 'Добавить ребёнка'; }
   const onChild = () => { track('шапка:ребёнок'); child ? openSheet(ChildSwitcher) : go('/profil/rebyonok/novyy'); };
   return html`
@@ -141,7 +151,7 @@ export function Pill({ on, children, onClick }) {
 export function SaveButton({ item, label = 'Сохранить' }) {
   const s = useStore();
   const on = isSaved(item.kind, item.id);
-  return html`<button onClick=${(e) => { e.stopPropagation(); const added = toggleSaved(item); track('сохранить:' + item.kind); toast({ text: added ? 'Сохранили — всё сохранённое под сердечком' : 'Убрали из сохранённого', ms: 2500 }); }}>${on ? '♥ Сохранено' : '♡ ' + label}</button>`;
+  return html`<button onClick=${(e) => { e.stopPropagation(); const added = toggleSaved(item); track('сохранить:' + item.kind); toast({ text: added ? 'Сохранено — под сердечком в шапке' : 'Убрали из сохранённого', ms: 3000, actions: [{ label: 'Отменить', onClick: () => toggleSaved(item) }] }); }}>${on ? '♥ Сохранено' : '♡ ' + label}</button>`;
 }
 
 // Нижнее меню: четыре вкладки и помощник

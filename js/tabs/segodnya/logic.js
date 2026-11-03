@@ -10,7 +10,7 @@ import { factsFor } from '../../content/facts.js';
 import { activitiesFor } from '../../content/activities.js';
 import { ARTICLES, articlesFor } from '../../content/articles.js';
 import { weekLines } from '../../content/weekly.js';
-import { VACCINES, CDC, vaccineDate } from '../../content/reference.js';
+import { VACCINES, CDC } from '../../content/reference.js';
 import { genitive } from '../../onboarding.js';
 
 const H = 3600e3;
@@ -175,8 +175,8 @@ export function articlePool(s, child, t = now(), { topic, self } = {}) {
   else {
     const months = child && !child.expecting ? ageMonths(child, t) : -3;
     const stage = !child ? (s.stage === 'planning' ? 'planning' : 'born') : child.expecting ? 'expecting' : 'born';
-    list = articlesFor({ months, stage, topics: s.topics || [] });
-    if (!child && stage === 'born') list = list.filter((a) => a.bucket !== 'self');
+    // Статьи «для себя» — своей карточкой «Для себя», здесь — про ребёнка и этап
+    list = articlesFor({ months, stage, topics: s.topics || [] }).filter((a) => a.bucket !== 'self');
   }
   if (topic) list = list.filter((a) => a.topics.includes(topic));
   list = list.filter((a) => !opened[a.id] && !isDismissed(s, 'article:' + a.id));
@@ -210,7 +210,7 @@ export function newInAge(s, child, t = now()) {
     out.push({
       key: 'age:' + key, kind: 'cdc', label: 'Новое в возрасте',
       title: `Ориентиры ${SHEET_WORD[sheet.m] || ''}`.trim(),
-      short: item ? `Ориентир ${SHEET_WORD[sheet.m]}: ${lowerFirst(item.ru)}` : `Ориентиры ${SHEET_WORD[sheet.m]}`,
+      short: item ? `Ориентир ${SHEET_WORD[sheet.m]}: ${lowerFirst(item.ru.split(':')[0])}` : `Ориентиры ${SHEET_WORD[sheet.m]}`,
       text: item ? `Например: «${item.ru}». В «Развитии» можно отметить, что уже видели.` : 'В «Развитии» можно отметить, что уже видели.',
       action: 'Все ориентиры', path: ROUTES.development,
     });
@@ -242,23 +242,30 @@ function groupTitle(items) {
   if (items.length === 1) return vaccineName(items[0]);
   return `Прививки ${inAge(items[0].ageText)}`;
 }
+// Срок прививки от даты рождения. Свой расчёт вместо vaccineDate: там «4,5 месяца» округляются до 4
+export function vaccineDue(it, dob) {
+  if (it.ageDays) return startOfDay(dob + it.ageDays[0] * DAY);
+  const whole = Math.floor(it.age);
+  return startOfDay(addMonths(dob, whole) + Math.round((it.age - whole) * 30.44) * DAY);
+}
 // Ближайшая прививка по календарю без отметки: от 45 дней назад до 14 вперёд. Грипп — только если записались.
 export function calendarVaccine(s, child, t = now()) {
   if (!child || child.expecting) return null;
   const sod = startOfDay(t);
   const list = VACCINES.items
-    .filter((it) => !it.riskGroup && it.disease !== 'flu')
-    .map((it) => ({ ...it, due: startOfDay(vaccineDate(it, child.dob)) }))
+    .filter((it) => !it.riskGroup && it.disease !== 'flu' && !it.ageDays) // первые — в роддоме
+    .map((it) => ({ ...it, due: vaccineDue(it, child.dob) }))
     .filter((it) => !markFor(s, it.id, child.id) && it.due >= sod - 45 * DAY && it.due <= sod + 14 * DAY)
     .sort((a, b) => a.due - b.due);
   if (!list.length) return null;
   const items = list.filter((it) => it.due === list[0].due);
   const due = list[0].due;
-  const when = due <= sod ? inAge(items[0].ageText) : `${lowerFirst(weekdayLong(due))}, ${dateLong(due)}`;
+  // Прошёл срок или он дальше недели — словами возраста; на этой неделе — днём
+  const when = due <= sod || due >= sod + 7 * DAY ? inAge(items[0].ageText) : `${lowerFirst(weekdayLong(due))}, ${dateLong(due)}`;
   return {
     key: 'vac:' + items.map((x) => x.id).join('+'), ids: items.map((x) => x.id), items, due,
     title: groupTitle(items),
-    sub: `По календарю${isPreterm(child) && due > sod ? ' от даты рождения' : ''} — ${when}. Записаться и отметить`,
+    sub: `По календарю${isPreterm(child) ? ' от даты рождения' : ''} — ${when}. Записаться и отметить`,
     ageText: inAge(items[0].ageText),
   };
 }
@@ -282,7 +289,9 @@ export function plannedVaccines(s, childIds) {
 export function calendarCheckup(s, child, t = now()) {
   if (!child || child.expecting) return null;
   const sod = startOfDay(t);
-  const marks = seg(s).checkups || {};
+  // Отметки осмотров — общие с «Ребёнок → Здоровье»: s.rebyonok.checkups[id ребёнка][возраст в месяцах]
+  const marks = { ...(seg(s).checkups || {}) };
+  for (const [age, at] of Object.entries((((s.rebyonok || {}).checkups || {})[child.id]) || {})) if (at) marks['m' + age] = at;
   const ages = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 36, 72, 84];
   for (const m of ages) {
     const d = startOfDay(addMonths(child.dob, m));

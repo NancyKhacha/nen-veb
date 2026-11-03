@@ -6,7 +6,7 @@ import { Header, Row, SecTitle, Pill, openSheet, closeSheet, toast } from '../..
 import { DAY, startOfDay, dayKey, dateLong } from '../../age.js';
 import { addRecord, editRecord, removeRecord } from '../../records.js';
 import { track } from '../../stats.js';
-import { bornChild, nameOf, measures, measureLine, fmtNum, Seg } from './util.js';
+import { bornChild, nameOf, measures, measureLine, fmtNum, Seg , NotBorn } from './util.js';
 
 const KINDS = { weight: { label: 'Вес', unit: 'кг', step: 0.1, digits: 2, base: [3, 6] }, height: { label: 'Рост', unit: 'см', step: 0.5, digits: 1, base: [48, 62] }, head: { label: 'Голова', unit: 'см', step: 0.5, digits: 1, base: [33, 41] } };
 const MON = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
@@ -42,7 +42,7 @@ export function Chart({ points, kind, from, to }) {
     </div>`;
 }
 
-function Stepper({ value, step, unit, digits, onChange }) {
+export function Stepper({ value, step, unit, digits, onChange }) {
   const [typing, setTyping] = useState(value == null);
   if (typing || value == null) {
     return html`<input class="field rb-num" inputmode="decimal" placeholder=${`Сколько, ${unit}`} value=${value == null ? '' : fmtNum(value, digits)}
@@ -52,7 +52,7 @@ function Stepper({ value, step, unit, digits, onChange }) {
   return html`
     <div class="rb-stepper">
       <button class="pill" onClick=${() => onChange(Math.max(0, +(value - step).toFixed(2)))}>−${f(step)}</button>
-      <button class="big-num" onClick=${() => setTyping(true)}>${fmtNum(value, digits)} ${unit}</button>
+      <button class="big-num" onClick=${() => setTyping(true)}>${unit === '°' ? value.toFixed(1).replace('.', ',') : fmtNum(value, digits)} ${unit}</button>
       <button class="pill" onClick=${() => onChange(+(value + step).toFixed(2))}>+${f(step)}</button>
     </div>`;
 }
@@ -105,7 +105,7 @@ function Growth() {
   const s = useStore();
   const child = bornChild(s);
   const [kind, setKind] = useState('weight');
-  if (!child) return html`<div class="screen"><${Header} /><h1 class="h1">Рост</h1><p class="lead">Замеры начнутся, когда малыш родится.</p></div>`;
+  if (!child) return html`<${NotBorn} title="Рост" text="Замеры начнутся, когда малыш родится." />`;
   const all = measures(child, s);
   const t = now();
   const points = all.filter((r) => r.data && r.data[kind]).map((r) => ({ t: r.start, v: +r.data[kind] }));

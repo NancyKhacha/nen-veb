@@ -5,7 +5,7 @@ import { Header, SecTitle, Row, Ill, Pill, Field, openSheet, closeSheet, toast }
 import { DAY, dateLong, diffYMD, startOfDay } from '../../age.js';
 import { go } from '../../router.js';
 import { track } from '../../stats.js';
-import { bornChild, nameOf, momentsOf, momentTitle, momentMore, memory, inFirstYear, cap } from './util.js';
+import { bornChild, nameOf, momentsOf, momentTitle, momentMore, memory, inFirstYear, cap , NotBorn } from './util.js';
 
 const MONTHS = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
 const ORD = ['первый', 'второй', 'третий', 'четвёртый', 'пятый', 'шестой', 'седьмой', 'восьмой', 'девятый', 'десятый', 'одиннадцатый', 'двенадцатый'];
@@ -105,7 +105,7 @@ export function MemoryCard({ child, mem }) {
   };
   return html`
     <div class="card rb-memory">
-      ${url ? html`<img class="rb-bigphoto" src=${url} alt="" onClick=${() => openMoment(m)} />` : html`<${Ill} text=${m.photo ? 'Фото из момента' : 'Слова'} />`}
+      ${url ? html`<img class="rb-bigphoto" src=${url} alt="" onClick=${() => openMoment(m)} />` : m.photo ? html`<${Ill} text="Фото из момента" />` : ''}
       <div class="tiny">${mem.label} · ${dateLong(m.at)}</div>
       <button class="h2" style="text-align:left" onClick=${() => openMoment(m)}>${momentTitle(m)}</button>
       ${momentMore(m) && html`<p class="p">«${momentMore(m)}»</p>`}
@@ -117,7 +117,7 @@ export function MemoryCard({ child, mem }) {
 function Moments({ query }) {
   const s = useStore();
   const child = bornChild(s);
-  if (!child) return html`<div class="screen"><${Header} /><h1 class="h1">Моменты</h1><p class="lead">Моменты появятся, когда малыш родится.</p></div>`;
+  if (!child) return html`<${NotBorn} title="Моменты" text="Моменты появятся, когда малыш родится." />`;
   const list = momentsOf(child, s);
   const mem = memory(child, s);
   // Один месяц целиком
@@ -155,7 +155,7 @@ function Moments({ query }) {
 function Book() {
   const s = useStore();
   const child = bornChild(s);
-  if (!child) return html`<div class="screen"><${Header} /><h1 class="h1">«Первый год»</h1><p class="lead">Книга начнётся, когда малыш родится.</p></div>`;
+  if (!child) return html`<${NotBorn} title="«Первый год»" text="Книга начнётся, когда малыш родится." />`;
   const list = momentsOf(child, s);
   const year = list.filter((m) => m.at - child.dob < 366 * DAY);
   const months = Array.from({ length: 12 }, (_, i) => {

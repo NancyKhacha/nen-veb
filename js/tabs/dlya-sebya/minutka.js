@@ -18,6 +18,10 @@ export const locked = (p, s = getState()) => !p.free && !hasPlus(s);
 
 const ds = (s = getState()) => s.dlyaSebya || {};
 export const wasPlayed = (id, s = getState()) => !!(ds(s).played || {})[id];
+// Скачано: практика уже играла на этом телефоне. «Когда малыш плачет» — в телефоне всегда:
+// она нужна в худшую минуту и не закрывается никогда.
+export const ALWAYS = 'rebenok-plachet-sil-net';
+export const isDownloaded = (id, s = getState()) => id === ALWAYS || wasPlayed(id, s);
 
 const stepDur = (st) => (st.r || 0) + (st.p || 0);
 export const totalSec = (p) => p.steps.reduce((a, st) => a + stepDur(st), 0);
@@ -56,7 +60,7 @@ export function isRunning(id) { return !!(run && run.id === id && !run.done); }
 export function startPractice(id) {
   const p = practiceById(id);
   if (!p) return;
-  play({ id: PLAYER_ID, title: p.title, sub: `Минутка для себя · ${p.min} мин`, src: silence(), loop: true });
+  play({ id: PLAYER_ID, title: p.title, sub: `Минутка для себя · ${p.min} мин`, src: silence(), loop: true, route: `/dlya-sebya/minutka/${p.id}` });
   run = { id, start: Date.now(), pausedAt: null, pausedMs: 0, done: false };
   update((s) => {
     s.dlyaSebya = s.dlyaSebya || {};

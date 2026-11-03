@@ -9,7 +9,10 @@ const DAY = 864e5;
 // Срок прививки от даты рождения (у недоношенных тоже от даты рождения)
 export function vaccineDate(item, dob) {
   if (item.ageDays) return dob + item.ageDays[0] * DAY;
-  const d = new Date(dob); d.setMonth(d.getMonth() + item.age); return d.getTime();
+  // «4,5 месяца» — четыре полных месяца и ещё половина месяца днями
+  const whole = Math.floor(item.age), d = new Date(dob);
+  d.setMonth(d.getMonth() + whole);
+  return d.getTime() + Math.round((item.age - whole) * 30.44) * DAY;
 }
 export const vaccineTitle = (item) => {
   const dis = VACCINES.diseases[item.disease] || item.disease;
