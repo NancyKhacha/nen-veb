@@ -63,10 +63,10 @@ export const confirmAction = (props) => openSheet(ConfirmSheet, props);
 // ——— Иконки шапки ———
 const Bell = () => html`<svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>`;
 const Heart = () => html`<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>`;
-const Lupa = () => html`<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M15.5 15.5L20 20"/></svg>`;
-const Person = () => html`<svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.5"/><path d="M5.5 19.5a6.5 6.5 0 0 1 13 0"/></svg>`;
+const Lupa = () => html`<svg viewBox="0 0 24 24" width="18" height="18"><circle cx="11" cy="11" r="6"/><path d="M15.5 15.5L20 20"/></svg>`;
+const Person = () => html`<svg viewBox="0 0 24 24" width="18" height="18"><circle cx="12" cy="9" r="3.5"/><path d="M5.5 19.5a6.5 6.5 0 0 1 13 0"/></svg>`;
 // Искорка — общий знак ИИ
-const Spark = () => html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"/></svg>`;
+const Spark = () => html`<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"/></svg>`;
 
 export function Avatar({ child, size = 36 }) {
   const url = usePhoto(child && child.photo);
