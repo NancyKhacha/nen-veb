@@ -46,7 +46,7 @@ function Reader({ params }) {
     const readable = s.saved.filter((x) => x.kind === 'article' && articleById(x.id));
     return html`
       <div class="screen">
-        <${Inner} eyebrow="Статья НЭН" title=${it ? it.title : 'Этой статьи здесь нет'} />
+        <${Inner} eyebrow="" title=${it ? it.title : 'Этой статьи здесь нет'} />
         ${it && it.lead && html`<p class="lead">${it.lead}</p>`}
         ${it && html`<div class="mn-save"><${SaveButton} item=${{ ...it }} /></div>`}
         <p class="small">${offline
@@ -57,7 +57,7 @@ function Reader({ params }) {
         <div class="rows">
           ${[...readable.map((x) => articleById(x.id)), ...todays(readingFor(s).list, undefined, 3)]
             .filter((x, i, arr) => arr.findIndex((y) => y.id === x.id) === i).slice(0, 3)
-            .map((x) => html`<${ArticleRow} a=${x} from="статья-без-сети" full sub=${isSaved('article', x.id) ? '✓ Сохранено' : 'Статья НЭН'} />`)}
+            .map((x) => html`<${ArticleRow} a=${x} from="статья-без-сети" full sub=${isSaved('article', x.id) ? '✓ Сохранено' : ''} />`)}
         </div>
       </div>`;
   }
@@ -65,10 +65,10 @@ function Reader({ params }) {
   const saved = isSaved('article', a.id);
   return html`
     <div class="screen">
-      <${Inner} eyebrow=${a.fromM === -4 ? 'Сегодня в НЭН' : 'Статья НЭН'} />
+      <${Inner} eyebrow=${a.fromM === -4 ? 'Сегодня в НЭН' : ''} />
       <h1 class="h1 mn-h1">${a.title}</h1>
       <p class="small">${a.author ? a.author + ' · ' : ''}${fullDate(a.date)}</p>
-      <${Ill} big />
+      <${Ill} big id=${a.id} />
       <${Body} a=${a} />
       ${a.cut && html`<p class="small">${offline
         ? 'Продолжение — на сайте НЭН, когда появится сеть.'
@@ -83,5 +83,5 @@ export const readerRoutes = [{ path: '/statya/:id', view: Reader }];
 
 // Поиск: все статьи — по заголовку и лиду
 export function articleSearch() {
-  return ARTICLES.map((a) => ({ title: a.title, sub: a.fromM === -4 ? 'Сегодня в НЭН' : 'Статья НЭН', path: '/statya/' + a.id, text: a.title + ' ' + a.lead }));
+  return ARTICLES.map((a) => ({ title: a.title, sub: a.fromM === -4 ? 'Сегодня в НЭН' : '', path: '/statya/' + a.id, text: a.title + ' ' + a.lead }));
 }

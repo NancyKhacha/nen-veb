@@ -42,12 +42,12 @@ function factCard(f) {
     dismissKey: 'fact:' + f.id,
   };
 }
-function articleCard(a, label = 'Статья НЭН', text) {
+function articleCard(a, label = '', text) {
   const path = ROUTES.article(a.id);
   return {
     kind: 'article', key: 'article:' + a.id, label, title: a.title, text: text ?? leadOf(a), path, onOpen: () => markOpened(a.id),
     actions: [{ label: 'Читать', onClick: () => { track('сегодня:карточка-дня:article'); markOpened(a.id); go(path); } }],
-    save: { kind: 'article', id: a.id, title: a.title, sub: 'Статья НЭН', route: path },
+    save: { kind: 'article', id: a.id, title: a.title, sub: '', route: path },
     dismissKey: 'article:' + a.id,
   };
 }
@@ -106,7 +106,7 @@ function feedCards(s, child, t, big, evening, limit = 6) {
   const cards = [];
   const used = new Set(big ? [big.key] : []);
   const push = (c) => { if (c && !used.has(c.key) && cards.length < limit) { used.add(c.key); cards.push(c); } };
-  const art = (a, label = 'Статья НЭН', kind = 'article') => a && ({ key: 'article:' + a.id, kind, label, title: a.title, path: ROUTES.article(a.id), onOpen: () => markOpened(a.id) });
+  const art = (a, label = '', kind = 'article') => a && ({ key: 'article:' + a.id, kind, label, title: a.title, path: ROUTES.article(a.id), onOpen: () => markOpened(a.id) });
   const m = ageMonths(child, t);
   if (hardSleepWeek(child, t)) push(art(articlePool(s, child, t, { topic: 'sleep' })[0], 'Про сон', 'answer'));
   for (const n of newInAge(s, child, t)) {
@@ -115,7 +115,7 @@ function feedCards(s, child, t, big, evening, limit = 6) {
   }
   const facts = factsOfDay(s, child, t);
   const f = facts.find((x) => !used.has('fact:' + x.id));
-  if (f) push({ key: 'fact:' + f.id, kind: 'fact', label: 'Нет, это нормально', title: splitFact(f.text)[0], path: '/fakt/' + f.id });
+  if (f) push({ key: 'fact:' + f.id, kind: 'fact', label: 'Нет, это нормально', title: splitFact(f.text)[0], source: f.nen, path: '/fakt/' + f.id });
   const pool = articlePool(s, child, t).filter((a) => !used.has('article:' + a.id));
   push(art(pool[0]));
   const self = articlePool(s, child, t, { self: true }).filter((a) => !used.has('article:' + a.id))[0];
@@ -125,7 +125,7 @@ function feedCards(s, child, t, big, evening, limit = 6) {
   if (s.demo && s.demo.course) push({ key: 'course', kind: 'course', label: 'Курс', title: 'Урок этой недели уже открыт', path: ROUTES.course });
   push(art(pool[1]));
   if (m >= 12) push({ key: 'idea', kind: 'idea', label: 'Идея на сегодня', title: 'Что приготовить — рецепт «Семейной кухни»', path: ROUTES.idea });
-  if (limit > 6) { for (const a of pool.slice(2)) push(art(a)); for (const x of facts.slice(1)) push({ key: 'fact:' + x.id, kind: 'fact', label: 'Нет, это нормально', title: splitFact(x.text)[0], path: '/fakt/' + x.id }); }
+  if (limit > 6) { for (const a of pool.slice(2)) push(art(a)); for (const x of facts.slice(1)) push({ key: 'fact:' + x.id, kind: 'fact', label: 'Нет, это нормально', title: splitFact(x.text)[0], source: x.nen, path: '/fakt/' + x.id }); }
   return cards;
 }
 
@@ -275,14 +275,14 @@ function ExpectingScreen({ s, child, t }) {
     <div class="small sg-date">${dateWithWeekday(t)}</div>
     <div class="card sg-day">
       <button class="sg-day-main" onClick=${() => { if (!a) return; track('сегодня:ваша-неделя'); markOpened(a.id); go(ROUTES.article(a.id)); }}>
-        <${Ill} />
+        <${Ill} id=${a && a.id} />
         <div class="tiny">Ваша неделя</div>
         <div class="h2">${w}-я неделя</div>
         ${a && html`<p class="p sg-text">Материал недели от редакции НЭН: «${a.title}»</p>`}
       </button>
       ${a && html`<div class="actions sg-actions">
         <button onClick=${() => { track('сегодня:ваша-неделя'); markOpened(a.id); go(ROUTES.article(a.id)); }}>Читать</button>
-        <${SaveButton} item=${{ kind: 'article', id: a.id, title: a.title, sub: 'Статья НЭН', route: ROUTES.article(a.id) }} />
+        <${SaveButton} item=${{ kind: 'article', id: a.id, title: a.title, sub: '', route: ROUTES.article(a.id) }} />
       </div>`}
     </div>
     <div class="rows">
@@ -304,19 +304,19 @@ function NoChildScreen({ s, t }) {
     ${top && html`
       <div class="card sg-day">
         <button class="sg-day-main" onClick=${open(top)}>
-          <${Ill} />
-          <div class="tiny">Сегодня в НЭН · Статья НЭН</div>
+          <${Ill} id=${top.id} />
+          <div class="tiny">Сегодня в НЭН</div>
           <div class="h2">${top.title}</div>
           ${leadOf(top) && html`<p class="p sg-text">${leadOf(top)}</p>`}
         </button>
         <div class="actions sg-actions">
           <button onClick=${open(top)}>Читать</button>
-          <${SaveButton} item=${{ kind: 'article', id: top.id, title: top.title, sub: 'Статья НЭН', route: ROUTES.article(top.id) }} />
+          <${SaveButton} item=${{ kind: 'article', id: top.id, title: top.title, sub: '', route: ROUTES.article(top.id) }} />
         </div>
       </div>`}
     ${arts.length > 1 && html`
       <${SecTitle}>Сегодня в НЭН<//>
-      <div class="rows">${arts.slice(1).map((a) => html`<${Row} title=${a.title} sub="Статья НЭН" onClick=${open(a)} />`)}</div>`}
+      <div class="rows">${arts.slice(1).map((a) => html`<${Row} title=${a.title} onClick=${open(a)} />`)}</div>`}
     <${SecTitle}>Для себя<//>
     <div class="rows">
       <${Row} title="Мои заметки" sub=${lastNote ? `Последняя — ${dateWithWeekday(lastNote.at).toLowerCase()} · ＋ Заметка` : '＋ Заметка — мысли и вопросы своими словами'} onClick=${() => { track('сегодня:заметки'); go(ROUTES.notes); }} />
@@ -362,18 +362,18 @@ function FactScreen({ params }) {
   return html`
     <div class="screen sg">
       <${Back} />
-      <${Ill} />
+      <${Ill} big from=${f.nen} />
       <div class="tiny">Нет, это нормально</div>
       <h1 class=${'h1 sg-fact-title' + (title.length > 80 ? ' sg-long' : '')}>${title}</h1>
       ${text && html`<p class="lead">${text}</p>`}
       <div class="actions"><${SaveButton} item=${{ kind: 'fact', id: f.id, title, sub: 'Нет, это нормально', route: '/fakt/' + f.id }} /></div>
       ${art ? html`
         <${SecTitle}>Подробнее в НЭН<//>
-        <div class="rows"><${Row} title=${art.title} sub="Статья НЭН" onClick=${() => { track('факт:статья'); markOpened(art.id); go(ROUTES.article(art.id)); }} /></div>`
+        <div class="rows"><${Row} title=${art.title} onClick=${() => { track('факт:статья'); markOpened(art.id); go(ROUTES.article(art.id)); }} /></div>`
         : f.nen ? html`
         <${SecTitle}>Подробнее в НЭН<//>
         <div class="rows"><a class="row" href=${f.nen} target="_blank" rel="noopener" onClick=${() => track('факт:статья-на-сайте')}>
-          <span class="row-text"><span class="row-title">Статья НЭН на эту тему</span><span class="row-sub">${shortUrl(f.nen)}${navigator.onLine === false ? ' · нужна сеть' : ''}</span></span><span class="chev">›</span></a></div>` : ''}
+          <span class="row-text"><span class="row-title">Об этом на сайте НЭН</span><span class="row-sub">${shortUrl(f.nen)}${navigator.onLine === false ? ' · нужна сеть' : ''}</span></span><span class="chev">›</span></a></div>` : ''}
       ${more.length > 0 && html`
         <${SecTitle}>Ещё «Нет, это нормально»<//>
         <div class="rows">${more.map((x) => html`<${Row} title=${splitFact(x.text)[0]} onClick=${() => { track('факт:ещё'); go('/fakt/' + x.id, { replace: true }); }} />`)}</div>`}
@@ -411,7 +411,7 @@ function AllForYou() {
   if (!child || child.expecting) {
     const list = nenToday(s, t, 8);
     return html`<div class="screen sg"><${Back} title="Для вас" />
-      <div class="rows">${list.map((a) => html`<${Row} title=${a.title} sub="Статья НЭН" onClick=${() => { markOpened(a.id); go(ROUTES.article(a.id)); }} />`)}</div></div>`;
+      <div class="rows">${list.map((a) => html`<${Row} title=${a.title} onClick=${() => { markOpened(a.id); go(ROUTES.article(a.id)); }} />`)}</div></div>`;
   }
   const evening = partOfDay(t) === 'evening';
   const cards = feedCards(s, child, t, null, evening, 20);

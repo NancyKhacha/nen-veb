@@ -56,12 +56,15 @@ export function Note({ children, onClick }) {
     : html`<div class="quote sg-note">${children}</div>`;
 }
 
+// Карточка про статью — с её обложкой
+const artId = (c) => (c && c.key && c.key.startsWith('article:') ? c.key.slice(8) : null);
+
 // ——— Карточка дня: одна большая ———
 export function DayCard({ card }) {
   if (!card) return null;
   const open = card.path ? () => { track('сегодня:карточка-дня:' + card.kind); if (card.onOpen) card.onOpen(); go(card.path); } : null;
   const Main = html`
-    ${card.ill !== false && html`<${Ill} />`}
+    ${card.ill !== false && html`<${Ill} id=${artId(card)} from=${card.source} />`}
     <div class="tiny">${card.label}</div>
     <div class=${'h2' + (card.title.length > 80 ? ' sg-long' : '')}>${card.title}</div>
     ${card.text && html`<p class="p sg-text">${card.text}</p>`}
@@ -85,7 +88,7 @@ export function Feed({ cards }) {
     <div class="feed">
       ${cards.map((c) => html`
         <button class="feed-card" key=${c.key} onClick=${() => { track('сегодня:для-вас:' + c.kind); if (c.onOpen) c.onOpen(); if (c.path) go(c.path); }}>
-          <div class="ill">Архив НЭН</div>
+          <${Ill} id=${artId(c)} from=${c.source} keep />
           <span class="tiny">${c.label}</span>
           <span class="t">${c.title}</span>
         </button>`)}
@@ -281,7 +284,7 @@ export function WearSheet({ childId }) {
     const src = WEAR_SOURCES[id];
     const a = articleByUrl(src.url);
     return a
-      ? html`<${Row} title=${src.title} sub="Статья НЭН" onClick=${() => { closeSheet(); go(ROUTES.article(a.id)); }} />`
+      ? html`<${Row} title=${src.title} onClick=${() => { closeSheet(); go(ROUTES.article(a.id)); }} />`
       : html`<a class="row" href=${src.url} target="_blank" rel="noopener"><span class="row-text"><span class="row-title">${src.title}</span><span class="row-sub">${isOffline() ? 'Нужна сеть · n-e-n.ru' : 'n-e-n.ru'}</span></span><span class="chev">›</span></a>`;
   };
   return html`

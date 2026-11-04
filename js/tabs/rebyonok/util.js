@@ -81,7 +81,7 @@ export function DotRow({ plan, title, sub, onClick, end }) {
 }
 
 // Карточка ленты, как «Для вас»
-export function FeedCard({ ill = 'Архив НЭН', label, title, onClick, dim, photo }) {
+export function FeedCard({ ill = '', label, title, onClick, dim, photo }) {
   return html`
     <button class=${'feed-card rb-card' + (dim ? ' dim' : '')} onClick=${onClick}>
       ${photo ? html`<span class="rb-photo"><img src=${photo} alt="" /></span>` : html`<span class="ill">${ill}</span>`}

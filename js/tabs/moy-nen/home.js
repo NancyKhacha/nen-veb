@@ -18,8 +18,7 @@ import { IdeaCard } from './ideya.js';
 function ArticleCard({ a }) {
   return html`
     <div class="card" onClick=${() => openArticle(a, 'статья')}>
-      <${Ill} />
-      <div class="mn-eyebrow">Статья НЭН</div>
+      <${Ill} id=${a.id} />
       <div class="mn-title">${a.title}</div>
       <p class="lead">${a.lead}</p>
       <div class="actions" onClick=${(e) => e.stopPropagation()}>

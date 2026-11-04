@@ -202,7 +202,7 @@ function Activity({ params }) {
   return html`
     <div class="screen">
       <${Back} />
-      <${Ill} big />
+      <${Ill} big from=${a.url} />
       <div class="tiny">Занятие${done ? ' · сделали ' + dateLong(done) : ''}</div>
       <h1 class="h1">${a.title}</h1>
       <p class="p">${a.text}</p>

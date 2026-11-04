@@ -43,7 +43,7 @@ function openArticle(id) {
   track('для себя:статья');
   go(articleRoute(id));
 }
-const articleItem = (a) => ({ kind: 'article', id: a.id, title: a.title, sub: 'Статья НЭН', route: articleRoute(a.id) });
+const articleItem = (a) => ({ kind: 'article', id: a.id, title: a.title, sub: '', route: articleRoute(a.id) });
 const firstSentence = (t) => { const m = /^(.{40,220}?[.!?])\s/.exec(t || ''); return m ? m[1] : t; };
 const MONTHS = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
 const dateFull = (t) => `${dateLong(t)} ${new Date(t).getFullYear()}`;
@@ -114,7 +114,7 @@ function PracticeCard({ id, ctx }) {
   const line = practiceLine(p, ctx);
   return html`
     <button class=${'feed-card' + (line.off ? ' ds-off' : '')} onClick=${() => openPractice(id)}>
-      <div class="ill">Архив НЭН</div>
+      <${Ill} keep />
       <span class="tiny">${line.text}</span>
       <span class="t">${p.title}</span>
     </button>`;
@@ -172,7 +172,7 @@ function answerContent(key, part, s) {
     };
     case 'tired': return {
       lead: 'Тяжёлый день. Вот что можно сделать за пару минут.',
-      items: [{ practice: 'tri-minuty-na-kuhne' }, { article: { id: 'kak-byt-roditeliu-v-depressii', t: 'Нет сил заботиться', s: 'Статья НЭН о родителе, которого накрыла депрессия' } }],
+      items: [{ practice: 'tri-minuty-na-kuhne' }, { article: { id: 'kak-byt-roditeliu-v-depressii', t: 'Нет сил заботиться', s: 'О родителе, которого накрыла депрессия' } }],
     };
     case 'anxious': return {
       lead: 'Тревожно — так бывает. Вот что можно сделать за пару минут.',
@@ -207,7 +207,7 @@ function KakVyBlock({ ctx }) {
   const off = ds(ctx.s).kakVy && ds(ctx.s).kakVy.off;
   return html`
     <div class="card ds-kakvy">
-      ${off ? html`<button class="label ds-link" onClick=${() => go('/dlya-sebya/kak-vy')}>Как вы? · анкета раз в месяц ›</button>` : html`<span class="label">Как вы?</span>`}
+      ${off ? html`<button class="label ds-link" onClick=${() => go('/dlya-sebya/kak-vy')}>Как вы? · анкета раз в месяц ›</button>` : null}
       <div class="h2">Как вы сегодня?</div>
       <div class="ds-answers">
         ${ANSWERS.map(([k, l]) => html`<button class=${'ds-answer' + (key === k ? ' on' : '')} aria-pressed=${key === k} onClick=${() => pick(k)}>${l}</button>`)}
@@ -295,7 +295,7 @@ function Home() {
       <div class="feed">
         ${order.slice(0, 4).map((id) => html`
           <button key=${id} class="feed-card" onClick=${() => { track('для себя:подборка'); go('/dlya-sebya/podborka/' + id); }}>
-            <div class="ill">Архив НЭН</div><span class="tiny">Подборка</span><span class="t">${podborkaById(id).title}</span>
+            <${Ill} id=${(podborkaById(id).items[0] || {}).id} keep /><span class="tiny">${pl(podborkaById(id).items.length, 'статья', 'статьи', 'статей')}</span><span class="t">${podborkaById(id).title}</span>
           </button>`)}
       </div>
 
@@ -314,7 +314,7 @@ function openTest(t) {
 function TestCard({ test, offline }) {
   return html`
     <button class=${'feed-card' + (offline ? ' ds-off' : '')} onClick=${() => openTest(test)}>
-      <div class="ill">Архив НЭН</div><span class="tiny">${offline ? NEED_NET : 'Тест'}</span><span class="t">${test.title}</span>
+      <${Ill} keep from=${test.url} /><span class="tiny">${offline ? NEED_NET : 'Тест'}</span><span class="t">${test.title}</span>
     </button>`;
 }
 
@@ -461,7 +461,7 @@ function Help() {
         ${HELP.many.filter((it) => anyArticle(it.id)).map((it) => {
           const ok = readable(it.id, s);
           return html`<button key=${it.id} class=${'feed-card' + (ok ? '' : ' ds-off')} onClick=${() => openArticle(it.id)}>
-            <div class="ill">Архив НЭН</div><span class="tiny">${ok ? 'Статья НЭН' : NEED_NET}</span><span class="t">${it.t}</span></button>`;
+            <${Ill} id=${it.id} keep /><span class="tiny">${ok ? '' : NEED_NET}</span><span class="t">${it.t}</span></button>`;
         })}
       </div>
 
@@ -495,7 +495,7 @@ function Notes({ query }) {
     <div class="screen">
       <${Header} />
       <h1 class="h1">Мои заметки</h1>
-      <button class="ds-add" onClick=${() => { track('для себя:новая заметка'); openSheet(NoteSheet, {}); }}>＋ Заметка</button>
+      <button class="ds-add" onClick=${() => { track('для себя:новая заметка'); go('/zametka'); }}>＋ Заметка</button>
       ${!list.length && html`
         <p class="lead">Сохраните свои вопросы, планы и мысли.</p>
         <p class="p muted">Заметок пока нет. Первая запись может быть совсем короткой.</p>`}
@@ -515,8 +515,11 @@ function dayChoices(at) {
   if (at && startOfDay(at) < days[days.length - 1]) list.push({ d: startOfDay(at), l: dateLong(at) });
   return list;
 }
-function NoteSheet({ id }) {
+// Заметка — на весь экран: без меню и полосы записи, потому что сразу открывается клавиатура
+// (журнал, 4 ноября). Новая — из кнопки слева в меню и из «Заметок».
+function NoteScreen({ params }) {
   const s = getState();
+  const id = params && params.id;
   const old = id && (s.notes || []).find((n) => n.id === id);
   const [title, setTitle] = useState(old ? noteTitle(old) : '');
   const [text, setText] = useState(old ? noteBody(old) : '');
@@ -534,19 +537,20 @@ function NoteSheet({ id }) {
       const note = { id: nid, text: full.trim(), at: old && startOfDay(old.at) === day ? old.at : at };
       if (i >= 0) d.notes[i] = note; else d.notes.unshift(note);
     });
-    closeSheet();
     track(old ? 'для себя:заметка поправить' : 'для себя:заметка сохранить');
+    back('/dlya-sebya/zametki');
     toast({ text: old ? 'Заметку поправили' : 'Заметка сохранена', ms: 3000, actions: old ? [] : [{ label: 'Отменить', onClick: () => update((d) => { d.notes = (d.notes || []).filter((n) => n.id !== nid); }) }] });
   };
   return html`
-    <div class="h2">${old ? 'Заметка' : 'Новая заметка'}</div>
-    <label class="field"><span class="label">Название</span>
-      <input value=${title} placeholder="Например, вопросы к педиатру" onInput=${(e) => setTitle(e.target.value)} /></label>
-    <label class="field"><span class="label">Текст</span>
-      <textarea value=${text} placeholder="Что хочется не забыть" onInput=${(e) => setText(e.target.value)}></textarea></label>
-    <span class="label">Когда</span>
-    <div class="pills">${dayChoices(old && old.at).map((c) => html`<${Pill} on=${day === c.d} onClick=${() => setDay(c.d)}>${c.l}<//>`)}</div>
-    <button class="btn btn-primary" disabled=${!ok} onClick=${saveNote}>Сохранить</button>`;
+    <div class="note-screen">
+      <div class="note-top">
+        <button onClick=${() => back('/dlya-sebya/zametki')}>Отмена</button>
+        <button class="done" disabled=${!ok} onClick=${saveNote}>Готово</button>
+      </div>
+      <input class="note-title" value=${title} placeholder=${old ? 'Название' : 'Новая заметка'} onInput=${(e) => setTitle(e.target.value)} />
+      <textarea class="note-body" autofocus=${!old} value=${text} placeholder="Что хочется не забыть" onInput=${(e) => setText(e.target.value)}></textarea>
+      <div class="pills">${dayChoices(old && old.at).map((c) => html`<${Pill} on=${day === c.d} onClick=${() => setDay(c.d)}>${c.l}<//>`)}</div>
+    </div>`;
 }
 function NoteView({ id }) {
   const s = useStore();
@@ -565,7 +569,7 @@ function NoteView({ id }) {
     <p class="small">${dateFull(n.at)}</p>
     ${body && html`<p class="p ds-text">${body}</p>`}
     <div class="actions">
-      <button onClick=${() => openSheet(NoteSheet, { id })}>Поправить</button>
+      <button onClick=${() => { closeSheet(); go('/zametka/' + id); }}>Поправить</button>
       <button onClick=${remove}>Удалить</button>
     </div>`;
 }
@@ -587,8 +591,8 @@ function Podborka({ params }) {
       <h1 class="h1">${pb.title}</h1>
       ${a && html`
         <div class=${'card' + (headOk ? '' : ' ds-off')}>
-          <${Ill} big />
-          <span class="small">${headOk ? (offline && isSaved('article', a.id) ? 'Статья НЭН · сохранено' : 'Статья НЭН') : NEED_NET}</span>
+          <${Ill} big id=${a.id} />
+          <span class="small">${headOk ? (offline && isSaved('article', a.id) ? 'Сохранено' : '') : NEED_NET}</span>
           <div class="h2">${a.title}</div>
           <p class="p">${firstSentence(a.lead && a.lead.length > 40 ? a.lead : (a.body || []).find((x) => !x.startsWith('## ')))}</p>
           <div class="actions">
@@ -661,9 +665,9 @@ function Statya({ params }) {
   return html`
     <div class="screen">
       <${Back} />
-      <span class="small">Статья НЭН${date ? ' · ' + date : ''}${a.author ? ' · ' + a.author : ''}</span>
+      <span class="small">${[date, a.author].filter(Boolean).join(' · ')}</span>
       <h1 class="h1" style="font-size:24px">${a.title}</h1>
-      <${Ill} big text="Иллюстрация из архива НЭН" />
+      <${Ill} big id=${a.id} />
       <div class="actions"><${SaveButton} item=${articleItem(a)} /></div>
       <div class="prose">
         ${(a.body || []).map((p) => (p.startsWith('## ') ? html`<h3>${p.slice(3)}</h3>` : html`<p>${p}</p>`))}
@@ -691,6 +695,8 @@ export const routes = [
   R('/dlya-sebya/podborka/:id', Podborka),
   R('/dlya-sebya/testy', TestsAll),
   R('/dlya-sebya/statya/:id', Statya),
+  { path: '/zametka', view: NoteScreen, solo: true },
+  { path: '/zametka/:id', view: NoteScreen, solo: true },
 ];
 
 // ——— Поиск: практики, подборки, заметки, «Если тяжело», статьи подборок ———
@@ -713,7 +719,7 @@ export function searchItems(state) {
   items.push({ title: 'Мои заметки', sub: 'Личный дневник родителя', path: '/dlya-sebya/zametki', text: 'заметки дневник записать мысли вопросы планы' });
   items.push({ title: 'Тесты НЭН', sub: 'Лёгкие тесты на сайте', path: '/dlya-sebya/testy', text: TESTS.map((t) => t.title).join(' ') });
   for (const a of STATI) {
-    items.push({ title: a.title, sub: 'Статья НЭН · Для себя', path: articleRoute(a.id), text: a.lead });
+    items.push({ title: a.title, sub: 'Для себя', path: articleRoute(a.id), text: a.lead });
   }
   return items;
 }

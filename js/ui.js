@@ -5,6 +5,7 @@ import { childAgeLine } from './age.js';
 import { go, back } from './router.js';
 import { track } from './stats.js';
 import { usePlayer } from './player.js';
+import { cover, coverOfUrl } from './content/covers.js';
 
 // ——— Лист поверх экрана и сообщение внизу ———
 let overlay = { sheet: null, toast: null };
@@ -152,7 +153,19 @@ export function Row({ title, sub, end, onClick, chev = true, left }) {
     </button>`;
 }
 
-export const Ill = ({ text = 'Иллюстрация из архива НЭН', big }) => html`<div class=${'ill' + (big ? ' big' : '')}>${text}</div>`;
+// Картинка карточки — живая иллюстрация НЭН: обложка статьи с сайта (id статьи или from — её адрес).
+// Нет иллюстрации — нет и пустого пятна; пятно в цветах НЭН остаётся только там, где его держит
+// сетка (keep — карточки ленты) или где в приложении будет фото или видео (text — что там будет).
+// Служебных подписей вроде «Иллюстрация из архива НЭН» на экране нет.
+const PLACEHOLDER = /архив|иллюстрац|фото блюда|видео из урока|фото из момента/i;
+export const Ill = ({ text, big, id, src, from, keep }) => {
+  const size = big ? 'big' : 'small';
+  const url = src || (id && cover(id, size)) || (from && coverOfUrl(from, size)) || null;
+  const label = text && !PLACEHOLDER.test(text) ? text : '';
+  if (url) return html`<div class=${'ill' + (big ? ' big' : '')}><img src=${url} alt="" loading="lazy" onError=${(e) => e.target.remove()} /></div>`;
+  if (!text && !keep) return null;
+  return html`<div class=${'ill' + (big ? ' big' : '')} aria-hidden=${label ? null : 'true'}>${label}</div>`;
+};
 
 export function Pill({ on, children, onClick }) {
   return html`<button class=${'pill' + (on ? ' on' : '')} onClick=${onClick}>${on ? '✓ ' : ''}${children}</button>`;
@@ -173,7 +186,17 @@ export function AskButton() {
   return html`<button class="ask-fab" onClick=${() => { track('помощник:кнопка'); go('/sprosit'); }}><${Spark} />Спросить</button>`;
 }
 
-// Нижнее меню: четыре вкладки; поиск — в шапке, помощник — капсулой над меню
+// Значки вкладок — тонкой линией, как в шапке
+const TAB_ICONS = {
+  '/segodnya': () => html`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/></svg>`,
+  '/rebyonok': () => html`<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M11 5.2c.6-.9 1.8-1 2.5-.3"/><path d="M5 20.5c.8-3.6 3.6-5.8 7-5.8s6.2 2.2 7 5.8"/></svg>`,
+  '/dlya-sebya': () => html`<svg viewBox="0 0 24 24"><path d="M5 10h11v4a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z"/><path d="M16 11h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M9 3.5c-.8 1 .8 2-.1 3M12.5 3.5c-.8 1 .8 2-.1 3"/></svg>`,
+  '/moy-nen': () => html`<svg viewBox="0 0 24 24"><path d="M12 6.5C10 5 7.5 4.6 4 5v13c3.5-.4 6 0 8 1.5 2-1.5 4.5-1.9 8-1.5V5c-3.5-.4-6 0-8 1.5z"/><path d="M12 6.5v13"/></svg>`,
+};
+const NoteIcon = () => html`<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z"/><path d="M14 8l3 3"/></svg>`;
+
+// Нижнее меню: слева — новая заметка (журнал, 4 ноября), дальше четыре вкладки;
+// поиск — в шапке, помощник — капсулой над меню.
 export const TABS = [
   { path: '/segodnya', label: 'Сегодня' },
   { path: '/rebyonok', label: 'Ребёнок' },
@@ -183,9 +206,10 @@ export const TABS = [
 export function Menu({ tab }) {
   return html`
     <nav class="menu">
+      <button class="note-btn" aria-label="Новая заметка" onClick=${() => { track('меню:заметка'); go('/zametka'); }}><${NoteIcon} /></button>
       ${TABS.map((t) => html`
-        <button class=${'tab' + (tab === t.path ? ' on' : '')} onClick=${() => { track('вкладка:' + t.label); go(t.path, { replace: true }); }}>
-          <i></i>${t.label}
+        <button class=${'tab' + (tab === t.path ? ' on' : '')} aria-current=${tab === t.path ? 'page' : null} onClick=${() => { track('вкладка:' + t.label); go(t.path, { replace: true }); }}>
+          ${TAB_ICONS[t.path]()}${t.label}
         </button>`)}
     </nav>`;
 }

@@ -1,5 +1,5 @@
 // Каркас: какой экран показать, шапка, полоса записи, меню, листы и сообщения.
-import { html, render, useEffect } from './lib.js';
+import { html, render, useEffect, useState } from './lib.js';
 import { useStore, now, getState } from './store.js';
 import { addRoutes, match, useRoute, go } from './router.js';
 import { Menu, OverlayHost, AskButton } from './ui.js';
@@ -31,6 +31,26 @@ mods.forEach((m) => addRoutes(m.routes || []));
 addRoutes(profileRoutes);
 addRoutes(commonRoutes);
 
+// Экран загрузки: логотип НЭН и одна строка о том, что это (журнал, 4 ноября).
+// Один раз за запуск, полторы секунды; касание пропускает.
+function Splash() {
+  const [st, setSt] = useState(() => { try { return sessionStorage.getItem('nen-splash') ? 'gone' : 'on'; } catch (e) { return 'on'; } });
+  useEffect(() => {
+    if (st !== 'on') return undefined;
+    try { sessionStorage.setItem('nen-splash', '1'); } catch (e) { /* без хранилища тоже покажем */ }
+    const t1 = setTimeout(() => setSt('out'), 1500);
+    const t2 = setTimeout(() => setSt('gone'), 1950);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+  if (st === 'gone') return null;
+  return html`
+    <div class=${'splash' + (st === 'out' ? ' out' : '')} role="status" onClick=${() => setSt('gone')}>
+      <img src="img/logo.svg" alt="НЭН" />
+      <div class="t">Нет, это нормально</div>
+      <div class="s">Дневник ребёнка и редакция НЭН — в одном приложении</div>
+    </div>`;
+}
+
 function App() {
   const s = useStore();
   const { path, query } = useRoute();
@@ -49,7 +69,7 @@ function App() {
 
   const View = r.view;
   if (r.solo) {
-    return html`<div class="app"><div class="scroll"><${View} params=${m.params} query=${query} /></div><${OverlayHost} /></div>`;
+    return html`<div class="app"><div class="scroll"><${View} params=${m.params} query=${query} /></div><${OverlayHost} /><${Splash} /></div>`;
   }
   return html`
     <div class="app">
@@ -61,6 +81,7 @@ function App() {
         <${Menu} tab=${r.tab} />
       </div>
       <${OverlayHost} bottomOffset=${r.strip ? 190 : 86} />
+      <${Splash} />
     </div>`;
 }
 

@@ -3,13 +3,15 @@ import { html, useState } from './lib.js';
 import { useStore, update, uid, getState, replaceAll, savePhoto, now } from './store.js';
 import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy } from './age.js';
 import { go, back, current } from './router.js';
-import { Ill, Row, Pill, Field, toast } from './ui.js';
+import { Row, Pill, Field, toast } from './ui.js';
 import { track } from './stats.js';
 
 export const TOPICS = [
   ['sleep', 'Сон'], ['food', 'Еда'], ['development', 'Развитие'],
   ['health', 'Здоровье'], ['emotions', 'Эмоции и поведение'], ['self', 'Для себя'],
 ];
+
+const Dots = ({ n }) => html`<div class="onb-dots" aria-label=${`Шаг ${n} из 3`}>${[1, 2, 3].map((i) => html`<i class=${i === n ? 'on' : ''}></i>`)}</div>`;
 
 function finish(path = '/segodnya') {
   update((s) => { s.onboarded = true; });
@@ -27,11 +29,11 @@ function Start() {
   };
   return html`
     <div class="solo">
-      <div class="ill big" style="height:170px">Иллюстрация из архива НЭН</div>
+      <div class="onb-logo"><img src="img/logo.svg" alt="НЭН" /></div>
       <h1 class="h1">Нет, это нормально</h1>
-      <p class="lead" style="font-size:17px;font-weight:500">Для родителей, которые хотят разобраться, а не соответствовать.</p>
-      <div class="sec-title">Это для вас, если</div>
-      <div class="rows">
+      <p class="lead">Для родителей, которые хотят разобраться, а не соответствовать.</p>
+      <div class="sec-title center">Это для вас, если</div>
+      <div class="onb-stage">
         <${Row} title="Ребёнок уже родился" sub="и каждый день приносит новые вопросы" onClick=${pick('born', '/start/rebyonok')} />
         <${Row} title="Ждёте малыша" sub="и советов вокруг больше, чем ответов" onClick=${pick('expecting', '/start/zhdyom')} />
         <${Row} title="Планируете родительство" sub="и хотите понять, во что ввязываетесь" onClick=${pick('planning')} />
@@ -68,6 +70,7 @@ function ChildStep({ fromSite }) {
   return html`
     <div class="solo">
       ${!fromSite && html`<div class="back"><button onClick=${() => back('/start')}>‹ Назад</button></div>`}
+      <${Dots} n=${2} />
       <h1 class="h1">Ваш ребёнок</h1>
       <p class="lead">${fromSite ? 'Имя и дату перенесли с n-e-n.ru — проверьте и сохраните.' : 'Достаточно имени и даты рождения. По ним «Сегодня» подберёт ориентиры, прививки и статьи.'}</p>
       <${Field} label="Имя" value=${name} onInput=${setName} placeholder="Можно домашнее" />
@@ -120,6 +123,7 @@ function Expecting() {
   return html`
     <div class="solo">
       <div class="back"><button onClick=${() => back('/start')}>‹ Назад</button></div>
+      <${Dots} n=${2} />
       <h1 class="h1">Ждём малыша</h1>
       <p class="lead">Достаточно даты родов. После рождения дополните эту же карточку — записи и заметки останутся.</p>
       <${Field} label="Как назвать" value=${name} onInput=${setName} placeholder="Можно домашнее или «Малыш»" />
@@ -142,6 +146,7 @@ function Topics() {
   return html`
     <div class="solo">
       <div class="back"><button onClick=${() => back('/start')}>‹ Назад</button></div>
+      <${Dots} n=${3} />
       <h1 class="h1">Что сейчас волнует?</h1>
       <p class="lead">Отметьте одну или несколько тем — с них начнутся статьи на «Сегодня». Поменять можно в профиле.</p>
       <div class="pills">${TOPICS.map(([k, l]) => html`<${Pill} on=${sel.includes(k)} onClick=${() => toggle(k)}>${l}<//>`)}</div>

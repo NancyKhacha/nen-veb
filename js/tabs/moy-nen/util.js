@@ -121,14 +121,14 @@ export function splitTitle(title) {
     const m = re.exec(title);
     if (m && balanced(m[1])) return [m[1], m[2].startsWith('(') ? m[2] : cap1(m[2])];
   }
-  return [title, 'Статья НЭН'];
+  return [title, ''];
 }
 export function openArticle(a, from) { track('мой-нэн:' + from); go('/statya/' + a.id); }
 export function ArticleRow({ a, from = 'статья', sub, full }) {
-  const [t, st] = full ? [a.title, 'Статья НЭН'] : splitTitle(a.title);
+  const [t, st] = full ? [a.title, ''] : splitTitle(a.title);
   return html`<${Row} title=${t} sub=${sub || st} onClick=${() => openArticle(a, from)} />`;
 }
-export const savedItem = (a) => ({ kind: 'article', id: a.id, title: a.title, sub: 'Статья НЭН', route: '/statya/' + a.id, url: a.url, lead: a.lead });
+export const savedItem = (a) => ({ kind: 'article', id: a.id, title: a.title, sub: '', route: '/statya/' + a.id, url: a.url, lead: a.lead });
 
 // ——— Эфир Клуба (показательный): ближайший четверг, 19:00 ———
 export const EFIR = { title: 'Сон в первые месяцы: вопросы сомнологу', hour: 19 };
