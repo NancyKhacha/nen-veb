@@ -2,7 +2,7 @@
 import { html, render, useEffect } from './lib.js';
 import { useStore, now, getState } from './store.js';
 import { addRoutes, match, useRoute, go } from './router.js';
-import { Menu, OverlayHost } from './ui.js';
+import { Menu, OverlayHost, AskButton } from './ui.js';
 import { RecordStrip } from './strip.js';
 import { MiniPlayer } from './player.js';
 import { partOfDay } from './age.js';
@@ -55,6 +55,7 @@ function App() {
     <div class="app">
       <div class="scroll"><${View} params=${m.params} query=${query} /></div>
       <div class="bottom">
+        ${!r.noAsk && html`<${AskButton} />`}
         <${MiniPlayer} />
         ${r.strip && html`<${RecordStrip} />`}
         <${Menu} tab=${r.tab} />

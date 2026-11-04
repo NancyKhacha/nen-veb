@@ -134,12 +134,13 @@ export function RecordStrip() {
   const { buttons, line } = stripButtons(child, s);
   if (!child || child.expecting) return null;
   if (line && !buttons.length) {
-    return html`<button class="strip-line" onClick=${() => openSheet(OtherSheet, {})}><span>Записать</span><span class="chev">＋</span></button>`;
+    return html`<button class="strip-line" onClick=${() => openSheet(OtherSheet, {})}><span>＋ Записать</span></button>`;
   }
+  // «＋» — слева: справа над полосой капсула «✦ Спросить», рядом с ней «＋» не ставим
   return html`
     <div class="strip">
-      ${buttons.map((t) => html`<${StripButton} key=${t} type=${t} child=${child} />`)}
       <button class="strip-btn" onClick=${() => { track('запись:другая'); openSheet(OtherSheet, {}); }}><b>＋</b><span>${line ? 'Записать' : 'Другая'}</span><span>${line ? '' : 'запись'}</span></button>
+      ${buttons.map((t) => html`<${StripButton} key=${t} type=${t} child=${child} />`)}
     </div>`;
 }
 
