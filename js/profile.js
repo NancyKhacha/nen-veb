@@ -4,7 +4,7 @@ import { useStore, update, uid, getState, resetAll, savePhoto, now } from './sto
 import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy, childAgeLine } from './age.js';
 import { go, back } from './router.js';
 import { Back, Row, SecTitle, Pill, Field, Avatar, toast, confirmAction } from './ui.js';
-import { TOPICS, Transfer } from './onboarding.js';
+import { TOPICS, Transfer, startPreview } from './onboarding.js';
 import { statsReport, statsCode, resetStats, track } from './stats.js';
 
 function Profile() {
@@ -20,7 +20,7 @@ function Profile() {
       <${SecTitle}>Приложение<//>
       <div class="rows">
         <${Row} title="Что сейчас волнует" sub=${s.topics.length ? TOPICS.filter(([k]) => s.topics.includes(k)).map(([, l]) => l).join(', ') : 'Темы не выбраны — статьи по возрасту'} onClick=${() => go('/profil/temy')} />
-        <${Row} title="Кнопки записи" sub=${(s.settings.hiddenButtons || []).length ? 'Часть кнопок убрана' : 'Сон, кормление, подгузник — как по возрасту'} onClick=${() => go('/profil/knopki')} />
+        <${Row} title="Полоса записи" sub=${(s.settings.hiddenButtons || []).length ? 'Часть кнопок убрана' : 'Сон, кормление, подгузник — как по возрасту'} onClick=${() => go('/profil/knopki')} />
         <${Row} title="Город для погоды" sub=${s.settings.city} onClick=${() => go('/profil/gorod')} />
         <${Row} title="Копия записей" sub="Файл, чтобы перенести всё на другой телефон" onClick=${() => go('/profil/kopiya')} />
         <${Row} title="Войти" sub="Для Клуба и Школы НЭН. Дневник работает и без входа" onClick=${() => go('/start/vhod')} />
@@ -110,7 +110,7 @@ function Buttons() {
   const items = [['sleep', 'Сон'], ['feed', 'Кормление'], ['diaper', 'Подгузник'], ['food', 'Еда'], ['potty', 'Горшок']];
   return html`
     <div class="screen">
-      <${Back} title="Кнопки записи" />
+      <${Back} title="Полоса записи" />
       <p class="lead">Что не записываете — уберите. Прошлые записи останутся.</p>
       <div class="pills">${items.map(([k, l]) => html`<${Pill} on=${!hidden.includes(k)} onClick=${() => toggle(k)}>${l}<//>`)}</div>
     </div>`;
@@ -182,6 +182,9 @@ function Research() {
         <button class="pill" onClick=${() => go('/moy-nen?sostoyanie=pusto')}>«Мой НЭН»: пусто</button>
         <button class="pill" onClick=${() => go('/moy-nen?sostoyanie=pervyy-zapusk')}>Первый запуск без сети</button>
       </div>
+      <${SecTitle}>Первый вход<//>
+      <p class="small">Пройти его ещё раз, как в первый день. Записи, дети и заметки не тронутся.</p>
+      <button class="btn btn-gray" onClick=${startPreview}>Посмотреть первый вход</button>
       <${SecTitle}>Начать заново<//>
       <button class="btn btn-gray" onClick=${() => confirmAction({ title: 'Стереть всё?', text: 'Записи, дети и заметки на этом телефоне удалятся, приложение начнётся с первого экрана.', yes: 'Стереть всё', onYes: () => { resetAll(); resetStats(); go('/start', { replace: true }); } })}>Стереть всё и начать с первого экрана</button>
     </div>`;

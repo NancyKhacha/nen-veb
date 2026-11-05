@@ -36,7 +36,7 @@ export function ContinueCard({ s, course, offline }) {
   const open = () => { track('мой-нэн:продолжить'); go('/moy-nen/kurs/urok/' + n); };
   return html`
     <div class="card">
-      <${Ill} />
+      <${Ill} keep seed=${'урок' + n} />
       <div class="mn-eyebrow">Школа НЭН · урок ${n} из 12${who ? ' · для ' + who : ''}</div>
       <div class="mn-title">${lessonTitle(n)}</div>
       <p class="lead">${text}</p>
@@ -60,12 +60,25 @@ export function SchoolRow({ s, acc, course, offline }) {
     const n = course.lesson;
     const d = dat(childName(course.child));
     const sub = offline ? 'Нужна сеть' : `12 уроков: урок на каждый месяц. ${d ? d + ' сейчас' : 'Сейчас'} — ${n === 1 ? 'первый' : n === 2 ? 'второй' : '«' + lessonTitle(n).replace(' ребёнка', '') + '»'}`;
+    // Промо Школы — карточкой с иллюстрацией курса: из приложения должны покупать (замечание Марии Даниной)
     return html`<${SecTitle}>Школа НЭН<//>
-      <div class=${'rows' + (offline ? ' mn-pale' : '')}><${Row} title="Первый год с малышом" sub=${sub} onClick=${() => !offline && openSite(FIRSTYEAR_URL, 'первый-год')} /></div>`;
+      <button class=${'card mn-promo' + (offline ? ' mn-pale' : '')} onClick=${() => !offline && openSite(FIRSTYEAR_URL, 'первый-год')}>
+        <${Ill} src="https://n-e-n.ru/firstyear/images/tild3961-6463-4962-b232-386563383636__2_1.jpg" />
+        <div class="mn-title">Первый год с малышом</div>
+        <p class="lead">${sub}</p>
+        ${!offline && html`<span class="mn-promo-go">Посмотреть курс ›</span>`}
+      </button>`;
   }
   const go2 = () => { if (acc.course) { track('мой-нэн:курс'); go('/moy-nen/kurs'); } else if (!offline) openSite(PERESTAN.url, 'перестань'); };
+  if (acc.course) return html`<${SecTitle}>Школа НЭН<//>
+    <div class="rows"><${Row} title=${PERESTAN.title} sub=${PERESTAN.sub} onClick=${go2} /></div>`;
   return html`<${SecTitle}>Школа НЭН<//>
-    <div class=${'rows' + (offline && !acc.course ? ' mn-pale' : '')}><${Row} title=${PERESTAN.title} sub=${offline && !acc.course ? 'Нужна сеть' : PERESTAN.sub} onClick=${go2} /></div>`;
+    <button class=${'card mn-promo' + (offline ? ' mn-pale' : '')} onClick=${go2}>
+      <${Ill} src="https://n-e-n.ru/perestan/images/hero.png" />
+      <div class="mn-title">${PERESTAN.title}</div>
+      <p class="lead">${offline ? 'Нужна сеть' : PERESTAN.sub}</p>
+      ${!offline && html`<span class="mn-promo-go">Посмотреть курс ›</span>`}
+    </button>`;
 }
 
 // ——— Экран 5. Курс ———

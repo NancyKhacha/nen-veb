@@ -140,7 +140,7 @@ function Item({ params }) {
     return html`
       <div class="screen">
         <${Back} />
-        <${Ill} />
+        <${Ill} keep seed=${song.id} />
         <div class="tiny">${song.kind} · ${song.dur}</div>
         <h1 class="h1">${song.title}</h1>
         <div class="rb-verse">${song.text}</div>
@@ -153,7 +153,7 @@ function Item({ params }) {
   return html`
     <div class="screen">
       <${Back} />
-      <${Ill} big />
+      <${Ill} big keep seed=${tale.id} />
       <div class="tiny">Сказка · ${yrs(tale)}${tale.min ? ` · ${tale.min} мин вслух` : ''}</div>
       <h1 class="h1">${tale.title}</h1>
       <p class="small">${tale.author}${tale.by ? ', ' + tale.by : ''}${tale.alt ? ` · ${tale.alt}` : ''}</p>

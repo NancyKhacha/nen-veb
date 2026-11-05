@@ -1,5 +1,6 @@
 // Главный «Мой НЭН» — экраны 1, 2, 9, 11, 12, 14–18 Фигмы «35 · V3 · Мой НЭН».
-// Сверху — что начато (урок, эфир), потом новое для всех (статьи, идея дня), потом продукты.
+// Сверху — что начато (урок, эфир), потом продукты НЭН (Школа, Клуб), потом статьи и идея дня
+// (журнал, 5 ноября: было — продукты в конце).
 // Состояния для показа: #/moy-nen?sostoyanie=pusto | bez-seti | pervyy-zapusk | bez-akkaunta
 import { html } from '../../lib.js';
 import { useStore, activeChild, now } from '../../store.js';
@@ -67,6 +68,14 @@ function Home({ query }) {
       ${acc.club === 'paid' && !first && html`<${ClubBlock} acc=${acc} offline=${offline} />`}
 
       ${first
+        ? html`
+          ${course && html`<${SchoolRow} s=${s} acc=${{ ...acc, course: false }} course=${course} offline=${true} />`}
+          <${SecTitle}>Клуб НЭН<//><${ClubInvite} loggedIn=${acc.loggedIn} offline=${true} />`
+        : html`
+          ${!showContinue && html`<${SchoolRow} s=${s} acc=${acc} course=${course} offline=${offline} />`}
+          ${acc.club !== 'paid' && html`<${ClubBlock} acc=${acc} offline=${offline} />`}`}
+
+      ${first
         ? html`<${SecTitle}>Почитать<//><${FirstLaunch} band=${r.band} />`
         : html`
           <${SecTitle} more="Все" onMore=${() => { track('мой-нэн:почитать-все'); go('/moy-nen/pochitat'); }}>Почитать<//>
@@ -79,14 +88,6 @@ function Home({ query }) {
           ${offline && html`<p class="small">Без сети: статьи этой версии уже в телефоне и читаются целиком.</p>`}`}
 
       ${idea && html`<${IdeaCard} r=${idea} />`}
-
-      ${first
-        ? html`
-          ${course && html`<${SchoolRow} s=${s} acc=${{ ...acc, course: false }} course=${course} offline=${true} />`}
-          <${SecTitle}>Клуб НЭН<//><${ClubInvite} loggedIn=${acc.loggedIn} offline=${true} />`
-        : html`
-          <${SchoolRow} s=${s} acc=${acc} course=${course} offline=${offline} />
-          ${acc.club !== 'paid' && html`<${ClubBlock} acc=${acc} offline=${offline} />`}`}
     </div>`;
 }
 

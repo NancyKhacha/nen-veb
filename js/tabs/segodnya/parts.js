@@ -3,6 +3,7 @@ import { html, useState, useEffect } from '../../lib.js';
 import { useStore, update, uid, now, getState } from '../../store.js';
 import { DAY, startOfDay, dayKey, weekdayShort, weekdayLong, dateWithWeekday, hhmm, diffYMD } from '../../age.js';
 import { Row, SecTitle, Ill, Pill, Field, SaveButton, openSheet, closeSheet, toast } from '../../ui.js';
+import { cover, coverOfUrl } from '../../content/covers.js';
 import { go } from '../../router.js';
 import { track } from '../../stats.js';
 import { selectWear, WEAR_SOURCES, WEAR_WEATHER, WEAR_MODES } from '../../content/segodnya-wear.js';
@@ -83,12 +84,15 @@ export function DayCard({ card }) {
 // ——— Лента «Для вас» ———
 export function Feed({ cards }) {
   if (!cards.length) return null;
+  // Одна картинка — один раз в ленте: у фактов из одной статьи обложка общая
+  const used = new Set();
+  const pic = (c) => { const u = artId(c) ? cover(artId(c)) : coverOfUrl(c.source); if (!u || used.has(u)) return null; used.add(u); return u; };
   return html`
     <${SecTitle} more="Все" onMore=${() => { track('сегодня:для-вас-все'); go('/segodnya/dlya-vas'); }}>Для вас<//>
     <div class="feed">
       ${cards.map((c) => html`
         <button class="feed-card" key=${c.key} onClick=${() => { track('сегодня:для-вас:' + c.kind); if (c.onOpen) c.onOpen(); if (c.path) go(c.path); }}>
-          <${Ill} id=${artId(c)} from=${c.source} keep />
+          <${Ill} src=${pic(c)} seed=${c.key + c.title} keep />
           <span class="tiny">${c.label}</span>
           <span class="t">${c.title}</span>
         </button>`)}

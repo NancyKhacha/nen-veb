@@ -118,8 +118,7 @@ export const openJoin = (loggedIn) => { track(loggedIn ? 'мой-нэн:всту
 // Карточка «Клуб НЭН» для тех, кто не в Клубе (экраны 1, 9, 11, 14, 18)
 export function ClubInvite({ loggedIn, offline, here }) {
   return html`
-    <div class="card">
-      <div class="mn-eyebrow">Клуб НЭН</div>
+    <div class="card mn-promo mn-promo-club">
       <div class="mn-title">Эфиры с врачами и психологами, подарки партнёров, встречи</div>
       <p class="lead">Каждую неделю — эфир с экспертом, записи, канал и чат в Telegram. Вступить можно бесплатно: подарки, карта участника и встречи один на один.</p>
       <p class="small">${offline ? 'Вступить — когда появится сеть.' : loggedIn ? 'Эфиры и записи — в полном Клубе.' : 'Сначала — вход по почте, потом короткая анкета.'}</p>

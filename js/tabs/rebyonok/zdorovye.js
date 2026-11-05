@@ -1,6 +1,6 @@
 // «Ребёнок → Здоровье» (экраны 8, 18): прививки и визиты — теми же строками, что «На этой неделе»,
 // что было — с отметкой; медкарта строками; болезнь и лекарства; симптомы; аптечка; документы после рождения.
-import { html, useState } from '../../lib.js';
+import { html, useState, useEffect } from '../../lib.js';
 import { useStore, getState, update, now, uid } from '../../store.js';
 import { Header, Back, SecTitle, Row, Pill, Field, openSheet, closeSheet, toast } from '../../ui.js';
 import { DAY, startOfDay, dateLong, dateWithWeekday, weekdayShort, dayKey, hhmm, ageMonths, isPreterm, childAgeLine, diffYMD } from '../../age.js';
@@ -78,9 +78,10 @@ function CheckupSheet({ childId, age }) {
     <button class="btn btn-gray" onClick=${() => { closeSheet(); openVisit(child, null, 'Осмотр у педиатра'); }}>Записались</button>`;
 }
 
-function Health() {
+function Health({ query }) {
   const s = useStore();
   const child = bornChild(s);
+  useEffect(() => { if (query && query.zapis && child) { openVisit(child, null); history.replaceState(null, '', '#/rebyonok/zdorovye'); } }, []);
   if (!child) return html`<${NotBorn} title="Здоровье" text="Прививки, осмотры и медкарта начнутся, когда малыш родится." />`;
   const t = now();
   const today = startOfDay(t);

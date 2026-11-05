@@ -114,7 +114,7 @@ function PracticeCard({ id, ctx }) {
   const line = practiceLine(p, ctx);
   return html`
     <button class=${'feed-card' + (line.off ? ' ds-off' : '')} onClick=${() => openPractice(id)}>
-      <${Ill} keep />
+      <${Ill} keep seed=${id + p.title} />
       <span class="tiny">${line.text}</span>
       <span class="t">${p.title}</span>
     </button>`;
@@ -314,7 +314,7 @@ function openTest(t) {
 function TestCard({ test, offline }) {
   return html`
     <button class=${'feed-card' + (offline ? ' ds-off' : '')} onClick=${() => openTest(test)}>
-      <${Ill} keep from=${test.url} /><span class="tiny">${offline ? NEED_NET : 'Тест'}</span><span class="t">${test.title}</span>
+      <${Ill} keep from=${test.url} seed=${test.id} /><span class="tiny">${offline ? NEED_NET : 'Тест'}</span><span class="t">${test.title}</span>
     </button>`;
 }
 
@@ -470,7 +470,10 @@ function Help() {
 
       <${SecTitle}>Если тяжело не первый день<//>
       <p class="p">${HELP.notFirstDay}</p>
-      <div class="rows"><${ArticleRow} item=${HELP.psychologist} s=${s} /></div>
+      <div class="rows">
+        <${ArticleRow} item=${HELP.psychologist} s=${s} />
+        <${Row} title="Психологи Балансити" sub="Подобрать специалиста для себя · Реклама" onClick=${() => { track('для себя:балансити'); toast({ text: 'В пробной версии запись к психологу выключена. В приложении — со скидкой для Плюса.', ms: 4000 }); }} />
+      </div>
 
       <p class="tiny">Если есть угроза жизни или здоровью — <a class="ds-tel" href="tel:112" onClick=${() => track('для себя:звонок')}>112</a> или <a class="ds-tel" href="tel:103" onClick=${() => track('для себя:звонок')}>103</a>.</p>
     </div>`;
@@ -548,7 +551,8 @@ function NoteScreen({ params }) {
         <button class="done" disabled=${!ok} onClick=${saveNote}>Готово</button>
       </div>
       <input class="note-title" value=${title} placeholder=${old ? 'Название' : 'Новая заметка'} onInput=${(e) => setTitle(e.target.value)} />
-      <textarea class="note-body" autofocus=${!old} value=${text} placeholder="Что хочется не забыть" onInput=${(e) => setText(e.target.value)}></textarea>
+      <textarea class="note-body" autofocus=${!old} value=${text} placeholder="Что хочется не забыть. Например, вопросы к педиатру" onInput=${(e) => setText(e.target.value)}></textarea>
+      <div class="label">Когда</div>
       <div class="pills">${dayChoices(old && old.at).map((c) => html`<${Pill} on=${day === c.d} onClick=${() => setDay(c.d)}>${c.l}<//>`)}</div>
     </div>`;
 }
@@ -695,8 +699,8 @@ export const routes = [
   R('/dlya-sebya/podborka/:id', Podborka),
   R('/dlya-sebya/testy', TestsAll),
   R('/dlya-sebya/statya/:id', Statya),
-  { path: '/zametka', view: NoteScreen, solo: true },
-  { path: '/zametka/:id', view: NoteScreen, solo: true },
+  { path: '/zametka', view: NoteScreen, solo: true, night: true },
+  { path: '/zametka/:id', view: NoteScreen, solo: true, night: true },
 ];
 
 // ——— Поиск: практики, подборки, заметки, «Если тяжело», статьи подборок ———

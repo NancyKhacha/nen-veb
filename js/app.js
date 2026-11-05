@@ -7,7 +7,8 @@ import { RecordStrip } from './strip.js';
 import { MiniPlayer } from './player.js';
 import { partOfDay } from './age.js';
 import { trackOpen } from './stats.js';
-import { onboardingRoutes } from './onboarding.js';
+import { onboardingRoutes, isPreview, markPreview, endPreview } from './onboarding.js';
+import { back } from './router.js';
 import { commonRoutes, setTabModules } from './common.js';
 import { profileRoutes } from './profile.js';
 import { Header, setNewsCheck } from './ui.js';
@@ -55,10 +56,12 @@ function App() {
   const s = useStore();
   const { path, query } = useRoute();
   const free = path.startsWith('/start') || path === '/s';
+  if (path === '/start' && query && query.pokaz) markPreview();
+  if (!path.startsWith('/start') && isPreview()) endPreview();
 
   useEffect(() => {
     if (!s.onboarded && !free) go('/start', { replace: true });
-    else if (s.onboarded && (path === '/' || path === '' || path === '/start')) go('/segodnya', { replace: true });
+    else if (s.onboarded && (path === '/' || path === '' || (path === '/start' && !isPreview()))) go('/segodnya', { replace: true });
   }, [s.onboarded, path]);
 
   const m = match(path) || match('/segodnya');
@@ -86,6 +89,20 @@ function App() {
 }
 
 render(html`<${App} />`, document.getElementById('root'));
+
+// Свайп от левого края — назад. Только в приложении на экране телефона: в браузере свой жест.
+const standalone = navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+if (standalone) {
+  let sx = null; let sy = 0;
+  document.addEventListener('touchstart', (e) => { const t = e.touches[0]; sx = t.clientX < 24 ? t.clientX : null; sy = t.clientY; }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    if (sx == null) return;
+    const t = e.changedTouches[0];
+    const root = ['/segodnya', '/rebyonok', '/dlya-sebya', '/moy-nen'].includes(location.hash.replace(/^#/, '').split('?')[0]);
+    if (t.clientX - sx > 70 && Math.abs(t.clientY - sy) < 60 && !root) back();
+    sx = null;
+  }, { passive: true });
+}
 
 trackOpen();
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') trackOpen(); });

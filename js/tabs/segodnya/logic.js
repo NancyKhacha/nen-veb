@@ -211,7 +211,7 @@ export function newInAge(s, child, t = now()) {
       key: 'age:' + key, kind: 'cdc', label: 'Новое в возрасте',
       title: `Ориентиры ${SHEET_WORD[sheet.m] || ''}`.trim(),
       short: item ? `Ориентир ${SHEET_WORD[sheet.m]}: ${lowerFirst(item.ru.split(':')[0])}` : `Ориентиры ${SHEET_WORD[sheet.m]}`,
-      text: item ? `Например: «${item.ru}». В «Развитии» можно отметить, что уже видели.` : 'В «Развитии» можно отметить, что уже видели.',
+      text: item ? `Например: «${item.ru.replace(/^[«"„]+|[»"“]+$/g, '')}». В «Развитии» можно отметить, что уже видели.` : 'В «Развитии» можно отметить, что уже видели.',
       action: 'Все ориентиры', path: ROUTES.development,
     });
   }

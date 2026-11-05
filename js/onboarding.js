@@ -13,7 +13,33 @@ export const TOPICS = [
 
 const Dots = ({ n }) => html`<div class="onb-dots" aria-label=${`Шаг ${n} из 3`}>${[1, 2, 3].map((i) => html`<i class=${i === n ? 'on' : ''}></i>`)}</div>`;
 
+// Показ первого входа: пройти его заново и ничего не поменять в записях.
+// «Профиль → Для исследования → Посмотреть первый вход» или ссылка #/start?pokaz=1.
+const PREVIEW = 'nen-pokaz';
+let previewChild = null;
+export const isPreview = () => { try { return sessionStorage.getItem(PREVIEW) === '1'; } catch (e) { return false; } };
+export function markPreview() {
+  try { sessionStorage.setItem(PREVIEW, '1'); } catch (e) { /* без хранилища показ не включится */ }
+}
+export function endPreview() { try { sessionStorage.removeItem(PREVIEW); } catch (e) { /* ничего */ } previewChild = null; }
+export function startPreview() {
+  markPreview();
+  try { sessionStorage.removeItem('nen-splash'); } catch (e) { /* экран загрузки просто не покажется */ }
+  previewChild = null;
+  track('первый-вход:показ');
+  go('/start');
+}
+// В показе ничего не сохраняем
+const remember = (fn) => { if (!isPreview()) update(fn); };
+
 function finish(path = '/segodnya') {
+  if (isPreview()) {
+    try { sessionStorage.removeItem(PREVIEW); } catch (e) { /* ничего */ }
+    previewChild = null;
+    go(path, { replace: true });
+    toast({ text: 'Это был показ первого входа — ваши записи на месте', ms: 3500 });
+    return;
+  }
   update((s) => { s.onboarded = true; });
   track('первый-вход:готово');
   go(path, { replace: true });
@@ -23,7 +49,7 @@ function finish(path = '/segodnya') {
 function Start() {
   const pick = (stage, path) => () => {
     track('первый-вход:' + stage);
-    update((s) => { s.stage = stage; });
+    remember((s) => { s.stage = stage; });
     if (stage === 'planning') return finish();
     go(path);
   };
@@ -57,6 +83,7 @@ function ChildStep({ fromSite }) {
   const future = dob && dob > now();
   const ok = name.trim() && dob && !future;
   const save = async () => {
+    if (isPreview()) { previewChild = { name: name.trim() }; go('/start/temy'); return; }
     const photoId = photo ? await savePhoto(photo) : null;
     const id = uid();
     update((s) => {
@@ -100,7 +127,7 @@ function ChildStep({ fromSite }) {
         </div>`}
       <div class="grow"></div>
       <button class="btn btn-primary" disabled=${!ok} onClick=${save}>Готово</button>
-      <button class="btn-quiet" onClick=${() => { update((s) => { s.stage = 'born'; }); track('первый-вход:заполню-позже'); finish(); }}>Заполню позже</button>
+      <button class="btn-quiet" onClick=${() => { remember((s) => { s.stage = 'born'; }); track('первый-вход:заполню-позже'); finish(); }}>Заполню позже</button>
     </div>`;
 }
 
@@ -111,6 +138,7 @@ function Expecting() {
   const due = parseDate(date);
   const valid = due && due > now() - 14 * 864e5 && due < now() + 300 * 864e5;
   const save = () => {
+    if (isPreview()) { previewChild = { name: name.trim() || 'Малыш', expecting: true }; go('/start/temy'); return; }
     const id = uid();
     update((s) => {
       s.stage = 'expecting';
@@ -139,9 +167,9 @@ function Expecting() {
 // 3. Что сейчас волнует?
 function Topics() {
   const s = useStore();
-  const [sel, setSel] = useState(s.topics.length ? s.topics : []);
-  const child = s.children.find((c) => c.id === s.activeChildId);
-  const who = child && !child.expecting ? `по возрасту ${genitive(child.name)}` : 'по сроку';
+  const [sel, setSel] = useState(s.topics.length && !isPreview() ? s.topics : []);
+  const child = isPreview() ? previewChild : s.children.find((c) => c.id === s.activeChildId);
+  const who = child && !child.expecting ? `по возрасту ${genitive(child.name)}` : child ? 'по сроку' : 'по возрасту ребёнка';
   const toggle = (k) => setSel(sel.includes(k) ? sel.filter((x) => x !== k) : [...sel, k]);
   return html`
     <div class="solo">
@@ -152,7 +180,7 @@ function Topics() {
       <div class="pills">${TOPICS.map(([k, l]) => html`<${Pill} on=${sel.includes(k)} onClick=${() => toggle(k)}>${l}<//>`)}</div>
       <p class="small">Можно ничего не отмечать — статьи подберём ${who}.</p>
       <div class="grow"></div>
-      <button class="btn btn-primary" onClick=${() => { update((d) => { d.topics = sel; }); track('первый-вход:темы-' + sel.length); finish(); }}>Готово</button>
+      <button class="btn btn-primary" onClick=${() => { remember((d) => { d.topics = sel; }); track('первый-вход:темы-' + sel.length); finish(); }}>Готово</button>
       <button class="btn-quiet" onClick=${() => finish()}>Пропустить</button>
     </div>`;
 }
@@ -175,6 +203,7 @@ export function Transfer() {
   const [text, setText] = useState('');
   const onFile = async (f) => importText(await f.text());
   const importText = (raw) => {
+    if (isPreview()) { toast({ text: 'В показе первого входа записи не переносятся — ваши остаются как есть', ms: 3500 }); return; }
     try {
       const data = JSON.parse(raw);
       if (!data || data.app !== 'nen-veb' || !data.state) throw new Error();

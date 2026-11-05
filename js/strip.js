@@ -6,6 +6,7 @@ import { addRecord, finishRecord, removeRecord, editRecord, switchSide, lastOf, 
 import { openSheet, closeSheet, toast, Pill, Field } from './ui.js';
 import { playNoise, usePlayer, playing, stop as stopPlayer } from './player.js';
 import { track } from './stats.js';
+import { go } from './router.js';
 
 // Для кого запись: выбранный ребёнок, а у близнецов в режиме «Оба» — каждый
 export function targets(s = getState()) {
@@ -28,13 +29,38 @@ function recorded(ids, text, { editable = true, extra = [] } = {}) {
 }
 
 // ——— Нажатия на кнопки записи ———
+// Сон — с вопросом: случайное касание больше не начинает и не заканчивает сон (замечание Марии Даниной)
 export function tapSleep() {
   const ids = targets(); if (!ids.length) return;
   const run = ongoing(ids[0]).find((r) => r.type === 'sleep');
-  if (run) return finishSleep(run.id);
-  track('запись:сон');
+  track(run ? 'запись:сон-лист-идёт' : 'запись:сон-лист');
+  openSheet(SleepSheet, { runId: run ? run.id : null });
+}
+function startSleep(agoMin = 0) {
+  const ids = targets(); if (!ids.length) return;
+  track('запись:сон' + (agoMin ? '-раньше' : ''));
   const made = addRecord(ids, 'sleep', {}, { timer: true });
-  recorded(made, 'Сон идёт — нажмите «Закончить», когда проснётся', { editable: true });
+  if (agoMin) made.forEach((id) => editRecord(id, (x) => { x.start -= agoMin * 60000; }));
+  closeSheet();
+  recorded(made, agoMin ? `Сон идёт — уснули ${agoMin} мин назад` : 'Сон идёт', { editable: true });
+}
+function SleepSheet({ runId }) {
+  const s = useStore();
+  useTick(15000);
+  const run = runId && s.records.find((x) => x.id === runId && x.end == null);
+  if (run) return html`
+    <div class="h2">Сон идёт · ${dur(now() - run.start)}</div>
+    <p class="small">С ${hhmm(run.start)}.</p>
+    <button class="btn btn-primary" onClick=${() => { closeSheet(); finishSleep(run.id); }}>Проснулись — закончить</button>
+    <button class="btn btn-gray" onClick=${() => openSheet(EditSheet, { id: run.id })}>Поправить начало</button>
+    <button class="btn-quiet" onClick=${closeSheet}>Не сейчас</button>`;
+  return html`
+    <div class="h2">Начинаем сон?</div>
+    <p class="small">Время пойдёт с этой минуты. Уснули раньше — выберите, когда.</p>
+    <button class="btn btn-primary" onClick=${() => startSleep(0)}>Да, сейчас</button>
+    <div class="pills">${[10, 20, 30].map((m) => html`<button class="pill" onClick=${() => startSleep(m)}>${m} мин назад</button>`)}</div>
+    <button class="btn-quiet" onClick=${() => openSheet(OtherForm, { kind: 'sleep' })}>Записать прошедший сон</button>
+    <button class="btn-quiet" onClick=${closeSheet}>Не сейчас</button>`;
 }
 export function finishSleep(id) {
   finishRecord(id);
@@ -121,11 +147,12 @@ function StripButton({ type, child }) {
   const since = sinceLine(child.id, type, now());
   const run = ongoing(child.id).find((r) => r.type === type);
   const lp = useLongPress(() => { const r = lastOf(child.id, type); if (r) openSheet(EditSheet, { id: r.id }); }, TAP[type]);
-  let a = '', b = '';
-  if (run) { a = 'идёт'; b = clock(now() - run.start).replace(/:\d\d$/, (x) => x); }
-  else if (since) { a = since.a; b = since.b; }
-  else { a = 'ещё не'; b = 'записывали'; }
-  return html`<button class=${'strip-btn' + (run ? ' on' : '')} ...${lp}><b>${LABEL[type]}</b><span>${a}</span><span>${b}</span></button>`;
+  // Одна строка состояния под названием: полоса ниже, а последняя запись всё равно видна
+  let a = '';
+  if (run) a = 'идёт ' + clock(now() - run.start);
+  else if (since) a = `${since.a} ${since.b}`.trim();
+  else a = 'нет записей';
+  return html`<button class=${'strip-btn' + (run ? ' on' : '')} ...${lp}><b>${LABEL[type]}</b><span>${a}</span></button>`;
 }
 
 export function RecordStrip() {
@@ -139,7 +166,7 @@ export function RecordStrip() {
   // «＋» — слева: справа над полосой капсула «✦ Спросить», рядом с ней «＋» не ставим
   return html`
     <div class="strip">
-      <button class="strip-btn" onClick=${() => { track('запись:другая'); openSheet(OtherSheet, {}); }}><b>＋</b><span>${line ? 'Записать' : 'Другая'}</span><span>${line ? '' : 'запись'}</span></button>
+      <button class="strip-btn strip-plus" aria-label=${line ? 'Записать' : 'Другая запись'} onClick=${() => { track('запись:другая'); openSheet(OtherSheet, {}); }}><b>＋</b><span>${line ? 'Записать' : 'Другое'}</span></button>
       ${buttons.map((t) => html`<${StripButton} key=${t} type=${t} child=${child} />`)}
     </div>`;
 }
@@ -236,15 +263,21 @@ export function EditSheet({ id }) {
   const setTime = (v) => { const [h, m] = v.split(':').map(Number); if (isNaN(h)) return; editRecord(id, (x) => { const d = new Date(x.start); d.setHours(h, m, 0, 0); const delta = d.getTime() - x.start; x.start += delta; if (x.end != null && !['sleep', 'feed', 'walk'].includes(x.type)) x.end += delta; }); };
   const d = r.data || {};
   const timed = ['sleep', 'feed', 'walk'].includes(r.type) && !(r.type === 'feed' && d.method === 'bottle');
+  // Колесо даты и времени — системное, как в iOS и Android: можно записать день задним числом
+  const loc = (t) => { const x = new Date(t); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); return x.toISOString().slice(0, 16); };
+  const setStart = (v) => { const t = new Date(v).getTime(); if (isNaN(t)) return; editRecord(id, (x) => { const delta = t - x.start; x.start = t; if (x.end != null && !['sleep', 'feed', 'walk'].includes(x.type)) x.end += delta; if (x.end != null && x.end < x.start) x.end = x.start + 60000; }); };
+  const setEnd = (v) => { const t = new Date(v).getTime(); if (isNaN(t)) return; editRecord(id, (x) => { x.end = Math.max(x.start + 60000, t); }); };
   return html`
     <div class="h2">Поправить запись</div>
     <div class="small">${describe(r)} · ${whenText(r)}</div>
     <div class="label">${timed ? 'Начало' : 'Когда'}</div>
     <div class="pills">
       ${[5, 15, 30].map((m) => html`<button class="pill" onClick=${() => shift(m)}>−${m} мин</button>`)}
-      ${custom ? html`<input type="time" class="pill" value=${hhmm(r.start).padStart(5, '0')} onChange=${(e) => setTime(e.target.value)} />`
-        : html`<button class="pill" onClick=${() => setCustom(true)}>Другое время</button>`}
+      ${custom ? '' : html`<button class="pill" onClick=${() => setCustom(true)}>Другие дата и время</button>`}
     </div>
+    ${custom && html`
+      <label class="field"><span class="label">${timed ? 'Дата и время начала' : 'Дата и время'}</span><input type="datetime-local" value=${loc(r.start)} max=${loc(now())} onChange=${(e) => setStart(e.target.value)} /></label>
+      ${timed && r.end != null && html`<label class="field"><span class="label">Дата и время конца</span><input type="datetime-local" value=${loc(r.end)} max=${loc(now())} onChange=${(e) => setEnd(e.target.value)} /></label>`}`}
     ${timed && r.end != null && html`
       <div class="label">Длительность · ${dur(r.end - r.start)}</div>
       <div class="pills">${[-10, -5, 5, 10].map((m) => html`<button class="pill" onClick=${() => editRecord(id, (x) => { x.end = Math.max(x.start + 60000, x.end + m * 60000); })}>${m > 0 ? '+' : '−'}${Math.abs(m)} мин</button>`)}</div>`}
@@ -274,18 +307,19 @@ export function OtherSheet() {
     ['pump', 'Сцеживание', 'Сколько мл'],
     ...(m >= 4 ? [['solids', 'Прикорм', 'Что попробовали']] : []),
     ...(m >= 12 ? [['diaper', 'Подгузник', 'Мокрый, грязный или оба'], ['sleep', 'Сон', 'Таймер или задним числом'], ['potty', 'Горшок', 'Получилось, мимо, посидели']] : []),
-    ['measure', 'Замер', 'Вес и рост — в «Ребёнок → Рост»'],
+    ['visit', 'К врачу', 'Когда и к кому — напомним накануне'],
+    ['measure', 'Замер', 'Вес, рост, окружность головы'],
     ['moment', 'Момент', 'Фото, фраза, что-то впервые'],
-    ['temp', 'Температура', 'Попадёт в «Здоровье»'],
+    ['temp', 'Температура', 'Градусы и время'],
     ['med', 'Лекарство', 'Название и время'],
-    ['walk', 'Прогулка', 'Таймер'],
+    ['walk', 'Прогулка', 'Таймер или задним числом'],
     ['bath', 'Купание', 'Одним касанием'],
   ];
   if (sick) items = [...items.filter(([k]) => k === 'temp' || k === 'med'), ...items.filter(([k]) => k !== 'temp' && k !== 'med')];
   return html`
     <div class="h2">Записать</div>
     <div class="rows">
-      ${items.map(([k, t, sub]) => html`<button class="row" onClick=${() => { track('запись:другая:' + k); openSheet(OtherForm, { kind: k }); }}><span class="row-text"><span class="row-title">${t}</span><span class="row-sub">${sub}</span></span><span class="chev">›</span></button>`)}
+      ${items.map(([k, t, sub]) => html`<button class="row" onClick=${() => { track('запись:другая:' + k); if (k === 'visit') { closeSheet(); go('/rebyonok/zdorovye?zapis=1'); return; } openSheet(OtherForm, { kind: k }); }}><span class="row-text"><span class="row-title">${t}</span><span class="row-sub">${sub}</span></span><span class="chev">›</span></button>`)}
     </div>`;
 }
 

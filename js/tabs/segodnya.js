@@ -167,7 +167,7 @@ function EveningCard({ child }) {
   return html`
     <div class="card sg-day">
       <button class="sg-day-main" onClick=${() => { track('сегодня:на-ночь'); go(ROUTES.tales); }}>
-        <${Ill} />
+        <${Ill} keep seed=${small ? 'колыбельная' : 'сказка'} />
         <div class="tiny">${small ? 'Вечером · перед сном' : 'Вечером · сказка на ночь'}</div>
         <div class="h2">${small ? 'Колыбельная на ночь' : 'Сказка на ночь'}</div>
         <p class="p sg-text">${small ? 'Или шум — одним касанием.' : `Из вашего избранного — или новая ${range}.`}</p>

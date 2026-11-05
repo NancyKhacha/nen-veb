@@ -15,7 +15,7 @@ export const PODBORKI = [
       { id: 'birthinjury', t: '«Через ваше тазовое дно проехал грузовик»', s: 'Почему не стоит терпеть недержание и боль после родов' },
       { id: 'dontbeahero', t: 'Не спешите быть Чудо-женщиной', s: '6 ошибок, которых стоит избегать после родов' },
       { id: 'bodylove', t: 'Снова подружиться со своим телом', s: '5 способов после родов' },
-      { id: 'alopecija-posle-rodov', t: 'Почему выпадают волосы после родов?', s: 'Статья НЭН' },
+      { id: 'alopecija-posle-rodov', t: 'Почему выпадают волосы после родов?' },
     ],
     // Эфир Клуба — показательный, только в режиме «В Клубе» (название эфира в Фигме — пример)
     efir: { title: 'Тазовое дно после родов: вопросы физиотерапевту', sub: 'Запись эфира · для Клуба' },
@@ -28,9 +28,9 @@ export const PODBORKI = [
     items: [
       { id: 'eto-kakaa-to-pustota-vnutri-ni-zalosti-ni-zlosti-ni-lubvi-cto-takoe-emocional-noe-vygoranie-zensiny-v-dekrete' },
       { id: 'kak-byt-roditeliu-v-depressii', t: 'Нет сил заботиться', s: 'Как выжить родителю, которого накрыла депрессия' },
-      { id: 'materinskoe-vygoranie-podkradyvaetsa-nezametno', t: '«Материнское выгорание подкрадывается незаметно»', s: 'Статья НЭН' },
+      { id: 'materinskoe-vygoranie-podkradyvaetsa-nezametno', t: '«Материнское выгорание подкрадывается незаметно»' },
       { id: 'materinstvo-v-tri-chasa-nochi', t: 'Материнство в три часа ночи', s: 'О чём мы молчим, когда мир спит' },
-      { id: 'sleeplessnight', t: 'Как выжить после бессонной ночи с младенцем', s: 'Статья НЭН' },
+      { id: 'sleeplessnight', t: 'Как выжить после бессонной ночи с младенцем' },
       { id: 'psiholog-o-tom-kak-izbezhat-roditelskogo-vygorania', t: 'Без отпусков и больничных', s: 'Как избежать родительского выгорания' },
       { id: 'burnouthacks', t: '7 способов справиться с выгоранием', s: 'По версии работающей мамы двух тоддлеров' },
       { id: 'depmatern', t: 'Приуныли в декрете?', s: 'Это называется «депрессия домохозяек», и вы в ней не одиноки' },
@@ -89,7 +89,7 @@ export const PODBORKI = [
       { id: 'everydaycare', t: '«Одна вылазка в бар не перекрывает месяцы недосыпа»', s: 'Почему забота о себе должна стать повседневностью' },
       { id: 'takecare', t: 'Забота о себе начинается с малого', s: 'Например, с горячего душа' },
       { id: 'svidanie-s-soboy-ili-zachem-mame-idti-v-kino-odnoy', t: 'Свидание с собой', s: 'Зачем маме идти в кино одной' },
-      { id: 'filmy-o-materinstve', t: '10 лучших фильмов о материнстве', s: 'Статья НЭН' },
+      { id: 'filmy-o-materinstve', t: '10 лучших фильмов о материнстве' },
     ],
     practice: 'blagodarnost-sebe',
   },
@@ -138,7 +138,7 @@ export const HELP = {
     'Не требуйте от себя слишком многого. Отдых — это забота о себе. Если справляться трудно, можно обратиться к врачу, психологу или психотерапевту. Поддержка близких не заменяет профессиональную помощь.',
   ],
   notFirstDay: 'Если вам тяжело не первый день — вы много плачете, не можете уснуть, даже когда есть возможность, всё время тревожитесь или ничего не радует, — об этом стоит рассказать врачу или психологу.',
-  psychologist: { id: 'findanexpert', t: 'Где найти психолога', s: 'Статья НЭН: 5 способов и не разориться' },
+  psychologist: { id: 'findanexpert', t: 'Где найти психолога', s: '5 способов и не разориться' },
 };
 
 // Телефоны помощи — app-content/calm/kak-vy.md, раздел 6 (номера сверены редакцией 19.09.2026).
@@ -163,11 +163,11 @@ export const articleRoute = (id) => (articleById(id) ? `/statya/${id}` : `/dlya-
 export function rowText(item) {
   const a = anyArticle(item.id);
   if (!a) return null;
-  if (item.t) return { t: item.t, s: item.s || 'Статья НЭН' };
+  if (item.t) return { t: item.t, s: item.s || '' };
   const i = a.title.indexOf(': ');
   if (i > 10 && i < 80) {
     const rest = a.title.slice(i + 2);
     return { t: a.title.slice(0, i), s: rest[0].toUpperCase() + rest.slice(1) };
   }
-  return { t: a.title, s: 'Статья НЭН' };
+  return { t: a.title, s: '' };
 }

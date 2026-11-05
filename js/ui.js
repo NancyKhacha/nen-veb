@@ -2,7 +2,7 @@
 import { html, useState, useEffect } from './lib.js';
 import { useStore, activeChild, update, isSaved, toggleSaved, usePhoto, now } from './store.js';
 import { childAgeLine } from './age.js';
-import { go, back } from './router.js';
+import { go, back, current } from './router.js';
 import { track } from './stats.js';
 import { usePlayer } from './player.js';
 import { cover, coverOfUrl } from './content/covers.js';
@@ -36,9 +36,12 @@ export function OverlayHost({ bottomOffset = 0 }) {
   const S = o.sheet && o.sheet.view;
   const p = usePlayer();
   bottomOffset += p ? 64 : 0; // мини-плеер над полосой записи
+  // Сообщение встаёт над всем низом экрана (меню, полоса, плеер) с отступом — не на карточку
+  const low = typeof document !== 'undefined' && document.querySelector('.app > .bottom');
+  if (low) bottomOffset = low.offsetHeight;
   return html`
     ${o.toast && html`
-      <div class="toast" style=${o.sheet ? 'top:calc(10px + var(--safe-t))' : `bottom:${bottomOffset + 10}px`} role="status">
+      <div class="toast" style=${o.sheet ? 'top:calc(10px + var(--safe-t))' : `bottom:${bottomOffset + 14}px`} role="status">
         <span class="t">${o.toast.text}</span>
         ${(o.toast.actions || []).map((a) => html`<button onClick=${() => { hideToast(); a.onClick(); }}>${a.label}</button>`)}
       </div>`}
@@ -80,9 +83,19 @@ let newsCheck = null;
 export function setNewsCheck(fn) { newsCheck = fn; }
 
 // Шапка вкладок: ребёнок слева; справа поиск, «Что нового», «Сохранённое», профиль
+// Внутренний экран — не корень вкладки: в шапке слева тонкая стрелка «назад»
+const ROOTS = ['/segodnya', '/rebyonok', '/dlya-sebya', '/moy-nen'];
+const rootOf = (path) => { const r = '/' + (path.split('/')[1] || ''); return ROOTS.includes(r) ? r : '/segodnya'; };
+const Chevron = () => html`<svg class="chev-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>`;
+export function BackArrow() {
+  const path = current().path;
+  return html`<button class="back-arrow" aria-label="Назад" onClick=${() => { track('назад:шапка'); back(rootOf(path)); }}><${Chevron} /></button>`;
+}
+
 export function Header({ newsDot }) {
   const s = useStore();
   const child = activeChild(s);
+  const inner = !ROOTS.includes(current().path);
   if (newsDot === undefined) { try { newsDot = newsCheck ? newsCheck(s, now()) : false; } catch (e) { newsDot = false; } }
   let name, line;
   const twin = child && s.bothTwins && child.twinOf ? s.children.find((c) => c.id === child.twinOf) : null;
@@ -92,6 +105,7 @@ export function Header({ newsDot }) {
   const onChild = () => { track('шапка:ребёнок'); child ? openSheet(ChildSwitcher) : go('/profil/rebyonok/novyy'); };
   return html`
     <div class="hdr">
+      ${inner && html`<${BackArrow} />`}
       <button class="hdr-child" onClick=${onChild}>
         <${Avatar} child=${child} />
         <span style="min-width:0">
@@ -134,7 +148,7 @@ export function ChildSwitcher() {
 export function Back({ title, to, right }) {
   return html`
     <div class="back between">
-      <button onClick=${() => (to ? go(to) : back())}>‹ Назад</button>
+      <button class="back-btn" onClick=${() => (to ? go(to) : back(rootOf(current().path)))}><${Chevron} />Назад</button>
       ${right || ''}
     </div>
     ${title && html`<h1 class="h1" style="font-size:24px">${title}</h1>`}`;
@@ -158,13 +172,47 @@ export function Row({ title, sub, end, onClick, chev = true, left }) {
 // сетка (keep — карточки ленты) или где в приложении будет фото или видео (text — что там будет).
 // Служебных подписей вроде «Иллюстрация из архива НЭН» на экране нет.
 const PLACEHOLDER = /архив|иллюстрац|фото блюда|видео из урока|фото из момента/i;
-export const Ill = ({ text, big, id, src, from, keep }) => {
+
+// Пятно без картинки — у каждой карточки своё: цвета НЭН, расположение и наклон
+// выбираются по её названию, поэтому от открытия к открытию не меняются.
+const TINTS = ['255,164,192', '128,184,250', '186,164,240', '255,212,120', '255,182,156', '150,124,232'];
+const BASES = [['#fbe3ee', '#e8e0fb'], ['#dfeafd', '#efe8fc'], ['#fff0d6', '#fbe3ee'], ['#efe8fc', '#ffe9df'], ['#fde9f1', '#e3eefe']];
+function seeded(seed) {
+  let h = 2166136261;
+  for (const ch of String(seed)) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619); }
+  let x = (h >>> 0) || 1;
+  return () => { x ^= x << 13; x >>>= 0; x ^= x >>> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; };
+}
+export function blobBg(seed) {
+  const r = seeded(seed);
+  const pick = (a) => a[Math.floor(r() * a.length)];
+  const [b1, b2] = pick(BASES);
+  const start = Math.floor(r() * TINTS.length);
+  const layers = [];
+  const n = 2 + Math.floor(r() * 2);
+  for (let i = 0; i < n; i++) {
+    const c = TINTS[(start + i * (1 + Math.floor(r() * 2))) % TINTS.length];
+    const x = Math.round(r() * 100); const y = Math.round(r() * 100);
+    const w = 45 + Math.round(r() * 65); const h = 45 + Math.round(r() * 65);
+    layers.push(`radial-gradient(${w}% ${h}% at ${x}% ${y}%, rgba(${c},${(0.8 + r() * 0.2).toFixed(2)}) 0%, rgba(${c},0) ${62 + Math.round(r() * 14)}%)`);
+  }
+  if (r() < 0.45) {
+    // Иногда — круглое «солнце» с мягким краем
+    const c = TINTS[(start + 2 + Math.floor(r() * 3)) % TINTS.length];
+    const rad = 12 + Math.round(r() * 14);
+    layers.unshift(`radial-gradient(circle at ${12 + Math.round(r() * 76)}% ${18 + Math.round(r() * 64)}%, rgba(${c},0.95) 0, rgba(${c},0.95) ${rad}%, rgba(${c},0) ${rad + 6}%)`);
+  }
+  return layers.join(', ') + `, linear-gradient(${Math.round(r() * 360)}deg, ${b1} 0%, ${b2} 100%)`;
+}
+
+export const Ill = ({ text, big, id, src, from, keep, seed }) => {
   const size = big ? 'big' : 'small';
   const url = src || (id && cover(id, size)) || (from && coverOfUrl(from, size)) || null;
   const label = text && !PLACEHOLDER.test(text) ? text : '';
   if (url) return html`<div class=${'ill' + (big ? ' big' : '')}><img src=${url} alt="" loading="lazy" onError=${(e) => e.target.remove()} /></div>`;
   if (!text && !keep) return null;
-  return html`<div class=${'ill' + (big ? ' big' : '')} aria-hidden=${label ? null : 'true'}>${label}</div>`;
+  const video = /видео/i.test(text || '');
+  return html`<div class=${'ill' + (big ? ' big' : '')} style=${{ background: blobBg(seed || id || from || text || 'НЭН') }} aria-hidden=${label ? null : 'true'}>${video ? html`<span class="ill-play" aria-label="Видео"></span>` : label}</div>`;
 };
 
 export function Pill({ on, children, onClick }) {
