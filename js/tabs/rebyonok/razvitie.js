@@ -206,7 +206,7 @@ function Activity({ params }) {
       <div class="tiny">Занятие${done ? ' · сделали ' + dateLong(done) : ''}</div>
       <h1 class="h1">${a.title}</h1>
       <p class="p">${a.text}</p>
-      <div class="note-box">По материалу НЭН «${a.source}»${a.url ? html` · <a class="link" href=${a.url} target="_blank" rel="noopener">${offline ? 'нужна сеть' : 'читать на сайте'}</a>` : ''}</div>
+      ${a.url && html`<a class=${'row' + (offline ? ' mn-pale' : '')} href=${offline ? null : a.url} target="_blank" rel="noopener"><span class="row-text"><span class="row-title">Подробнее — в статье «${a.source}»</span>${offline ? html`<span class="row-sub">Нужна сеть</span>` : ''}</span><span class="chev">›</span></a>`}
       <button class=${'btn ' + (done ? 'btn-gray' : 'btn-primary')} onClick=${toggle}>${done ? '✓ Сделали' : 'Сделали'}</button>
       <div class="actions"><${SaveButton} item=${{ kind: 'activity', id: a.id, title: a.title, sub: 'Занятие', route: '/rebyonok/zanyatie/' + a.id }} /></div>
       <button class="btn-quiet" onClick=${() => go('/rebyonok/razvitie/zanyatiya')}>Другие занятия для этого возраста</button>

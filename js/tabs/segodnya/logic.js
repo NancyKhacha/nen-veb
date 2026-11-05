@@ -413,7 +413,7 @@ export function newsItems(s = getState(), t = now()) {
     const cv = calendarVaccine(s, child, t);
     if (cv && cv.due <= sod + 7 * DAY) add('today', 'vac:' + cv.ids.join('+'), 'Пора записаться на прививку', `От ${diseasesOf(cv.items)} — по календарю ${cv.ageText}`, ROUTES.health);
     const f = factsOfDay(s, child, t)[0];
-    if (f) add('today', 'fact:' + day, 'Нет, это нормально', splitFact(f.text)[0], '/fakt/' + f.id);
+    if (f) add('today', 'fact:' + day, 'Факт дня', splitFact(f.text)[0], '/fakt/' + f.id);
     const a = activityPick(s, child, t);
     if (a && ageMonths(child, t) >= 12) add('today', 'act:' + day, 'Занятие на сегодня', activityTitle(a), ROUTES.activity(a.id));
     const wl = weekLines(ageDays(child, t));

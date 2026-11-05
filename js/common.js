@@ -11,7 +11,7 @@ import { genitive } from './onboarding.js';
 let tabModules = [];
 export function setTabModules(m) { tabModules = m; }
 
-const KIND = { article: 'Статьи', fact: 'Нет, это нормально', activity: 'Занятия', tale: 'Сказки и колыбельные', practice: 'Для себя', idea: 'Идеи', other: 'Другое' };
+const KIND = { article: 'Статьи', fact: 'Факты по возрасту', activity: 'Занятия', tale: 'Сказки и колыбельные', practice: 'Для себя', idea: 'Идеи', other: 'Другое' };
 
 function Saved() {
   const s = useStore();

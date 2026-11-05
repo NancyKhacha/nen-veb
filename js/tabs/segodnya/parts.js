@@ -66,10 +66,9 @@ export function DayCard({ card }) {
   const open = card.path ? () => { track('сегодня:карточка-дня:' + card.kind); if (card.onOpen) card.onOpen(); go(card.path); } : null;
   const Main = html`
     ${card.ill !== false && html`<${Ill} id=${artId(card)} from=${card.source} />`}
-    <div class="tiny">${card.label}</div>
+    ${card.label && html`<div class="tiny">${card.label}</div>`}
     <div class=${'h2' + (card.title.length > 80 ? ' sg-long' : '')}>${card.title}</div>
-    ${card.text && html`<p class="p sg-text">${card.text}</p>`}
-    ${card.source && html`<div class="tiny">По материалу НЭН · ${shortUrl(card.source)}</div>`}`;
+    ${card.text && html`<p class="p sg-text">${card.text}</p>`}`;
   return html`
     <div class=${'card sg-day' + (card.done ? ' sg-done' : '')}>
       ${open ? html`<button class="sg-day-main" onClick=${open}>${Main}</button>` : html`<div class="sg-day-main">${Main}</div>`}
@@ -93,7 +92,7 @@ export function Feed({ cards }) {
       ${cards.map((c) => html`
         <button class="feed-card" key=${c.key} onClick=${() => { track('сегодня:для-вас:' + c.kind); if (c.onOpen) c.onOpen(); if (c.path) go(c.path); }}>
           <${Ill} src=${pic(c)} seed=${c.key + c.title} keep />
-          <span class="tiny">${c.label}</span>
+          ${c.label && html`<span class="tiny">${c.label}</span>`}
           <span class="t">${c.title}</span>
         </button>`)}
     </div>`;
@@ -305,7 +304,7 @@ export function WearSheet({ childId }) {
       <div class="label">Где малыш в слинге?</div>
       <div class="pills"><${Pill} on=${choice.sling === 'under'} onClick=${() => set('sling', 'under')}>Под общей верхней одеждой<//><${Pill} on=${choice.sling === 'over'} onClick=${() => set('sling', 'over')}>Поверх одежды взрослого<//></div>`}
     ${sel.ready && html`
-      ${sel.advice.map((a) => html`<div class="note-box sg-advice">«${a.text}»<div class="tiny">По материалу НЭН · ${WEAR_SOURCES[a.src].title}</div></div>`)}
+      ${sel.advice.map((a) => html`<div class="note-box sg-advice">«${a.text}»</div>`)}
       ${!sel.advice.length && html`<p class="small">Для этих условий короткого совета пока нет. Вот материалы НЭН целиком.</p>`}
       ${(all || !sel.advice.length) ? html`<div class="rows">${sel.related.map((id) => html`<${SourceLink} id=${id} />`)}</div>`
         : html`<button class="btn-quiet" onClick=${() => setAll(true)}>Материалы НЭН целиком</button>`}`}

@@ -251,14 +251,14 @@ function MonthlyInvite() {
     </div>`;
 }
 
-// ——— Мои заметки (строка на главном) ———
+// ——— Заметки (строка на главном) ———
 // Общий ключ s.notes: { id, text, at }. Первая строка текста — название заметки.
 const noteTitle = (n) => (n.text || '').split('\n')[0].trim() || 'Без названия';
 const noteBody = (n) => (n.text || '').split('\n').slice(1).join('\n').trim();
 const notesSorted = (s) => [...(s.notes || [])].sort((a, b) => b.at - a.at);
 function NotesRow({ s }) {
   const last = notesSorted(s)[0];
-  return html`<${Row} title="Мои заметки" sub=${last ? `Последняя — «${noteTitle(last)}», ${dateLong(last.at)}` : 'Сохраните свои вопросы, планы и мысли'}
+  return html`<${Row} title="Заметки" sub=${last ? `Последняя — «${noteTitle(last)}», ${dateLong(last.at)}` : 'Сохраните свои вопросы, планы и мысли'}
     onClick=${() => { track('для себя:заметки'); go('/dlya-sebya/zametki'); }} />`;
 }
 
@@ -479,7 +479,7 @@ function Help() {
     </div>`;
 }
 
-// ——— Мои заметки (экраны 10, 12) ———
+// ——— Заметки (экраны 10, 12) ———
 function Notes({ query }) {
   const s = useStore();
   // Из поиска — сразу нужная заметка
@@ -497,7 +497,7 @@ function Notes({ query }) {
   return html`
     <div class="screen">
       <${Header} />
-      <h1 class="h1">Мои заметки</h1>
+      <h1 class="h1">Заметки</h1>
       <button class="ds-add" onClick=${() => { track('для себя:новая заметка'); go('/zametka'); }}>＋ Заметка</button>
       ${!list.length && html`
         <p class="lead">Сохраните свои вопросы, планы и мысли.</p>
@@ -716,11 +716,11 @@ export function searchItems(state) {
     items.push({ title: pb.title, sub: 'Подборка · Для себя', path: `/dlya-sebya/podborka/${pb.id}`, text: pb.sub + ' ' + pb.items.map((it) => (anyArticle(it.id) || {}).title || '').join(' ') });
   }
   for (const n of notesSorted(state)) {
-    items.push({ title: noteTitle(n), sub: `Моя заметка · ${dateLong(n.at)}`, path: `/dlya-sebya/zametki?id=${n.id}`, text: n.text });
+    items.push({ title: noteTitle(n), sub: `Заметка · ${dateLong(n.at)}`, path: `/dlya-sebya/zametki?id=${n.id}`, text: n.text });
   }
   items.push({ title: 'Если тяжело', sub: HELP_ROW.sub, path: '/dlya-sebya/esli-tyazhelo', text: 'тяжело нет сил плачу слёзы злость не справляюсь выгорание депрессия психолог помощь телефон 112 103' });
   items.push({ title: 'Как вы?', sub: 'Вопрос о вас и анкета раз в месяц', path: '/dlya-sebya/kak-vy', text: 'как вы настроение самочувствие анкета телефоны помощи' });
-  items.push({ title: 'Мои заметки', sub: 'Личный дневник родителя', path: '/dlya-sebya/zametki', text: 'заметки дневник записать мысли вопросы планы' });
+  items.push({ title: 'Заметки', sub: 'Личный дневник родителя', path: '/dlya-sebya/zametki', text: 'заметки дневник записать мысли вопросы планы' });
   items.push({ title: 'Тесты НЭН', sub: 'Лёгкие тесты на сайте', path: '/dlya-sebya/testy', text: TESTS.map((t) => t.title).join(' ') });
   for (const a of STATI) {
     items.push({ title: a.title, sub: 'Для себя', path: articleRoute(a.id), text: a.lead });

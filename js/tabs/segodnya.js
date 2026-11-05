@@ -36,9 +36,9 @@ function factCard(f) {
   const [title, text] = splitFact(f.text);
   const path = '/fakt/' + f.id;
   return {
-    kind: 'fact', key: 'fact:' + f.id, label: 'Нет, это нормально', title, text, source: f.nen, path,
+    kind: 'fact', key: 'fact:' + f.id, label: '', title, text, source: f.nen, path,
     actions: [{ label: 'Читать', onClick: () => { track('сегодня:карточка-дня:fact'); go(path); } }],
-    save: { kind: 'fact', id: f.id, title, sub: 'Нет, это нормально', route: path },
+    save: { kind: 'fact', id: f.id, title, sub: '', route: path },
     dismissKey: 'fact:' + f.id,
   };
 }
@@ -115,7 +115,7 @@ function feedCards(s, child, t, big, evening, limit = 6) {
   }
   const facts = factsOfDay(s, child, t);
   const f = facts.find((x) => !used.has('fact:' + x.id));
-  if (f) push({ key: 'fact:' + f.id, kind: 'fact', label: 'Нет, это нормально', title: splitFact(f.text)[0], source: f.nen, path: '/fakt/' + f.id });
+  if (f) push({ key: 'fact:' + f.id, kind: 'fact', label: '', title: splitFact(f.text)[0], source: f.nen, path: '/fakt/' + f.id });
   const pool = articlePool(s, child, t).filter((a) => !used.has('article:' + a.id));
   push(art(pool[0]));
   const self = articlePool(s, child, t, { self: true }).filter((a) => !used.has('article:' + a.id))[0];
@@ -125,7 +125,7 @@ function feedCards(s, child, t, big, evening, limit = 6) {
   if (s.demo && s.demo.course) push({ key: 'course', kind: 'course', label: 'Курс', title: 'Урок этой недели уже открыт', path: ROUTES.course });
   push(art(pool[1]));
   if (m >= 12) push({ key: 'idea', kind: 'idea', label: 'Идея на сегодня', title: 'Что приготовить — рецепт «Семейной кухни»', path: ROUTES.idea });
-  if (limit > 6) { for (const a of pool.slice(2)) push(art(a)); for (const x of facts.slice(1)) push({ key: 'fact:' + x.id, kind: 'fact', label: 'Нет, это нормально', title: splitFact(x.text)[0], source: x.nen, path: '/fakt/' + x.id }); }
+  if (limit > 6) { for (const a of pool.slice(2)) push(art(a)); for (const x of facts.slice(1)) push({ key: 'fact:' + x.id, kind: 'fact', label: '', title: splitFact(x.text)[0], source: x.nen, path: '/fakt/' + x.id }); }
   return cards;
 }
 
@@ -319,7 +319,7 @@ function NoChildScreen({ s, t }) {
       <div class="rows">${arts.slice(1).map((a) => html`<${Row} title=${a.title} onClick=${open(a)} />`)}</div>`}
     <${SecTitle}>Для себя<//>
     <div class="rows">
-      <${Row} title="Мои заметки" sub=${lastNote ? `Последняя — ${dateWithWeekday(lastNote.at).toLowerCase()} · ＋ Заметка` : '＋ Заметка — мысли и вопросы своими словами'} onClick=${() => { track('сегодня:заметки'); go(ROUTES.notes); }} />
+      <${Row} title="Заметки" sub=${lastNote ? `Последняя — ${dateWithWeekday(lastNote.at).toLowerCase()} · ＋ Заметка` : '＋ Заметка — мысли и вопросы своими словами'} onClick=${() => { track('сегодня:заметки'); go(ROUTES.notes); }} />
       <${Row} title="Минутка для себя" sub="Практики редакции на 3–12 минут" onClick=${() => { track('сегодня:минутка'); go(ROUTES.self); }} />
       ${s.stage === 'born'
         ? html`<${Row} title="Добавить ребёнка" sub="Имя и дата рождения — появятся записи, прививки и ориентиры" onClick=${() => { track('сегодня:добавить-ребёнка'); go('/profil/rebyonok/novyy'); }} />`
@@ -363,19 +363,16 @@ function FactScreen({ params }) {
     <div class="screen sg">
       <${Back} />
       <${Ill} big from=${f.nen} />
-      <div class="tiny">Нет, это нормально</div>
       <h1 class=${'h1 sg-fact-title' + (title.length > 80 ? ' sg-long' : '')}>${title}</h1>
       ${text && html`<p class="lead">${text}</p>`}
-      <div class="actions"><${SaveButton} item=${{ kind: 'fact', id: f.id, title, sub: 'Нет, это нормально', route: '/fakt/' + f.id }} /></div>
+      <div class="actions"><${SaveButton} item=${{ kind: 'fact', id: f.id, title, sub: '', route: '/fakt/' + f.id }} /></div>
       ${art ? html`
-        <${SecTitle}>Подробнее в НЭН<//>
-        <div class="rows"><${Row} title=${art.title} onClick=${() => { track('факт:статья'); markOpened(art.id); go(ROUTES.article(art.id)); }} /></div>`
+        <div class="rows"><${Row} title=${'Подробнее — ' + art.title} onClick=${() => { track('факт:статья'); markOpened(art.id); go(ROUTES.article(art.id)); }} /></div>`
         : f.nen ? html`
-        <${SecTitle}>Подробнее в НЭН<//>
         <div class="rows"><a class="row" href=${f.nen} target="_blank" rel="noopener" onClick=${() => track('факт:статья-на-сайте')}>
-          <span class="row-text"><span class="row-title">Об этом на сайте НЭН</span><span class="row-sub">${shortUrl(f.nen)}${navigator.onLine === false ? ' · нужна сеть' : ''}</span></span><span class="chev">›</span></a></div>` : ''}
+          <span class="row-text"><span class="row-title">Подробнее — в статье НЭН</span>${navigator.onLine === false ? html`<span class="row-sub">Нужна сеть</span>` : ''}</span><span class="chev">›</span></a></div>` : ''}
       ${more.length > 0 && html`
-        <${SecTitle}>Ещё «Нет, это нормально»<//>
+        <${SecTitle}>Что ещё нормально в этом возрасте<//>
         <div class="rows">${more.map((x) => html`<${Row} title=${splitFact(x.text)[0]} onClick=${() => { track('факт:ещё'); go('/fakt/' + x.id, { replace: true }); }} />`)}</div>`}
       <p class="small">Завтра на «Сегодня» — новый факт.</p>
     </div>`;
@@ -442,7 +439,7 @@ function Prep() {
           </button>`)}
       </div>
       <a class="row" href=${PREP.source.url} target="_blank" rel="noopener">
-        <span class="row-text"><span class="row-title">${PREP.source.title}</span><span class="row-sub">По материалу НЭН · n-e-n.ru</span></span><span class="chev">›</span>
+        <span class="row-text"><span class="row-title">${PREP.source.title}</span></span><span class="chev">›</span>
       </a>
     </div>`;
 }
@@ -491,7 +488,7 @@ export function searchItems(s) {
   const facts = born ? factsFor(Math.max(1, m)) : FACTS.filter((f) => f.fromM <= 1);
   const acts = born ? activitiesFor(m) : [];
   return [
-    ...facts.map((f) => ({ title: splitFact(f.text)[0], sub: 'Нет, это нормально', path: '/fakt/' + f.id, text: f.text })),
+    ...facts.map((f) => ({ title: splitFact(f.text)[0], sub: 'Факт по возрасту', path: '/fakt/' + f.id, text: f.text })),
     ...acts.map((a) => ({ title: activityTitle(a), sub: 'Занятие на сегодня', path: ROUTES.activity(a.id), text: a.text })),
   ];
 }
