@@ -136,7 +136,7 @@ export function ChildSwitcher() {
           ${c.id === (activeChild(s) || {}).id ? html`<span class="row-end">✓</span>` : ''}
         </button>`)}
       <button class="row" onClick=${() => { closeSheet(); go('/profil/rebyonok/' + (activeChild(s) || {}).id); }}>
-        <span class="row-text"><span class="row-title">Карточка ребёнка</span><span class="row-sub">Имя, дата, срок рождения, фото</span></span><span class="chev">›</span>
+        <span class="row-text"><span class="row-title">Карточка ребёнка</span><span class="row-sub">Как сегодня: сон, кормления, подгузники — и данные</span></span><span class="chev">›</span>
       </button>
       <button class="row" onClick=${() => { closeSheet(); go('/profil/rebyonok/novyy'); }}>
         <span class="row-text"><span class="row-title">+ Добавить ребёнка</span><span class="row-sub">Или малыша, которого ждёте</span></span><span class="chev">›</span>
@@ -160,7 +160,10 @@ export function Back({ title, to, right }) {
 export const SecTitle = ({ children, more, onMore }) => html`
   <div class="sec-title"><span>${children}</span>${more && html`<button onClick=${onMore}>${more} ›</button>`}</div>`;
 
-export function Row({ title, sub, end, onClick, chev = true, left }) {
+export function Row({ title, sub, end, onClick, chev = !!onClick, left }) {
+  // Без действия — не кнопка и без стрелки: стрелка обещает переход
+  if (!onClick) return html`
+    <div class="row">${left || ''}<span class="row-text"><span class="row-title">${title}</span>${sub && html`<span class="row-sub">${sub}</span>`}</span>${end && html`<span class="row-end">${end}</span>`}</div>`;
   return html`
     <button class="row" onClick=${onClick}>
       ${left || ''}

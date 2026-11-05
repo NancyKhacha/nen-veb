@@ -281,3 +281,19 @@ body.night .rb-today { background: var(--bg); }
 body.night .fam-nudge { background: var(--bg); }
 .fam-nudge .actions { display: flex; align-items: baseline; gap: 20px; }
 .strip-btn { min-width: 0; }
+
+/* Карточка ребёнка: аватар и возраст сверху */
+.child-top { display: flex; align-items: center; gap: 12px; margin-top: -6px; }
+.child-top .avatar { width: 56px; height: 56px; font-size: 22px; }
+
+/* Ритм дня в истории */
+.rb-rhythm { width: 100%; height: auto; display: block; margin-top: 6px; }
+.rb-rhythm .track { fill: rgba(106, 79, 179, 0.1); }
+.rb-rhythm .seg { fill: #9c8fd6; }
+.rb-rhythm .pt { fill: #7d6bc9; stroke: #fff; stroke-width: 1.5; }
+.rb-rhythm .pt.light { fill: #8ec2fa; }
+.rb-rhythm .now { stroke: #e2557e; stroke-width: 1.5; }
+.rb-rhythm .lbl { font-size: 10px; fill: var(--muted); font-family: Onest, system-ui, sans-serif; }
+
+/* Помощник: вопрос человека — маленьким белым пузырём, как у Dot */
+.ask-q { background: var(--bg); color: var(--ink); box-shadow: var(--shadow-s); font-size: 15px; padding: 10px 14px; }

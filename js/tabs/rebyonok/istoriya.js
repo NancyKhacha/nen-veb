@@ -6,6 +6,8 @@ import { useStore, useTick, now } from '../../store.js';
 import { Header, SecTitle, Row, openSheet } from '../../ui.js';
 import { DAY, startOfDay, dayKey, weekdayShort, hhmm, ageMonths, pl } from '../../age.js';
 import { recordsOf, daySummary, sleepNorm, SIDE, DIAPER } from '../../records.js';
+import { ARTICLES } from '../../content/articles.js';
+import { Ill } from '../../ui.js';
 import { EditSheet, tapSleep, tapFeed, tapDiaper, tapPotty, tapFood } from '../../strip.js';
 import { go } from '../../router.js';
 import { track } from '../../stats.js';
@@ -66,16 +68,16 @@ function todayFacts(child, type, t) {
     if (pump.length) facts.push(`сцедили ${pump.reduce((m, r) => m + (+(r.data || {}).ml || 0), 0)} мл`);
     if (feeds.length > 1) { const gap = (feeds[0].start - feeds[feeds.length - 1].start) / (feeds.length - 1); facts.push('в среднем раз в ' + durNoPad(gap)); }
     const lf = all.find((r) => r.type === 'feed');
-    if (lf) facts.unshift('последнее — ' + ago(t - lf.start) + ((lf.data || {}).method === 'bottle' ? `, ${(lf.data || {}).ml || ''} мл` : lf.data && lf.data.side ? `, ${SIDE[lf.data.side]} грудь` : ''));
+    if (lf) facts.unshift('последнее — ' + ago(t - lf.start) + ', в ' + hhmm(lf.start) + ((lf.data || {}).method === 'bottle' ? `, ${(lf.data || {}).ml || ''} мл` : lf.data && lf.data.side ? `, ${SIDE[lf.data.side]} грудь` : ''));
   } else if (type === 'diaper') {
     big = String(day.length);
     const k = (x) => day.filter((r) => ((r.data || {}).kind || 'wet') === x).length;
     const wet = k('wet') + k('both'); const dirty = k('dirty') + k('both');
     if (day.length) facts.push(`мокрых ${wet}, грязных ${dirty}`);
-    if (last) facts.unshift('последний — ' + ago(t - last.start) + ', ' + (DIAPER[(last.data || {}).kind] || 'мокрый'));
+    if (last) facts.unshift('последний — ' + ago(t - last.start) + ', в ' + hhmm(last.start) + ', ' + (DIAPER[(last.data || {}).kind] || 'мокрый'));
   } else {
     big = String(day.length);
-    if (last) facts.unshift('последний раз — ' + ago(t - last.start));
+    if (last) facts.unshift('последний раз — ' + ago(t - last.start) + ', в ' + hhmm(last.start));
   }
   return { big, facts, any: all.length > 0 };
 }
@@ -87,6 +89,31 @@ function unitWord(type, big) {
   if (isNaN(n)) return '';
   const w = (a, b, c) => pl(n, a, b, c).replace(/^\d+\s*/, '');
   return type === 'feed' ? w('кормление', 'кормления', 'кормлений') : type === 'diaper' ? w('подгузник', 'подгузника', 'подгузников') : w('раз', 'раза', 'раз');
+}
+
+// Ритм дня: сутки полоской — сон отрезками, остальное отметками (как «Rhythm» у May Baby, но проще)
+function DayRhythm({ child, type, t }) {
+  const d0 = startOfDay(t);
+  const W = 320; const x = (ms) => 6 + Math.max(0, Math.min(1, (ms - d0) / DAY)) * (W - 12);
+  const recs = recordsOf(child.id).filter((r) => matches(type)(r) && (r.end ?? t) >= d0 && r.start < d0 + DAY);
+  return html`
+    <svg class="rb-rhythm" viewBox=${`0 0 ${W} 34`} role="img" aria-label="Когда за сутки">
+      <rect x="6" y="10" width=${W - 12} height="10" rx="5" class="track" />
+      ${recs.map((r) => (type === 'sleep'
+        ? html`<rect x=${x(r.start)} y="10" width=${Math.max(4, x(r.end ?? t) - x(r.start))} height="10" rx="5" class="seg" />`
+        : html`<circle cx=${x(r.start)} cy="15" r="5" class=${'pt' + (r.type === 'pump' ? ' light' : '')} />`))}
+      <line x1=${x(t)} x2=${x(t)} y1="6" y2="24" class="now" />
+      ${[[0, '0'], [0.5, '12'], [1, '24']].map(([k, l]) => html`<text x=${6 + k * (W - 12)} y="33" class="lbl" text-anchor=${k === 0 ? 'start' : k === 1 ? 'end' : 'middle'}>${l}</text>`)}
+    </svg>`;
+}
+
+// Статьи НЭН по теме и возрасту — прямо в истории, как «Learn more» у May Baby
+const TOPIC = { sleep: [/сон|сна\b|спит|засып|ноч/, 'sleep'], feed: [/корм|груд|бутыл|смес|молок/, 'food'], food: [/еда|ест\b|прикорм|питан|аппетит/, 'food'], potty: [/горш/, null], diaper: [/подгуз|стул|какает|запор/, null] };
+function readFor(type, m) {
+  const [rx, topic] = TOPIC[type] || [];
+  if (!rx) return [];
+  const fit = (a) => a.fromM >= 0 && a.fromM <= m && m <= a.toM;
+  return ARTICLES.filter((a) => fit(a) && (rx.test(a.title.toLowerCase()) || (topic && (a.topics || []).includes(topic) && rx.test((a.lead || '').toLowerCase())))).slice(0, 3);
 }
 
 function Bars({ bars, norm, unit }) {
@@ -143,13 +170,17 @@ function History({ params }) {
         <div class="tiny">Сегодня · ${nameOf(child)}</div>
         <div class="rb-big">${f.big}<span>${unitWord(type, f.big)}</span></div>
         ${f.facts.map((x) => html`<div class="rb-fact">${x}</div>`)}
+        ${f.any && html`<${DayRhythm} child=${child} type=${type} t=${t} />`}
         ${!f.any && html`<p class="small">Пока ни одной записи. Кнопка «${kind.title === 'Кормления' ? 'Кормление' : kind.title === 'Подгузники' ? 'Подгузник' : kind.title}» — внизу, над меню.</p>`}
       </div>
       <${SecTitle}>Неделя<//>
       <div class="rb-chart">
         <${Bars} bars=${bars} norm=${norm} unit=${unit} />
-        <p class="tiny">${[avgText, norm ? `Полоса — ориентир возраста: ${norm[0]}–${norm[1]} ч в сутки, бывает и больше, и меньше.` : '', 'Сегодня — день ещё не кончился.'].filter(Boolean).join(' ')}</p>
+        <p class="tiny">${[avgText, norm ? `Полоса — ориентир возраста: ${norm[0]}–${norm[1]} ч в сутки, бывает и больше, и меньше.` : '', 'Сегодня в среднее не входит — день ещё не кончился.'].filter(Boolean).join(' ')}</p>
       </div>
+      ${(() => { const list = readFor(type, ageMonths(child, t)); return list.length ? html`
+        <${SecTitle}>Почитать<//>
+        <div class="feed">${list.map((a) => html`<button key=${a.id} class="feed-card" onClick=${() => { track('история:статья'); go('/statya/' + a.id); }}><${Ill} id=${a.id} keep seed=${a.id} /><span class="t">${a.title}</span></button>`)}</div>` : ''; })()}
       ${groups.map((g) => html`
         <${SecTitle}>${dayTitle(g.d, t)} · ${pl(g.list.length, 'запись', 'записи', 'записей')}<//>
         <div class="rows">${g.list.map((r) => html`<${Row} key=${r.id} title=${recTitle(r)} sub=${recTime(r)} onClick=${() => { track('история:запись'); openSheet(EditSheet, { id: r.id }); }} />`)}</div>`)}

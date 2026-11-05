@@ -6,6 +6,7 @@ import { go, back } from './router.js';
 import { Back, Row, SecTitle, Pill, Field, Avatar, toast, confirmAction } from './ui.js';
 import { TOPICS, Transfer, startPreview } from './onboarding.js';
 import { familyLine } from './semya.js';
+import { TodayTiles } from './tabs/rebyonok/istoriya.js';
 import { statsReport, statsCode, resetStats, track } from './stats.js';
 
 function Profile() {
@@ -39,6 +40,8 @@ function Profile() {
 }
 
 // Карточка ребёнка: правка или новый
+const ageMonthsOf = (c) => Math.floor((now() - c.dob) / (30.44 * 864e5));
+
 function ChildCard({ params }) {
   const s = useStore();
   const isNew = params.id === 'novyy';
@@ -74,6 +77,16 @@ function ChildCard({ params }) {
   return html`
     <div class="screen">
       <${Back} title=${isNew ? 'Новый ребёнок' : (c.name || 'Малыш')} />
+      ${!isNew && !c.expecting && html`
+        <div class="child-top"><${Avatar} child=${c} /><span class="small">${childAgeLine(c)}</span></div>
+        <${SecTitle}>Сегодня<//>
+        <${TodayTiles} child=${c} types=${ageMonthsOf(c) < 12 ? ['sleep', 'feed', 'diaper'] : ['sleep', 'food', 'potty']} />
+        <div class="rows">
+          <${Row} title="Дневник по дням" sub="Что было и что в планах" onClick=${() => { track('карточка:дневник'); go('/rebyonok/dnevnik'); }} />
+          <${Row} title="Рост" sub="Вес, рост, окружность головы — график" onClick=${() => { track('карточка:рост'); go('/rebyonok/rost'); }} />
+          <${Row} title="Вести дневник вместе" sub=${familyLine(s)} onClick=${() => { track('карточка:семья'); go('/profil/semya'); }} />
+        </div>
+        <${SecTitle}>Данные<//>`}
       ${(isNew || c.expecting) && html`<div class="pills"><${Pill} on=${!expecting} onClick=${() => setExpecting(false)}>${c && c.expecting ? 'Малыш родился' : 'Уже родился'}<//><${Pill} on=${expecting} onClick=${() => setExpecting(true)}>Ждём<//></div>`}
       <${Field} label=${expecting ? 'Как назвать' : 'Имя'} value=${name} onInput=${setName} placeholder=${expecting ? 'Можно домашнее или «Малыш»' : 'Можно домашнее'} />
       <${Field} label=${expecting ? 'Предполагаемая дата родов' : 'Дата рождения'} value=${date} inputmode="numeric" placeholder="ДД.ММ.ГГГГ" onInput=${(v) => setDate(maskDate(v))}
