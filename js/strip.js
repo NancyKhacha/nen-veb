@@ -1,14 +1,14 @@
 // Запись: лист «Записать» по левой кнопке меню (журнал, 5 ноября: полосы над меню больше нет),
 // плашки идущей записи и листы «Кормление», «Поправить» и формы остальных записей.
-import { html, useState, useRef } from './lib.js?v=18';
-import { useStore, useTick, activeChild, update, now, getState, savePhoto, uid } from './store.js?v=18';
-import { ageMonths, clock, hhmm, dur, startOfDay } from './age.js?v=18';
-import { addRecord, finishRecord, removeRecord, editRecord, switchSide, lastOf, ongoing, sinceLine, describe, whenText, recentTypes, sideTimes, breastLine, SIDE, DIAPER, POTTY } from './records.js?v=18';
-import { openSheet, closeSheet, toast, Pill, Field, KidsBar } from './ui.js?v=18';
-import { playNoise, usePlayer, playing, stop as stopPlayer } from './player.js?v=18';
-import { track } from './stats.js?v=18';
-import { go } from './router.js?v=18';
-import { quickTypes, recordAllowed } from './stages.js?v=18';
+import { html, useState, useRef } from './lib.js?v=19';
+import { useStore, useTick, activeChild, update, now, getState, savePhoto, uid } from './store.js?v=19';
+import { ageMonths, clock, hhmm, dur, startOfDay } from './age.js?v=19';
+import { addRecord, finishRecord, removeRecord, editRecord, switchSide, lastOf, ongoing, sinceLine, describe, whenText, recentTypes, sideTimes, breastLine, SIDE, DIAPER, POTTY } from './records.js?v=19';
+import { openSheet, closeSheet, toast, Pill, Field, KidsBar } from './ui.js?v=19';
+import { playNoise, usePlayer, playing, stop as stopPlayer } from './player.js?v=19';
+import { track } from './stats.js?v=19';
+import { go } from './router.js?v=19';
+import { quickTypes, recordAllowed, prefsOf, weaned } from './stages.js?v=19';
 
 // Для кого запись: выбранный ребёнок, а у близнецов в режиме «Оба» — каждый
 export function targets(s = getState()) {
@@ -118,7 +118,7 @@ export function stripButtons(child, s = getState()) {
   // кормления; на третьем — горшок вместо подгузника; с трёх лет быстрых записей нет
   const m = ageMonths(child, now());
   const hidden = s.settings.hiddenButtons || [];
-  const buttons = quickTypes(m);
+  const buttons = quickTypes(m, prefsOf(s, child));
   return { buttons: buttons.filter((b) => !hidden.includes(b)), line: m >= 36 };
 }
 
@@ -187,9 +187,12 @@ export function RecordHub() {
     <div class="h2">Записать${s.children.length > 1 && child ? html` <span class="hub-for">для ${child.name || 'малыша'}</span>` : ''}</div>
     ${s.children.length > 1 && html`<${KidsBar} compact />`}
     <div class="rows hub">
-      <button class="row" onClick=${() => { track('записать:заметка'); closeSheet(); go('/zametka'); }}>
-        <span class="row-text"><span class="row-title">Заметка</span><span class="row-sub">Мысль, вопрос к врачу — своими словами</span></span><span class="hub-add" aria-hidden="true">＋</span>
-      </button>
+      <div class="row hub-row">
+        <button class="hub-main" onClick=${() => { track('записать:все-заметки'); closeSheet(); go('/dlya-sebya/zametki'); }}>
+          <span class="row-text"><span class="row-title">Заметка</span><span class="row-sub">${(s.notes || []).length ? `${(s.notes || []).length} в «Заметках» · все ›` : 'Мысль, вопрос к врачу, с напоминанием'}</span></span>
+        </button>
+        <button class="hub-add" aria-label="Новая заметка" onClick=${() => { track('записать:заметка'); closeSheet(); go('/zametka'); }}>＋</button>
+      </div>
       ${types.map((type) => html`
         <div class="row hub-row">
           <button class="hub-main" onClick=${() => { track('записать:история-' + type); closeSheet(); go('/rebyonok/istoriya/' + HIST[type][0]); }}>
@@ -289,7 +292,11 @@ export function FeedSheet({ runId, tab: tab0 }) {
   const next = lastBreast && (lastBreast.data || {}).side === 'left' ? 'right' : 'left';
   const at = t - ago * 60000;
   const prevLine = lastFeed ? `В прошлый раз — ${(lastFeed.data || {}).method === 'bottle' ? `бутылочка ${(lastFeed.data || {}).ml || ''} мл` : 'грудь, ' + breastLine(lastFeed, t)}, ${whenText(lastFeed, t).replace(/^Сегодня /, 'сегодня ')}` : 'Это первое кормление в дневнике.';
-  const tabs = [['breast', 'Грудь'], ['bottle', 'Бутылочка'], ['pump', 'Сцеживание'], ...(m >= 4 && m < 12 ? [['solids', 'Прикорм']] : [])];
+  const pr = child ? prefsOf(s, child) : {};
+  const setPref = (k, v) => update((d) => { d.childPrefs = d.childPrefs || {}; d.childPrefs[child.id] = { ...(d.childPrefs[child.id] || {}), [k]: v }; });
+  const tabs = [...(pr.noBreast ? [] : [['breast', 'Грудь']]), ...(pr.noBottle ? [] : [['bottle', 'Бутылочка']]), ...(pr.noBreast ? [] : [['pump', 'Сцеживание']]), ...((m >= 4 && m < 12) || (weaned(pr) && m < 24) ? [['solids', 'Прикорм']] : [])];
+  if (tabs.length && !tabs.some(([k]) => k === tab)) setTimeout(() => setTab(tabs[0][0]), 0);
+  const stopLink = (k, label, back) => html`<button class="btn-quiet feed-stop" onClick=${() => { setPref(k, true); track('кормление:' + k); toast({ text: `${back} — вкладку убрали. Вернуть можно в профиле, «Быстрая запись»`, ms: 4000, actions: [{ label: 'Отменить', onClick: () => setPref(k, false) }] }); }}>${label}</button>`;
   const When = () => html`<div class="label">Когда</div><div class="pills">${AGO.map(([k, l]) => html`<${Pill} on=${ago === k} onClick=${() => setAgo(k)}>${l}<//>`)}</div>`;
   const save = (type, data, msg, opts) => { const made = addRecord(ids, type, data, opts || { start: at }); closeSheet(); recorded(made, msg); };
 
@@ -312,6 +319,11 @@ export function FeedSheet({ runId, tab: tab0 }) {
       <button class="btn-quiet" onClick=${() => { removeRecord(run.id); closeSheet(); track('кормление:отменить'); toast({ text: 'Кормление убрали', ms: 2000 }); }}>Отменить это кормление</button>`;
   }
 
+  if (!tabs.length) return html`
+    <div class="h2">Кормление</div>
+    <p class="small">Грудью и из бутылочки ${child ? (child.name || 'малыша') : ''} больше не кормите — так отмечено. Еда — в «Записать».</p>
+    <button class="btn btn-gray" onClick=${() => setPref('noBreast', false)}>Снова кормим грудью</button>
+    <button class="btn btn-gray" onClick=${() => setPref('noBottle', false)}>Снова даём бутылочку</button>`;
   return html`
     <div class="h2">Кормление</div>
     <p class="small">${prevLine}</p>
@@ -327,7 +339,8 @@ export function FeedSheet({ runId, tab: tab0 }) {
             <span class="s">${sd === next && lastBreast ? 'по очереди — эта' : 'начать'}</span>
           </button>`)}
       </div>
-      <button class="btn-quiet" onClick=${() => setManual(true)}>Уже покормили — записать без таймера</button>`}
+      <button class="btn-quiet" onClick=${() => setManual(true)}>Уже покормили — записать без таймера</button>
+      ${stopLink('noBreast', 'Больше не кормим грудью', 'Грудью больше не кормите')}`}
 
     ${tab === 'breast' && manual && html`
       <div class="label">Сколько минут</div>
@@ -349,7 +362,8 @@ export function FeedSheet({ runId, tab: tab0 }) {
       <div class="pills">${ML.map((v) => html`<${Pill} on=${ml === v} onClick=${() => setMl(v)}>${v} мл<//>`)}</div>
       <${Stepper} value=${ml} step=${10} unit="мл" onChange=${setMl} />
       <${When} />
-      <button class="btn btn-primary" onClick=${() => { track('кормление:бутылочка'); save('feed', { method: 'bottle', ml, milk }, `Записано: бутылочка ${ml} мл, ${milk === 'formula' ? 'смесь' : 'сцеженное'}`); }}>Записать ${ml} мл</button>`}
+      <button class="btn btn-primary" onClick=${() => { track('кормление:бутылочка'); save('feed', { method: 'bottle', ml, milk }, `Записано: бутылочка ${ml} мл, ${milk === 'formula' ? 'смесь' : 'сцеженное'}`); }}>Записать ${ml} мл</button>
+      ${stopLink('noBottle', 'Больше не даём бутылочку', 'Бутылочку больше не даёте')}`}
 
     ${tab === 'pump' && html`
       <div class="label">Какая грудь</div>
@@ -441,7 +455,7 @@ function otherItems(s, child) {
     ['med', 'Лекарство', 'Название и время'],
     ['walk', 'Прогулка', 'Таймер или задним числом'],
     ['bath', 'Купание', 'Одним касанием'],
-  ].filter(([k]) => recordAllowed(k, m));
+  ].filter(([k]) => recordAllowed(k, m, prefsOf(s, child)));
   if (sick) items = [...items.filter(([k]) => k === 'temp' || k === 'med'), ...items.filter(([k]) => k !== 'temp' && k !== 'med')];
   return items;
 }
@@ -450,7 +464,7 @@ const openOther = (k) => {
   if (k === 'visit') { closeSheet(); go('/rebyonok/zdorovye?zapis=1'); return; }
   if (k === 'feed') { tapFeed(); return; }
   if (k === 'club') { closeSheet(); go('/rebyonok/kruzhki?novyy=1'); return; }
-  if (k === 'task') { const c = activeChild(getState()); import('./tabs/rebyonok/dnevnik.js?v=18').then((mod) => mod.openNewTask(c, startOfDay(now()))); return; }
+  if (k === 'task') { const c = activeChild(getState()); import('./tabs/rebyonok/dnevnik.js?v=19').then((mod) => mod.openNewTask(c, startOfDay(now()))); return; }
   openSheet(OtherForm, { kind: k });
 };
 // Прежний лист «Другая запись» — теперь тот же «Записать»: один список на всё

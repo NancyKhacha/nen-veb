@@ -1,15 +1,15 @@
 // Профиль родителя — всё служебное: дети, темы, кнопки записи, копия, вход, «Для исследования».
-import { html, useState } from './lib.js?v=18';
-import { useStore, update, uid, getState, resetAll, savePhoto, now, storage } from './store.js?v=18';
-import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy, childAgeLine } from './age.js?v=18';
-import { go, back } from './router.js?v=18';
-import { Back, Row, SecTitle, Pill, Field, Avatar, toast, confirmAction, GestStepper } from './ui.js?v=18';
-import { TOPICS, Transfer, startPreview } from './onboarding.js?v=18';
-import { familyLine } from './semya.js?v=18';
-import { TodayTiles } from './tabs/rebyonok/istoriya.js?v=18';
-import { quickTypes, recordAllowed } from './stages.js?v=18';
-import { ageMonths } from './age.js?v=18';
-import { statsReport, statsCode, resetStats, track } from './stats.js?v=18';
+import { html, useState } from './lib.js?v=19';
+import { useStore, update, uid, getState, resetAll, savePhoto, now, storage } from './store.js?v=19';
+import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy, childAgeLine } from './age.js?v=19';
+import { go, back } from './router.js?v=19';
+import { Back, Row, SecTitle, Pill, Field, Avatar, toast, confirmAction, GestStepper } from './ui.js?v=19';
+import { TOPICS, Transfer, startPreview, genitive } from './onboarding.js?v=19';
+import { familyLine } from './semya.js?v=19';
+import { TodayTiles } from './tabs/rebyonok/istoriya.js?v=19';
+import { quickTypes, recordAllowed, prefsOf } from './stages.js?v=19';
+import { ageMonths } from './age.js?v=19';
+import { statsReport, statsCode, resetStats, track } from './stats.js?v=19';
 
 function Profile() {
   const s = useStore();
@@ -90,6 +90,8 @@ function ChildCard({ params }) {
         <div class="rows">
           <${Row} title="Дневник по дням" sub="Что было и что в планах" onClick=${() => { track('карточка:дневник'); go('/rebyonok/dnevnik'); }} />
           <${Row} title="Рост" sub="Вес, рост, окружность головы — график" onClick=${() => { track('карточка:рост'); go('/rebyonok/rost'); }} />
+          <${Row} title="Аллергии и паспорт здоровья" sub=${((((s.rebyonok || {}).med || {})[c.id] || {}).allergy || []).map((x) => x.text).join(', ') || 'Группа крови, аллергии, особенности'} onClick=${() => { track('карточка:аллергии'); go('/rebyonok/zdorovye/zapisi'); }} />
+          <${Row} title="Документы ребёнка" sub="СНИЛС, полис, прививочный сертификат, справки" onClick=${() => { track('карточка:документы'); go('/rebyonok/vse-dokumenty'); }} />
           <${Row} title="Вести дневник вместе" sub=${familyLine(s)} onClick=${() => { track('карточка:семья'); go('/profil/semya'); }} />
         </div>
         <${SecTitle}>Данные<//>`}
@@ -128,23 +130,56 @@ function Buttons() {
   const toggle = (k) => update((d) => { const h = d.settings.hiddenButtons || []; d.settings.hiddenButtons = h.includes(k) ? h.filter((x) => x !== k) : [...h, k]; });
   const child = (s.children.find((c) => c.id === s.activeChildId) || s.children[0]);
   const m = child && !child.expecting ? ageMonths(child, now()) : 0;
-  const items = [['sleep', 'Сон'], ['feed', 'Кормление'], ['diaper', 'Подгузник'], ['food', 'Еда'], ['potty', 'Горшок']].filter(([k]) => quickTypes(m).includes(k) || (k === 'potty' && recordAllowed('potty', m) && m < 36));
+  const pr = child ? prefsOf(s, child) : {};
+  const items = [['sleep', 'Сон'], ['feed', 'Кормление'], ['diaper', 'Подгузник'], ['food', 'Еда'], ['potty', 'Горшок']].filter(([k]) => quickTypes(m, pr).includes(k));
+  const setPref = (k, v) => update((d) => { d.childPrefs = d.childPrefs || {}; d.childPrefs[child.id] = { ...(d.childPrefs[child.id] || {}), [k]: v }; });
+  // Что у ребёнка уже позади или началось раньше — у каждого своё
+  const life = child && !child.expecting && m < 48 ? [
+    ['noBreast', 'Кормим грудью', true], ['noBottle', 'Даём бутылочку', true], ['noDiapers', 'Носим подгузники', true], ['potty', 'Ходим на горшок', false],
+  ] : [];
   return html`
     <div class="screen">
       <${Back} title="Быстрая запись" />
+      ${life.length > 0 && html`
+        <${SecTitle}>${child.name ? 'У ' + genitive(child.name) + ' сейчас' : 'Сейчас'}<//>
+        <div class="pills">${life.map(([k, l, inverse]) => { const on = inverse ? !pr[k] : !!pr[k]; return html`<${Pill} on=${on} onClick=${() => { setPref(k, inverse ? on : !on); track('профиль:' + k); }}>${l}<//>`; })}</div>
+        <p class="small">Отметьте, что уже позади: бросили грудь — вкладка «Грудь» уберётся из «Кормления»; без подгузников — вместо них появится горшок. Прошлые записи останутся.</p>
+        <${SecTitle}>Быстрые записи<//>`}
       ${items.length ? html`<p class="lead">Что показывать в «Записать» и на «Ребёнке». Что не записываете — уберите, прошлые записи останутся.</p>
       <div class="pills">${items.map(([k, l]) => html`<${Pill} on=${!hidden.includes(k)} onClick=${() => toggle(k)}>${l}<//>`)}</div>`
       : html`<p class="lead">С трёх лет быстрых записей нет: сон и еду дошкольника почти никто не записывает. Всё нужное — в «＋ Записать»: кружки, дела, температура, к врачу, моменты.</p>`}
     </div>`;
 }
 
+// Город для погоды и «Что надеть»: любой — поиском, или по месту, где вы сейчас
 function City() {
   const s = useStore();
   const cities = ['Москва', 'Санкт-Петербург', 'Новосибирск', 'Екатеринбург', 'Казань', 'Нижний Новгород', 'Краснодар', 'Самара', 'Ростов-на-Дону', 'Уфа'];
+  const [q, setQ] = useState('');
+  const [found, setFound] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const pick = (name, ll) => { update((d) => { d.settings.city = name; d.settings.cityLL = ll || null; d.weather = null; }); track('город:выбран'); toast({ text: `Погода — для города ${name}`, ms: 2000 }); back('/segodnya'); };
+  const find = async () => {
+    if (q.trim().length < 2) return;
+    setBusy(true);
+    try { const { searchCities } = await import('./tabs/segodnya/weather.js?v=19'); setFound(await searchCities(q.trim())); } catch (e) { setFound([]); toast({ text: 'Не нашли — нужна сеть. Попробуйте ещё раз', ms: 2500 }); }
+    setBusy(false);
+  };
+  const here = () => {
+    if (!navigator.geolocation) { toast({ text: 'Этот браузер не знает, где вы. Найдите город поиском', ms: 3000 }); return; }
+    navigator.geolocation.getCurrentPosition((p) => pick('Рядом с вами', [+p.coords.latitude.toFixed(2), +p.coords.longitude.toFixed(2)]), () => toast({ text: 'Место не определилось — найдите город поиском', ms: 3000 }), { timeout: 10000, maximumAge: 3600e3 });
+  };
   return html`
     <div class="screen">
       <${Back} title="Город для погоды" />
-      <div class="pills">${cities.map((c) => html`<${Pill} on=${s.settings.city === c} onClick=${() => update((d) => { d.settings.city = c; d.weather = null; })}>${c}<//>`)}</div>
+      <p class="lead">Сейчас: ${s.settings.city || 'Москва'}. По нему — погода и «Что надеть» на «Сегодня».</p>
+      <label class="field"><span class="label">Найти город</span>
+        <input value=${q} placeholder="Например, Тверь" onInput=${(e) => setQ(e.target.value)} onKeyDown=${(e) => { if (e.key === 'Enter') find(); }} /></label>
+      <button class="btn btn-primary" disabled=${q.trim().length < 2 || busy} onClick=${find}>${busy ? 'Ищем…' : 'Найти'}</button>
+      ${found && (found.length ? html`<div class="rows">${found.map((c) => html`<${Row} title=${c.name} sub=${c.region} onClick=${() => pick(c.name, c.ll)} />`)}</div>` : html`<p class="small">Такого города не нашли — проверьте название.</p>`)}
+      <button class="btn btn-gray" onClick=${here}>Определить, где я</button>
+      <${SecTitle}>Крупные города<//>
+      <div class="pills">${cities.map((c) => html`<${Pill} on=${s.settings.city === c && !s.settings.cityLL} onClick=${() => pick(c, null)}>${c}<//>`)}</div>
     </div>`;
 }
 

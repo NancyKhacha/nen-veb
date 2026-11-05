@@ -1,8 +1,8 @@
 // Погода на «Сегодня»: Open-Meteo без ключа, по городу из профиля. Последний прогноз хранится
 // на телефоне (s.weather) — без сети показываем его со временем, как приложение: «последний прогноз».
-import { html, useEffect, useState } from '../../lib.js?v=18';
-import { getState, update, now } from '../../store.js?v=18';
-import { startOfDay, hhmm, dateLong } from '../../age.js?v=18';
+import { html, useEffect, useState } from '../../lib.js?v=19';
+import { getState, update, now } from '../../store.js?v=19';
+import { startOfDay, hhmm, dateLong } from '../../age.js?v=19';
 
 // Координаты — из каталога городов приложения (GeoNames, округлены до 0,1°)
 export const CITIES = {
@@ -29,6 +29,14 @@ export function weatherLine(w) {
   return [temp(w.t), d.word, `ветер ${Math.round(w.wind)} м/с`].filter(Boolean).join(', ');
 }
 
+// Поиск города по названию — тот же сервис Open-Meteo, без ключа и без входа
+export async function searchCities(q) {
+  const r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=8&language=ru&format=json`);
+  if (!r.ok) throw new Error('geo ' + r.status);
+  const j = await r.json();
+  return (j.results || []).map((x) => ({ name: x.name, region: [x.admin1, x.country].filter(Boolean).join(', '), ll: [x.latitude, x.longitude] }));
+}
+
 export const isOffline = () => !!(getState().demo && getState().demo.offline) || (typeof navigator !== 'undefined' && navigator.onLine === false);
 
 let loading = false;
@@ -38,7 +46,8 @@ export async function refreshWeather(force = false) {
   const w = s.weather;
   const fresh = w && w.city === city && Date.now() - w.at < 30 * 60000;
   if (loading || isOffline() || (fresh && !force)) return;
-  const ll = CITIES[city];
+  // Любой город — по координатам из поиска или с телефона (settings.cityLL); десять крупных — из списка
+  const ll = (s.settings.cityLL && s.settings.cityLL.length === 2) ? s.settings.cityLL : CITIES[city];
   if (!ll) return;
   loading = true;
   try {

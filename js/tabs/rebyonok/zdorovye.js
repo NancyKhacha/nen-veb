@@ -1,19 +1,19 @@
 // «Ребёнок → Здоровье» (экраны 8, 18): прививки и визиты — теми же строками, что «На этой неделе»,
 // что было — с отметкой; медкарта строками; болезнь и лекарства; симптомы; аптечка; документы после рождения.
-import { html, useState, useEffect } from '../../lib.js?v=18';
-import { useStore, getState, update, now, uid } from '../../store.js?v=18';
-import { Header, Back, SecTitle, Row, Pill, Field, openSheet, closeSheet, toast } from '../../ui.js?v=18';
-import { DAY, startOfDay, dateLong, dateWithWeekday, weekdayShort, dayKey, hhmm, ageMonths, isPreterm, childAgeLine, diffYMD } from '../../age.js?v=18';
-import { addRecord, removeRecord, recordsOf } from '../../records.js?v=18';
-import { EditSheet } from '../../strip.js?v=18';
-import { Stepper } from './rost.js?v=18';
-import { go } from '../../router.js?v=18';
-import { track } from '../../stats.js?v=18';
-import { CHECKUP_PLAN, SYMPTOMS, SYMPTOMS_INTRO, SYMPTOMS_SMALL, KIT, TEETH, POST_BIRTH } from '../../content/rebyonok-spravka.js?v=18';
+import { html, useState, useEffect } from '../../lib.js?v=19';
+import { useStore, getState, update, now, uid } from '../../store.js?v=19';
+import { Header, Back, SecTitle, Row, Pill, Field, openSheet, closeSheet, toast } from '../../ui.js?v=19';
+import { DAY, startOfDay, dateLong, dateWithWeekday, weekdayShort, dayKey, hhmm, ageMonths, isPreterm, childAgeLine, diffYMD } from '../../age.js?v=19';
+import { addRecord, removeRecord, recordsOf } from '../../records.js?v=19';
+import { EditSheet } from '../../strip.js?v=19';
+import { Stepper } from './rost.js?v=19';
+import { go } from '../../router.js?v=19';
+import { track } from '../../stats.js?v=19';
+import { CHECKUP_PLAN, SYMPTOMS, SYMPTOMS_INTRO, SYMPTOMS_SMALL, KIT, TEETH, POST_BIRTH } from '../../content/rebyonok-spravka.js?v=19';
 import { R, rUpdate, forChild, bornChild, nameOf, cap, vaccineGroups, dueVaccineGroups, vaccineSub, openVaccine, lastDoneVaccine,
-  illness, endIllness, startIllness, tasksOf, inAge, addTask, setTask, removeTask, timeOf, measures, measureLine, Prose, Blocks, inFirstYear, isOffline , NotBorn } from './util.js?v=18';
-import { SHEETS, notYet } from './razvitie.js?v=18';
-import { openNewMoment } from './momenty.js?v=18';
+  illness, endIllness, startIllness, tasksOf, inAge, addTask, setTask, removeTask, timeOf, measures, measureLine, Prose, Blocks, inFirstYear, isOffline , NotBorn } from './util.js?v=19';
+import { SHEETS, notYet } from './razvitie.js?v=19';
+import { openNewMoment } from './momenty.js?v=19';
 
 // ——— Визиты к врачу: дела kind 'doctor' (как на «Сегодня») ———
 const DOCTORS = [['педиатр', 'Осмотр у педиатра'], ['невролог', 'Осмотр у невролога'], ['стоматолог', 'Стоматолог, плановый осмотр'], ['другой', 'Визит к врачу']];
@@ -104,6 +104,9 @@ function Health({ query }) {
     <div class="screen">
       <${Header} />
       <h1 class="h1">Здоровье</h1>
+      ${(med.allergy || []).length > 0
+        ? html`<button class="note-box allergy-box" onClick=${() => { track('здоровье:аллергии'); go('/rebyonok/zdorovye/zapisi'); }}><b>Аллергия</b> ${(med.allergy || []).map((x) => x.text).join('; ')} ›</button>`
+        : html`<div class="rows"><${Row} title="Аллергии" sub="Ничего не записано — если есть, запишите: пригодится врачу, в саду и в поездке" onClick=${() => { track('здоровье:аллергии'); go('/rebyonok/zdorovye/zapisi'); }} /></div>`}
       ${ill && html`
         <${SecTitle}>Сейчас<//>
         <div class="rows"><${Row} title=${`Болеет с ${dateLong(ill.from)}`} sub=${ill.temp ? `Последняя температура ${ill.temp.data.t} в ${hhmm(ill.temp.start)}` : 'Температура и лекарства — по часам'} onClick=${() => go('/rebyonok/zdorovye/bolezni')} /></div>`}

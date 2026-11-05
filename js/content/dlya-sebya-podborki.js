@@ -2,8 +2,8 @@
 // Подборки — темы статей НЭН (бриф docs/razdely/dlya-sebya.md, «Подборки»). Статьи — из архива n-e-n.ru:
 // часть уже есть в articles.js (общая читалка /statya/:id), остальные — в dlya-sebya-stati.js.
 // t и s у статьи — короткая строка, как в Фигме (страница «34 · V3 · Для себя», экран 4).
-import { articleById } from './articles.js?v=18';
-import { statyaById } from './dlya-sebya-stati.js?v=18';
+import { articleById } from './articles.js?v=19';
+import { statyaById } from './dlya-sebya-stati.js?v=19';
 
 export const PODBORKI = [
   {

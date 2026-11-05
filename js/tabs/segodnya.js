@@ -1,38 +1,44 @@
 // Вкладка «Сегодня» — Фигма «32 · V3 · Сегодня», экраны 1–17, и «36 · V3 · Первый вход», экраны 4, 6, 8.
 // Что показать, решают этап, возраст (у недоношенных до двух лет — исправленный), время суток и записи.
-import { html, useState, useEffect } from '../lib.js?v=18';
-import { useStore, useTick, update, now, activeChild } from '../store.js?v=18';
-import { DAY, startOfDay, dayKey, ageMonths, dateWithWeekday, pl, partOfDay, durShort } from '../age.js?v=18';
-import { summaryLine, finishRecord, SIDE } from '../records.js?v=18';
-import { Plaques, OtherSheet, finishSleep, finishFeed } from '../strip.js?v=18';
-import { Header, Back, Row, SecTitle, Ill, SaveButton, Field, openSheet, toast } from '../ui.js?v=18';
-import { go } from '../router.js?v=18';
-import { track } from '../stats.js?v=18';
-import { playNoise, usePlayer, stop as stopPlayer } from '../player.js?v=18';
-import { FACTS, factsFor, factById } from '../content/facts.js?v=18';
-import { activitiesFor } from '../content/activities.js?v=18';
-import { articleById } from '../content/articles.js?v=18';
-import { PREP } from '../content/segodnya-expecting.js?v=18';
+import { html, useState, useEffect } from '../lib.js?v=19';
+import { useStore, useTick, update, now, activeChild } from '../store.js?v=19';
+import { DAY, startOfDay, dayKey, ageMonths, dateWithWeekday, pl, partOfDay, durShort } from '../age.js?v=19';
+import { summaryLine, finishRecord, SIDE } from '../records.js?v=19';
+import { Plaques, OtherSheet, finishSleep, finishFeed } from '../strip.js?v=19';
+import { Header, Back, Row, SecTitle, Ill, SaveButton, Field, openSheet, toast } from '../ui.js?v=19';
+import { go } from '../router.js?v=19';
+import { track } from '../stats.js?v=19';
+import { playNoise, usePlayer, stop as stopPlayer } from '../player.js?v=19';
+import { FACTS, factsFor, factById } from '../content/facts.js?v=19';
+import { activitiesFor } from '../content/activities.js?v=19';
+import { articleById } from '../content/articles.js?v=19';
+import { PREP } from '../content/segodnya-expecting.js?v=19';
 import {
   ROUTES, seg, stageOf, splitFact, articleByUrl, shortUrl, hash, lowerFirst,
   sleepNormLine, promiseLine, firstHint, FIRST_WEEKS, everNightSleep, anyRecords, hardSleepWeek,
   factsOfDay, activityPick, activityTitle, activityText, articlePool, nenToday, newInAge,
   calendarVaccine, plannedVaccines, calendarCheckup, tasksOf, isVisit, whenLine, dayPlan, urgentItem,
   weekDays, expectingWeek, weekArticle, nextClubLive, newsItems, hasNews,
-} from './segodnya/logic.js?v=18';
+} from './segodnya/logic.js?v=19';
 import {
   setSeg, markOpened, WeekStrip, Total, Note, DayCard, Feed, ThisWeek, WeatherCard,
   NewTaskSheet, TaskSheet, VaccineSheet, CheckupSheet,
-} from './segodnya/parts.js?v=18';
-import { refreshWeather, useOnline } from './segodnya/weather.js?v=18';
-import { KidsBar } from '../ui.js?v=18';
-import { clubsOn, checkupNow, sadLine } from './rebyonok/etapy.js?v=18';
-import { sectionOn, schoolSeason } from '../stages.js?v=18';
+} from './segodnya/parts.js?v=19';
+import { refreshWeather, useOnline } from './segodnya/weather.js?v=19';
+import { KidsBar } from '../ui.js?v=19';
+import { clubsOn, checkupNow, sadLine } from './rebyonok/etapy.js?v=19';
+import { sectionOn, schoolSeason } from '../stages.js?v=19';
 
 // ——— «Важно сейчас» по возрасту: кружки сегодня, профосмотр, сад, запись в школу (журнал, 5 ноября) ———
 function StageToday({ child, s, t }) {
   const m = ageMonths(child, t);
   const rows = [];
+  // Напоминания из заметок — в свой день и пока не открыли (журнал, 5 ноября)
+  const endToday = startOfDay(t) + DAY;
+  for (const n of (s.notes || []).filter((x) => x.remindAt && x.remindAt < endToday && !x.remindDone)) {
+    const title = (n.text || '').split('\n')[0].slice(0, 60) || 'Заметка';
+    rows.push(html`<${Row} key=${'note' + n.id} title=${'Заметка: ' + title} sub=${n.remindAt < startOfDay(t) ? 'напоминание с ' + dateWithWeekday(n.remindAt).toLowerCase() : 'напоминание на сегодня'} onClick=${() => { track('сегодня:напоминание-заметки'); update((d) => { const x = (d.notes || []).find((y) => y.id === n.id); if (x) x.remindDone = true; }); go('/dlya-sebya/zametki?id=' + n.id); }} />`);
+  }
   for (const c of clubsOn(child, s, t)) rows.push(html`<${Row} key=${'club' + c.id} title=${`${c.time ? c.time + ' · ' : ''}${c.name}`} sub=${[c.bring && 'взять: ' + c.bring, c.place].filter(Boolean).join(' · ') || 'сегодня'} onClick=${() => { track('сегодня:кружок'); go('/rebyonok/kruzhki'); }} />`);
   const ch = m >= 36 ? checkupNow(child, t) : null;
   if (ch) rows.push(html`<${Row} key="checkup" title=${ch.title} sub=${ch.note || 'кого пройти — в «Здоровье»'} onClick=${() => { track('сегодня:профосмотр'); go('/rebyonok/zdorovye'); }} />`);

@@ -3,8 +3,8 @@
 // Возраст — полные месяцы по дате рождения; развитие по исправленному возрасту считает свой раздел.
 // Подробно — до 7 лет (как в приложении: «для родителей детей 0–7 лет»); старше — школьный этап,
 // без младенческих записей.
-import { ageMonths } from './age.js?v=18';
-import { now } from './store.js?v=18';
+import { ageMonths } from './age.js?v=19';
+import { now } from './store.js?v=19';
 
 export const STAGES = [
   { key: 'newborn', from: 0, to: 3, title: 'Первые недели' },
@@ -34,16 +34,28 @@ export const RECORD_AGES = {
   visit: [0, 1e9], measure: [0, 1e9], moment: [0, 1e9], temp: [0, 1e9], med: [0, 1e9],
   task: [0, 1e9], club: [24, 1e9],
 };
-export const recordAllowed = (type, m) => { const r = RECORD_AGES[type]; return !r || m == null || (m >= r[0] && m < r[1]); };
+// Что у этого ребёнка уже позади или началось раньше: грудь, бутылочка, подгузники, горшок —
+// у каждого ребёнка своё (state.childPrefs[id]): кто-то бросил грудь в полгода, кто-то сел на горшок в десять месяцев
+export const prefsOf = (s, child) => ((s && s.childPrefs) || {})[child && child.id] || {};
+export const weaned = (p) => !!(p.noBreast && p.noBottle);
+export function recordAllowed(type, m, p = {}) {
+  if (type === 'feed' && weaned(p)) return false;
+  if (type === 'pump' && p.noBreast) return false;
+  if (type === 'diaper' && p.noDiapers) return false;
+  if (type === 'potty' && p.potty && m != null && m >= 6 && m < 60) return true;
+  const r = RECORD_AGES[type];
+  return !r || m == null || (m >= r[0] && m < r[1]);
+}
 
 // Быстрые записи — «Записать» сверху и плитки «Сегодня» на «Ребёнке». С трёх лет их нет:
 // сон, еду и горшок дошкольника почти никто не записывает — главное уже другое.
-export function quickTypes(m) {
+export function quickTypes(m, p = {}) {
   if (m == null) return [];
-  if (m < 12) return ['sleep', 'feed', 'diaper'];
-  if (m < 24) return ['sleep', 'food', 'diaper'];
-  if (m < 36) return ['sleep', 'food', 'potty'];
-  return [];
+  let q = m < 12 ? ['sleep', 'feed', 'diaper'] : m < 24 ? ['sleep', 'food', 'diaper'] : m < 36 ? ['sleep', 'food', 'potty'] : [];
+  if (weaned(p) && q.includes('feed')) q = q.map((x) => (x === 'feed' ? (m >= 6 ? 'food' : 'feed') : x));
+  if (p.noDiapers) q = q.map((x) => (x === 'diaper' ? 'potty' : x));
+  if (p.potty && !q.includes('potty') && m >= 6 && m < 48) q = [...q, 'potty'];
+  return [...new Set(q)];
 }
 
 // Разделы, которые появляются с возрастом: сад, кружки, школа, профосмотры, развитие, сказки

@@ -1,17 +1,17 @@
 // «Ребёнок → Дневник»: история и итоги по каждому виду записи — сон, кормления, подгузники, еда, горшок
 // (журнал, 5 ноября). Вход — плитками «Сегодня» на дашборде «Ребёнка» и из листов записи.
 // Данные — те же записи, что пишет «Записать»; хранение не меняется.
-import { html, useState } from '../../lib.js?v=18';
-import { useStore, useTick, now } from '../../store.js?v=18';
-import { Header, SecTitle, Row, openSheet } from '../../ui.js?v=18';
-import { DAY, startOfDay, dayKey, weekdayShort, hhmm, ageMonths, pl } from '../../age.js?v=18';
-import { recordsOf, daySummary, sleepNorm, sideTimes, SIDE, DIAPER } from '../../records.js?v=18';
-import { ARTICLES } from '../../content/articles.js?v=18';
-import { Ill } from '../../ui.js?v=18';
-import { EditSheet, tapSleep, tapFeed, tapDiaper, tapPotty, tapFood } from '../../strip.js?v=18';
-import { go } from '../../router.js?v=18';
-import { track } from '../../stats.js?v=18';
-import { bornChild, nameOf, dayTitle, recTitle, recTime, durNoPad, NotBorn } from './util.js?v=18';
+import { html, useState } from '../../lib.js?v=19';
+import { useStore, useTick, now, update } from '../../store.js?v=19';
+import { Header, SecTitle, Row, openSheet, toast } from '../../ui.js?v=19';
+import { DAY, startOfDay, dayKey, weekdayShort, hhmm, ageMonths, pl } from '../../age.js?v=19';
+import { recordsOf, daySummary, sleepNorm, sideTimes, SIDE, DIAPER } from '../../records.js?v=19';
+import { ARTICLES } from '../../content/articles.js?v=19';
+import { Ill } from '../../ui.js?v=19';
+import { EditSheet, tapSleep, tapFeed, tapDiaper, tapPotty, tapFood } from '../../strip.js?v=19';
+import { go } from '../../router.js?v=19';
+import { track } from '../../stats.js?v=19';
+import { bornChild, nameOf, dayTitle, recTitle, recTime, durNoPad, NotBorn } from './util.js?v=19';
 
 // Адрес → вид записи
 export const KINDS = {
@@ -188,6 +188,7 @@ function History({ params }) {
         <div class="rows">${g.list.map((r) => html`<${Row} key=${r.id} title=${recTitle(r)} sub=${recTime(r)} onClick=${() => { track('история:запись'); openSheet(EditSheet, { id: r.id }); }} />`)}</div>`)}
       ${moreDays && html`<button class="rb-more" onClick=${() => { track('история:ещё'); setDays(days + 7); }}>Ещё дни ›</button>`}
       ${type === 'sleep' && html`<button class="rb-more" onClick=${() => { track('история:сон-месяц'); go('/rebyonok/dnevnik/son?vid=mesyac'); }}>Сон по месяцам ›</button>`}
+      ${type === 'diaper' && html`<button class="btn-quiet" onClick=${() => { update((d) => { d.childPrefs = d.childPrefs || {}; d.childPrefs[child.id] = { ...(d.childPrefs[child.id] || {}), noDiapers: true, potty: true }; }); track('история:без-подгузников'); toast({ text: 'Подгузники убрали, вместо них — горшок. Вернуть — в профиле, «Быстрая запись»', ms: 4000, actions: [{ label: 'Отменить', onClick: () => update((d) => { d.childPrefs[child.id] = { ...(d.childPrefs[child.id] || {}), noDiapers: false }; }) }] }); go('/rebyonok/istoriya/gorshok', { replace: true }); }}>Уже без подгузников — ходим на горшок</button>`}
     </div>`;
 }
 

@@ -1,23 +1,23 @@
 // Вкладка «Для себя» — раздел о самом родителе (бриф docs/razdely/dlya-sebya.md,
 // Фигма «34 · V3 · Для себя», экраны 1–18). Главный экран меняется по времени суток:
 // днём полный состав, вечером — вечерние практики, ночью — тёмный экран с ночными практиками.
-import { html, useState, useEffect } from '../lib.js?v=18';
-import { useStore, update, getState, activeChild, now, uid, isSaved, toggleSaved, useTick } from '../store.js?v=18';
-import { Header, Back, Row, SecTitle, Ill, Pill, SaveButton, openSheet, closeSheet, toast } from '../ui.js?v=18';
-import { go, back } from '../router.js?v=18';
-import { track } from '../stats.js?v=18';
-import { usePlayer } from '../player.js?v=18';
-import { stripButtons } from '../strip.js?v=18';
-import { partOfDay, diffYMD, dateLong, weekdayShort, startOfDay, fromKey, clock, DAY, pl } from '../age.js?v=18';
+import { html, useState, useEffect } from '../lib.js?v=19';
+import { useStore, update, getState, activeChild, now, uid, isSaved, toggleSaved, useTick } from '../store.js?v=19';
+import { Header, Back, Row, SecTitle, Ill, Pill, SaveButton, openSheet, closeSheet, toast } from '../ui.js?v=19';
+import { go, back } from '../router.js?v=19';
+import { track } from '../stats.js?v=19';
+import { usePlayer } from '../player.js?v=19';
+import { stripButtons } from '../strip.js?v=19';
+import { partOfDay, diffYMD, dateLong, weekdayShort, startOfDay, fromKey, clock, DAY, pl } from '../age.js?v=19';
 import {
   PRACTICES, practiceById, locked, hasPlus, isDownloaded, startPractice, stopPractice, pauseOrResume, skipStep,
   isRunning, usePractice, elapsedSec, totalSec, stepAt, stepText, savedItem,
-} from './dlya-sebya/minutka.js?v=18';
+} from './dlya-sebya/minutka.js?v=19';
 import {
   PODBORKI, podborkaById, ORDER_FIRST_YEAR, ORDER_LATER, ORDER_NO_CHILD, TESTS, TOPIC_TESTS, HELP, PHONES,
   anyArticle, articleRoute, rowText,
-} from '../content/dlya-sebya-podborki.js?v=18';
-import { STATI } from '../content/dlya-sebya-stati.js?v=18';
+} from '../content/dlya-sebya-podborki.js?v=19';
+import { STATI } from '../content/dlya-sebya-stati.js?v=19';
 
 // ——— Общее ———
 const ds = (s = getState()) => s.dlyaSebya || {};
@@ -500,11 +500,11 @@ function Notes({ query }) {
       <h1 class="h1">Заметки</h1>
       <button class="ds-add" onClick=${() => { track('для себя:новая заметка'); go('/zametka'); }}>＋ Заметка</button>
       ${!list.length && html`
-        <p class="lead">Сохраните свои вопросы, планы и мысли.</p>
+        <p class="lead">Сохраните свои вопросы, планы и мысли. Заметки — только ваши: их видите вы, даже если дневник ведёте вдвоём. Можно попросить напомнить — заметка встанет на «Сегодня».</p>
         <p class="p muted">Заметок пока нет. Первая запись может быть совсем короткой.</p>`}
       ${groups.map((g) => html`
         <${SecTitle}>${g.title}<//>
-        <div class="rows">${g.items.map((n) => html`<${Row} key=${n.id} title=${noteTitle(n)} sub=${dateLong(n.at)} onClick=${() => { track('для себя:заметка'); openSheet(NoteView, { id: n.id }); }} />`)}</div>`)}
+        <div class="rows">${g.items.map((n) => html`<${Row} key=${n.id} title=${noteTitle(n)} sub=${dateLong(n.at) + (n.remindAt && n.remindAt > now() - DAY ? ` · напомним ${dateLong(n.remindAt)}` : '')} onClick=${() => { track('для себя:заметка'); openSheet(NoteView, { id: n.id }); }} />`)}</div>`)}
       <p class="tiny">Заметки хранятся на этом телефоне в вашем личном дневнике, отдельно от семейного дневника.</p>
     </div>`;
 }
@@ -527,6 +527,9 @@ function NoteScreen({ params }) {
   const [title, setTitle] = useState(old ? noteTitle(old) : '');
   const [text, setText] = useState(old ? noteBody(old) : '');
   const [day, setDay] = useState(old ? startOfDay(old.at) : startOfDay(now()));
+  // Напоминание: в нужный день заметка встанет на «Сегодня» в «Важно сейчас» (журнал, 5 ноября)
+  const [remind, setRemind] = useState(old && old.remindAt ? old.remindAt : null);
+  const [remindPick, setRemindPick] = useState(false);
   const ok = title.trim() || text.trim();
   const saveNote = () => {
     if (!ok) return;
@@ -537,12 +540,12 @@ function NoteScreen({ params }) {
     update((d) => {
       d.notes = d.notes || [];
       const i = d.notes.findIndex((n) => n.id === nid);
-      const note = { id: nid, text: full.trim(), at: old && startOfDay(old.at) === day ? old.at : at };
+      const note = { id: nid, text: full.trim(), at: old && startOfDay(old.at) === day ? old.at : at, ...(remind ? { remindAt: remind } : {}) };
       if (i >= 0) d.notes[i] = note; else d.notes.unshift(note);
     });
     track(old ? 'для себя:заметка поправить' : 'для себя:заметка сохранить');
     back('/dlya-sebya/zametki');
-    toast({ text: old ? 'Заметку поправили' : 'Заметка сохранена', ms: 3000, actions: old ? [] : [{ label: 'Отменить', onClick: () => update((d) => { d.notes = (d.notes || []).filter((n) => n.id !== nid); }) }] });
+    toast({ text: (old ? 'Заметку поправили' : 'Заметка сохранена') + (remind ? ` — напомним ${dateLong(remind)}` : ''), ms: 3000, actions: old ? [] : [{ label: 'Отменить', onClick: () => update((d) => { d.notes = (d.notes || []).filter((n) => n.id !== nid); }) }] });
   };
   return html`
     <div class="note-screen">
@@ -552,6 +555,12 @@ function NoteScreen({ params }) {
       </div>
       <input class="note-title" value=${title} placeholder=${old ? 'Название' : 'Новая заметка'} onInput=${(e) => setTitle(e.target.value)} />
       <textarea class="note-body" autofocus=${!old} value=${text} placeholder="Что хочется не забыть. Например, вопросы к педиатру" onInput=${(e) => setText(e.target.value)}></textarea>
+      <div class="label">Напомнить</div>
+      <div class="pills">
+        ${[[null, 'Не нужно'], [1, 'Завтра'], [3, 'Через 3 дня'], [7, 'Через неделю']].map(([k, l]) => { const v = k == null ? null : startOfDay(now()) + k * DAY + 9 * 3600e3; return html`<${Pill} on=${k == null ? !remind : remind === v} onClick=${() => { setRemind(v); setRemindPick(false); }}>${l}<//>`; })}
+        <${Pill} on=${remindPick || (remind && ![1, 3, 7].some((k) => remind === startOfDay(now()) + k * DAY + 9 * 3600e3))} onClick=${() => setRemindPick(true)}>Другой день<//>
+      </div>
+      ${remindPick && html`<label class="field"><span class="label">Когда напомнить</span><input type="datetime-local" onChange=${(e) => { const t = new Date(e.target.value).getTime(); if (!isNaN(t)) setRemind(t); }} /></label>`}
       <div class="label">Когда</div>
       <div class="pills">${dayChoices(old && old.at).map((c) => html`<${Pill} on=${day === c.d} onClick=${() => setDay(c.d)}>${c.l}<//>`)}</div>
     </div>`;
@@ -570,7 +579,7 @@ function NoteView({ id }) {
   };
   return html`
     <div class="h2">${noteTitle(n)}</div>
-    <p class="small">${dateFull(n.at)}</p>
+    <p class="small">${dateFull(n.at)}${n.remindAt && !n.remindDone ? ` · напомним ${dateLong(n.remindAt)}` : ''}</p>
     ${body && html`<p class="p ds-text">${body}</p>`}
     <div class="actions">
       <button onClick=${() => { closeSheet(); go('/zametka/' + id); }}>Поправить</button>

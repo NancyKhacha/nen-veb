@@ -1,19 +1,19 @@
 // Вкладка «Ребёнок» — Фигма, страница «33 · V3 · Ребёнок», бриф docs/razdely/rebyonok.md.
 // Дашборд — блок на каждый раздел с фактом о ребёнке; разделы — в папке rebyonok/.
-import { activitiesFor } from '../content/activities.js?v=18';
-import { TALES, SONGS } from '../content/rebyonok-skazki.js?v=18';
-import { SYMPTOMS, SKILLS, POST_BIRTH } from '../content/rebyonok-spravka.js?v=18';
-import { activeChild, now } from '../store.js?v=18';
-import { ageMonths } from '../age.js?v=18';
-import { homeRoutes } from './rebyonok/home.js?v=18';
-import { dnevnikRoutes } from './rebyonok/dnevnik.js?v=18';
-import { razvitieRoutes } from './rebyonok/razvitie.js?v=18';
-import { skazkiRoutes } from './rebyonok/skazki.js?v=18';
-import { zdorovyeRoutes } from './rebyonok/zdorovye.js?v=18';
-import { rostRoutes } from './rebyonok/rost.js?v=18';
-import { momentyRoutes } from './rebyonok/momenty.js?v=18';
-import { istoriyaRoutes } from './rebyonok/istoriya.js?v=18';
-import { etapyRoutes } from './rebyonok/etapy.js?v=18';
+import { activitiesFor } from '../content/activities.js?v=19';
+import { TALES, SONGS } from '../content/rebyonok-skazki.js?v=19';
+import { SYMPTOMS, SKILLS, POST_BIRTH } from '../content/rebyonok-spravka.js?v=19';
+import { activeChild, now } from '../store.js?v=19';
+import { ageMonths } from '../age.js?v=19';
+import { homeRoutes } from './rebyonok/home.js?v=19';
+import { dnevnikRoutes } from './rebyonok/dnevnik.js?v=19';
+import { razvitieRoutes } from './rebyonok/razvitie.js?v=19';
+import { skazkiRoutes } from './rebyonok/skazki.js?v=19';
+import { zdorovyeRoutes } from './rebyonok/zdorovye.js?v=19';
+import { rostRoutes } from './rebyonok/rost.js?v=19';
+import { momentyRoutes } from './rebyonok/momenty.js?v=19';
+import { istoriyaRoutes } from './rebyonok/istoriya.js?v=19';
+import { etapyRoutes } from './rebyonok/etapy.js?v=19';
 
 export const routes = [
   ...homeRoutes, ...dnevnikRoutes, ...razvitieRoutes, ...skazkiRoutes, ...zdorovyeRoutes, ...rostRoutes, ...momentyRoutes, ...istoriyaRoutes, ...etapyRoutes,
@@ -45,6 +45,7 @@ const SECTIONS = [
   ['Детский сад', 'Очередь, направление, медкарта 026/у, адаптация', '/rebyonok/sad', 'сад садик очередь направление 026 адаптация воспитатель'],
   ['Школа', 'Запись в 1 класс, медкарта, контакты учителя', '/rebyonok/shkola', 'школа первый класс запись 1 апреля учитель'],
   ['Кружки и секции', 'Дни, время, что взять, оплата', '/rebyonok/kruzhki', 'кружок секция бассейн танцы музыка расписание'],
+  ['Аллергии', 'На что и как проявилась — в медкарте', '/rebyonok/zdorovye/zapisi', 'аллергия аллергии реакция непереносимость паспорт здоровья группа крови'],
   ['Документы ребёнка', 'Свидетельство, СНИЛС, полис, прививочный сертификат, справки', '/rebyonok/vse-dokumenty', 'документы справка полис снилс паспорт загранпаспорт сертификат'],
 ];
 

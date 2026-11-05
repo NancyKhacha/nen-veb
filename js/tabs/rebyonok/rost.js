@@ -1,12 +1,12 @@
 // «Ребёнок → Рост» (экраны 9, 10, 15): «График» замеров, замеры строками, лист «Новый замер» без клавиатуры.
 // Полос ВОЗ нет — так принято 2 ноября, пока нет разрешённых данных.
-import { html, useState } from '../../lib.js?v=18';
-import { useStore, getState, now } from '../../store.js?v=18';
-import { Header, Row, SecTitle, Pill, openSheet, closeSheet, toast } from '../../ui.js?v=18';
-import { DAY, startOfDay, dayKey, dateLong } from '../../age.js?v=18';
-import { addRecord, editRecord, removeRecord } from '../../records.js?v=18';
-import { track } from '../../stats.js?v=18';
-import { bornChild, nameOf, measures, measureLine, fmtNum, Seg , NotBorn } from './util.js?v=18';
+import { html, useState } from '../../lib.js?v=19';
+import { useStore, getState, now } from '../../store.js?v=19';
+import { Header, Row, SecTitle, Pill, openSheet, closeSheet, toast } from '../../ui.js?v=19';
+import { DAY, startOfDay, dayKey, dateLong } from '../../age.js?v=19';
+import { addRecord, editRecord, removeRecord } from '../../records.js?v=19';
+import { track } from '../../stats.js?v=19';
+import { bornChild, nameOf, measures, measureLine, fmtNum, Seg , NotBorn } from './util.js?v=19';
 
 const KINDS = { weight: { label: 'Вес', unit: 'кг', step: 0.1, digits: 2, base: [3, 6] }, height: { label: 'Рост', unit: 'см', step: 0.5, digits: 1, base: [48, 62] }, head: { label: 'Голова', unit: 'см', step: 0.5, digits: 1, base: [33, 41] } };
 const MON = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];

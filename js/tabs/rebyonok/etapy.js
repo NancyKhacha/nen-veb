@@ -2,15 +2,15 @@
 // документы ребёнка в одном месте (журнал, 5 ноября). Правила возраста — stages.js, тексты — content/etapy.js.
 // В веб-версии всё хранится на телефоне, в state.etapy[childId]. В приложении таких разделов пока нет:
 // это новые данные — решать Марии (сейчас там есть «К школе» с пяти лет и дела дня).
-import { html, useState, useEffect } from '../../lib.js?v=18';
-import { useStore, update, uid, now, activeChild } from '../../store.js?v=18';
-import { Header, Row, SecTitle, Pill, Field, openSheet, closeSheet, toast } from '../../ui.js?v=18';
-import { dateLong, ageMonths, startOfDay, DAY } from '../../age.js?v=18';
-import { go } from '../../router.js?v=18';
-import { track } from '../../stats.js?v=18';
-import { SAD, SHKOLA, DOCS, CHECKUPS_BY_AGE } from '../../content/etapy.js?v=18';
-import { bornChild, nameOf, NotBorn } from './util.js?v=18';
-import { findItems } from '../../common.js?v=18';
+import { html, useState, useEffect } from '../../lib.js?v=19';
+import { useStore, update, uid, now, activeChild } from '../../store.js?v=19';
+import { Header, Row, SecTitle, Pill, Field, openSheet, closeSheet, toast } from '../../ui.js?v=19';
+import { dateLong, ageMonths, startOfDay, DAY } from '../../age.js?v=19';
+import { go } from '../../router.js?v=19';
+import { track } from '../../stats.js?v=19';
+import { SAD, SHKOLA, DOCS, CHECKUPS_BY_AGE } from '../../content/etapy.js?v=19';
+import { bornChild, nameOf, NotBorn } from './util.js?v=19';
+import { findItems } from '../../common.js?v=19';
 
 const E = (s, child) => ((s.etapy || {})[child.id]) || {};
 const setE = (child, fn) => update((d) => { d.etapy = d.etapy || {}; d.etapy[child.id] = d.etapy[child.id] || {}; fn(d.etapy[child.id]); });

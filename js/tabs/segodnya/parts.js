@@ -1,14 +1,14 @@
 // Детали «Сегодня»: неделя, итог, карточка дня, «Для вас», «На этой неделе», погода и листы.
-import { html, useState, useEffect } from '../../lib.js?v=18';
-import { useStore, update, uid, now, getState } from '../../store.js?v=18';
-import { DAY, startOfDay, dayKey, weekdayShort, weekdayLong, dateWithWeekday, hhmm, diffYMD } from '../../age.js?v=18';
-import { Row, SecTitle, Ill, Pill, Field, SaveButton, openSheet, closeSheet, toast } from '../../ui.js?v=18';
-import { cover, coverOfUrl } from '../../content/covers.js?v=18';
-import { go } from '../../router.js?v=18';
-import { track } from '../../stats.js?v=18';
-import { selectWear, WEAR_SOURCES, WEAR_WEATHER, WEAR_MODES } from '../../content/segodnya-wear.js?v=18';
-import { ROUTES, seg, lowerFirst, whenLine, articleByUrl, shortUrl, diseasesOf } from './logic.js?v=18';
-import { weatherLine, describeCode, staleLabel, WeatherIcon, isOffline } from './weather.js?v=18';
+import { html, useState, useEffect } from '../../lib.js?v=19';
+import { useStore, update, uid, now, getState } from '../../store.js?v=19';
+import { DAY, startOfDay, dayKey, weekdayShort, weekdayLong, dateWithWeekday, hhmm, diffYMD } from '../../age.js?v=19';
+import { Row, SecTitle, Ill, Pill, Field, SaveButton, openSheet, closeSheet, toast } from '../../ui.js?v=19';
+import { cover, coverOfUrl } from '../../content/covers.js?v=19';
+import { go } from '../../router.js?v=19';
+import { track } from '../../stats.js?v=19';
+import { selectWear, WEAR_SOURCES, WEAR_WEATHER, WEAR_MODES } from '../../content/segodnya-wear.js?v=19';
+import { ROUTES, seg, lowerFirst, whenLine, articleByUrl, shortUrl, diseasesOf } from './logic.js?v=19';
+import { weatherLine, describeCode, staleLabel, WeatherIcon, isOffline } from './weather.js?v=19';
 
 // ——— Состояние вкладки ———
 export function setSeg(fn) { update((d) => { d.segodnya = d.segodnya || {}; fn(d.segodnya, d); }); }
@@ -267,12 +267,15 @@ export function WeatherCard({ wear = true, child }) {
     <${WeatherIcon} kind=${w ? describeCode(w.code).icon : 'cloud'} />
     <span class="sg-wtext">
       <span class="h3">${w && w.city === city ? weatherLine(w) : (off ? 'Прогноз придёт, когда появится сеть' : 'Узнаём погоду…')}</span>
-      <span class="small">${city}${w && w.city === city && stale ? ' · ' + staleLabel(w) : ''}</span>
+      ${w && w.city === city && stale ? html`<span class="small">${staleLabel(w)}</span>` : ''}
     </span>
     ${wear && html`<span class="sg-wear">Что надеть ›</span>`}`;
-  return tap
-    ? html`<button class="card-gray sg-weather" onClick=${tap}>${body}</button>`
-    : html`<div class="card-gray sg-weather">${body}</div>`;
+  // Город — своей кнопкой под погодой: сменить можно прямо здесь (журнал, 5 ноября)
+  return html`
+    <div class="card-gray sg-weather-wrap">
+      ${tap ? html`<button class="sg-weather" onClick=${tap}>${body}</button>` : html`<div class="sg-weather">${body}</div>`}
+      <button class="sg-city" onClick=${() => { track('сегодня:город'); go('/profil/gorod'); }}>${city} · сменить</button>
+    </div>`;
 }
 
 export function WearSheet({ childId }) {

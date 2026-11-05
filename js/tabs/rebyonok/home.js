@@ -1,25 +1,25 @@
 // «Ребёнок» — дашборд (экраны 1–3, 13, 16–18, 20, 21): блок на каждый раздел, под названием — факт о ребёнке.
 // Порядок один для всех: Дневник, Здоровье, Рост, Развитие, Моменты, Сказки и звуки, в первый год — Документы.
-import { html } from '../../lib.js?v=18';
-import { useStore, update, now, activeChild } from '../../store.js?v=18';
-import { Header, Row, SecTitle, Avatar } from '../../ui.js?v=18';
-import { DAY, startOfDay, dateLong, hhmm, ageMonths, isPreterm, dayKey, expectingLine } from '../../age.js?v=18';
-import { articlesFor } from '../../content/articles.js?v=18';
-import { go } from '../../router.js?v=18';
-import { track } from '../../stats.js?v=18';
+import { html } from '../../lib.js?v=19';
+import { useStore, update, now, activeChild } from '../../store.js?v=19';
+import { Header, Row, SecTitle, Avatar } from '../../ui.js?v=19';
+import { DAY, startOfDay, dateLong, hhmm, ageMonths, isPreterm, dayKey, expectingLine } from '../../age.js?v=19';
+import { articlesFor } from '../../content/articles.js?v=19';
+import { go } from '../../router.js?v=19';
+import { track } from '../../stats.js?v=19';
 import { bornChild, nameOf, WeekStrip, BlockTitle, FeedCard, lastDoneVaccine, vaccineGroups, vaccineSub, measures, measureLine, illness,
-  momentsOf, memory, monthBirthday, ageWords, inFirstYear, cap } from './util.js?v=18';
-import { lastSeen, currentSheet, sheetGen } from './razvitie.js?v=18';
-import { MomentCard, openNewMoment } from './momenty.js?v=18';
-import { talesFav } from './skazki.js?v=18';
-import { docsLine } from './zdorovye.js?v=18';
-import { TodayTiles } from './istoriya.js?v=18';
-import { FamilyNudge } from '../../semya.js?v=18';
-import { quickTypes, sectionOn, stageFor } from '../../stages.js?v=18';
-import { sadLine, schoolLine, clubsLine, docsCount, checkupNow } from './etapy.js?v=18';
-import { STAGE_NOTES, DOCS } from '../../content/etapy.js?v=18';
-import { KidsBar } from '../../ui.js?v=18';
-import { POST_BIRTH as POST } from '../../content/rebyonok-spravka.js?v=18';
+  momentsOf, memory, monthBirthday, ageWords, inFirstYear, cap } from './util.js?v=19';
+import { lastSeen, currentSheet, sheetGen } from './razvitie.js?v=19';
+import { MomentCard, openNewMoment } from './momenty.js?v=19';
+import { talesFav } from './skazki.js?v=19';
+import { docsLine } from './zdorovye.js?v=19';
+import { TodayTiles } from './istoriya.js?v=19';
+import { FamilyNudge } from '../../semya.js?v=19';
+import { quickTypes, sectionOn, stageFor, prefsOf } from '../../stages.js?v=19';
+import { sadLine, schoolLine, clubsLine, docsCount, checkupNow } from './etapy.js?v=19';
+import { STAGE_NOTES, DOCS } from '../../content/etapy.js?v=19';
+import { KidsBar } from '../../ui.js?v=19';
+import { POST_BIRTH as POST } from '../../content/rebyonok-spravka.js?v=19';
 
 // Переключатель близнецов — без «Оба»: история у каждого своя
 function TwinPills({ child, s }) {
@@ -81,7 +81,12 @@ function InfoTiles({ child, s }) {
   // выходят сад, кружки и школа; у школьника развития по ориентирам и сада нет
   const T = {
     rost: { k: 'рост', l: 'Рост', v: last ? measureLine(last, ', ') : 'Первый замер', sub: last ? (startOfDay(last.start) === startOfDay(t) ? 'сегодня' : dateLong(last.start)) : (m < 36 ? 'вес, рост, голова' : 'вес и рост'), to: '/rebyonok/rost' },
-    health: (() => { const c = checkupNow(child, t); const h = health(child, s, t, ill, lastVac); return c && !ill ? { ...h, v: c.title, sub: c.note || 'кого пройти — в «Здоровье»' } : h; })(),
+    health: (() => {
+      const c = checkupNow(child, t); const h0 = health(child, s, t, ill, lastVac);
+      const h = c && !ill ? { ...h0, v: c.title, sub: c.note || 'кого пройти — в «Здоровье»' } : h0;
+      const al = ((((s.rebyonok || {}).med || {})[child.id] || {}).allergy || []);
+      return al.length ? { ...h, sub: 'аллергия: ' + al.map((x) => x.text).join(', ') } : h;
+    })(),
     dev: sectionOn('development', m)
       ? { k: 'развитие', l: 'Развитие', v: seen ? seen.it.ru : sheet ? sheet.items[0].ru : 'Первые недели', sub: (seen ? `видели ${dateLong(seen.at)}` : sheet ? 'отметьте, когда увидите' : 'ориентиры — к 2 месяцам') + (isPreterm(child) && m < 24 && sheet ? ` · ориентиры ${sheetGen(sheet)}` : ''), to: '/rebyonok/razvitie' }
       : null,
@@ -111,7 +116,7 @@ function InfoTiles({ child, s }) {
 function Dashboard({ child, s }) {
   const t = now();
   const m = ageMonths(child, t);
-  const quick = quickTypes(m).filter((x) => !(s.settings.hiddenButtons || []).includes(x));
+  const quick = quickTypes(m, prefsOf(s, child)).filter((x) => !(s.settings.hiddenButtons || []).includes(x));
   const st = stageFor(child, t);
   return html`
     ${s.children.length > 1 ? html`<${KidsBar} />` : html`<${TwinPills} child=${child} s=${s} />`}
