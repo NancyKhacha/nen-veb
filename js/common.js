@@ -1,11 +1,11 @@
 // Общие экраны: «Сохранённое» (сердечко в шапке), поиск (лупа в шапке)
 // и помощник (капсула «✦ Спросить» над меню).
-import { html, useState } from './lib.js?v=22';
-import { useStore, getState, activeChild } from './store.js?v=22';
-import { go } from './router.js?v=22';
-import { Back, Row, SecTitle } from './ui.js?v=22';
-import { track } from './stats.js?v=22';
-import { genitive } from './onboarding.js?v=22';
+import { html, useState } from './lib.js?v=23';
+import { useStore, getState, activeChild } from './store.js?v=23';
+import { go } from './router.js?v=23';
+import { Back, Row, SecTitle } from './ui.js?v=23';
+import { track } from './stats.js?v=23';
+import { genitive } from './onboarding.js?v=23';
 
 // Модули вкладок передаёт каркас (app.js), когда они загрузились
 let tabModules = [];

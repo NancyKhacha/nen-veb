@@ -1,16 +1,16 @@
 // Профиль родителя — всё служебное: дети, темы, кнопки записи, копия, вход, «Для исследования».
-import { html, useState } from './lib.js?v=22';
-import { useStore, update, uid, getState, resetAll, savePhoto, now, storage } from './store.js?v=22';
-import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy, childAgeLine } from './age.js?v=22';
-import { go, back, current } from './router.js?v=22';
-import { Back, Row, SecTitle, Pill, Field, Avatar, toast, confirmAction, GestStepper } from './ui.js?v=22';
-import { TOPICS, Transfer, startPreview, genitive } from './onboarding.js?v=22';
-import { familyLine } from './semya.js?v=22';
-import { TodayTiles } from './tabs/rebyonok/istoriya.js?v=22';
-import { quickTypes, recordAllowed, prefsOf } from './stages.js?v=22';
-import { ageMonths } from './age.js?v=22';
-import { statsReport, statsCode, resetStats, track } from './stats.js?v=22';
-import { describe } from './records.js?v=22';
+import { html, useState } from './lib.js?v=23';
+import { useStore, update, uid, getState, resetAll, savePhoto, now, storage } from './store.js?v=23';
+import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy, childAgeLine } from './age.js?v=23';
+import { go, back, current } from './router.js?v=23';
+import { Back, Row, SecTitle, Pill, Field, Avatar, toast, confirmAction, GestStepper } from './ui.js?v=23';
+import { TOPICS, Transfer, startPreview, genitive } from './onboarding.js?v=23';
+import { familyLine } from './semya.js?v=23';
+import { TodayTiles } from './tabs/rebyonok/istoriya.js?v=23';
+import { quickTypes, recordAllowed, prefsOf } from './stages.js?v=23';
+import { ageMonths } from './age.js?v=23';
+import { statsReport, statsCode, resetStats, track } from './stats.js?v=23';
+import { describe } from './records.js?v=23';
 
 function Profile() {
   const s = useStore();
@@ -166,7 +166,7 @@ function City() {
   const find = async () => {
     if (q.trim().length < 2) return;
     setBusy(true);
-    try { const { searchCities } = await import('./tabs/segodnya/weather.js?v=22'); setFound(await searchCities(q.trim())); } catch (e) { setFound([]); toast({ text: 'Не нашли — нужна сеть. Попробуйте ещё раз', ms: 2500 }); }
+    try { const { searchCities } = await import('./tabs/segodnya/weather.js?v=23'); setFound(await searchCities(q.trim())); } catch (e) { setFound([]); toast({ text: 'Не нашли — нужна сеть. Попробуйте ещё раз', ms: 2500 }); }
     setBusy(false);
   };
   const here = () => {
@@ -190,7 +190,8 @@ function City() {
 // Копия записей — файл, который открывается на другом телефоне
 // Таблица всех записей и заметок — открывается в Excel, Numbers, Google Таблицах (как выгрузка CSV в приложении)
 function csvOf(st) {
-  const q = (x) => '"' + String(x == null ? '' : x).replace(/"/g, '""') + '"';
+  // Как csvCell в приложении: текст записи никогда не становится формулой в Excel
+  const q = (x) => { let t = x == null ? '' : String(x); if (typeof x === 'string' && /^[\s\u0000-\u001f]*[=+\-@]/u.test(t)) t = "'" + t; return '"' + t.replace(/"/g, '""') + '"'; };
   const two = (n) => String(n).padStart(2, '0');
   const d = (t) => { const x = new Date(t); return `${two(x.getDate())}.${two(x.getMonth() + 1)}.${x.getFullYear()}`; };
   const tm = (t) => { const x = new Date(t); return `${two(x.getHours())}:${two(x.getMinutes())}`; };
@@ -204,7 +205,7 @@ function csvOf(st) {
   for (const n of (st.notes || [])) rows.push(['', d(n.at), tm(n.at), 'Заметка', (n.text || '').replace(/\n/g, ' '), '']);
   return '\ufeff' + rows.map((r) => r.map(q).join(';')).join('\r\n');
 }
-const saveFile = (text, name, type) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click(); };
+const saveFile = (text, name, type) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); };
 
 function Backup() {
   const s = useStore();

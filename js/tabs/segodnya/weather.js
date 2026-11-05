@@ -1,8 +1,8 @@
 // Погода на «Сегодня»: Open-Meteo без ключа, по городу из профиля. Последний прогноз хранится
 // на телефоне (s.weather) — без сети показываем его со временем, как приложение: «последний прогноз».
-import { html, useEffect, useState } from '../../lib.js?v=22';
-import { getState, update, now } from '../../store.js?v=22';
-import { startOfDay, hhmm, dateLong } from '../../age.js?v=22';
+import { html, useEffect, useState } from '../../lib.js?v=23';
+import { getState, update, now } from '../../store.js?v=23';
+import { startOfDay, hhmm, dateLong } from '../../age.js?v=23';
 
 // Координаты — из каталога городов приложения (GeoNames, округлены до 0,1°)
 export const CITIES = {

@@ -1,19 +1,19 @@
 // Вкладка «Ребёнок» — Фигма, страница «33 · V3 · Ребёнок», бриф docs/razdely/rebyonok.md.
 // Дашборд — блок на каждый раздел с фактом о ребёнке; разделы — в папке rebyonok/.
-import { activitiesFor } from '../content/activities.js?v=22';
-import { TALES, SONGS } from '../content/rebyonok-skazki.js?v=22';
-import { SYMPTOMS, SKILLS, POST_BIRTH } from '../content/rebyonok-spravka.js?v=22';
-import { activeChild, now } from '../store.js?v=22';
-import { ageMonths } from '../age.js?v=22';
-import { homeRoutes } from './rebyonok/home.js?v=22';
-import { dnevnikRoutes } from './rebyonok/dnevnik.js?v=22';
-import { razvitieRoutes } from './rebyonok/razvitie.js?v=22';
-import { skazkiRoutes } from './rebyonok/skazki.js?v=22';
-import { zdorovyeRoutes } from './rebyonok/zdorovye.js?v=22';
-import { rostRoutes } from './rebyonok/rost.js?v=22';
-import { momentyRoutes } from './rebyonok/momenty.js?v=22';
-import { istoriyaRoutes } from './rebyonok/istoriya.js?v=22';
-import { etapyRoutes } from './rebyonok/etapy.js?v=22';
+import { activitiesFor } from '../content/activities.js?v=23';
+import { TALES, SONGS } from '../content/rebyonok-skazki.js?v=23';
+import { SYMPTOMS, SKILLS, POST_BIRTH } from '../content/rebyonok-spravka.js?v=23';
+import { activeChild, now } from '../store.js?v=23';
+import { ageMonths } from '../age.js?v=23';
+import { homeRoutes } from './rebyonok/home.js?v=23';
+import { dnevnikRoutes } from './rebyonok/dnevnik.js?v=23';
+import { razvitieRoutes } from './rebyonok/razvitie.js?v=23';
+import { skazkiRoutes } from './rebyonok/skazki.js?v=23';
+import { zdorovyeRoutes } from './rebyonok/zdorovye.js?v=23';
+import { rostRoutes } from './rebyonok/rost.js?v=23';
+import { momentyRoutes } from './rebyonok/momenty.js?v=23';
+import { istoriyaRoutes } from './rebyonok/istoriya.js?v=23';
+import { etapyRoutes } from './rebyonok/etapy.js?v=23';
 
 export const routes = [
   ...homeRoutes, ...dnevnikRoutes, ...razvitieRoutes, ...skazkiRoutes, ...zdorovyeRoutes, ...rostRoutes, ...momentyRoutes, ...istoriyaRoutes, ...etapyRoutes,

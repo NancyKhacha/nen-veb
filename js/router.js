@@ -1,7 +1,7 @@
 // Переходы по адресу после #: #/segodnya, #/rebyonok/dnevnik, #/statya/abc.
 // Каждая вкладка отдаёт свои экраны списком { path: '/rebyonok/rost', view, tab, strip }.
-import { useState, useEffect } from './lib.js?v=22';
-import { track } from './stats.js?v=22';
+import { useState, useEffect } from './lib.js?v=23';
+import { track } from './stats.js?v=23';
 
 const routes = [];
 export function addRoutes(list) { routes.push(...list); }
