@@ -3,7 +3,7 @@
 import { html, useState } from '../../lib.js';
 import { getState, update, activeChild, now, uid } from '../../store.js';
 import { DAY, startOfDay, dayKey, weekdayShort, weekdayLong, dateLong, hhmm, ageMonths, isPreterm, diffYMD, pl } from '../../age.js';
-import { recordsOf, hasRecords, daySummary, describe, SIDE, DIAPER, POTTY } from '../../records.js';
+import { recordsOf, hasRecords, daySummary, describe, breastLine, SIDE, DIAPER, POTTY } from '../../records.js';
 import { VACCINES, vaccineDate } from '../../content/reference.js';
 import { go } from '../../router.js';
 import { track } from '../../stats.js';
@@ -280,7 +280,7 @@ export function recTitle(r) {
   const len = r.end != null && r.end > r.start ? durNoPad(r.end - r.start) : '';
   switch (r.type) {
     case 'sleep': return r.end == null ? 'Сон — идёт' : `Сон ${len}`;
-    case 'feed': return d.method === 'bottle' ? `Бутылочка, ${d.ml || '—'} мл` : `Кормление, ${SIDE[d.side] || ''} грудь${len ? ', ' + len : ''}`;
+    case 'feed': return d.method === 'bottle' ? `Бутылочка, ${d.ml || '—'} мл${d.milk === 'expressed' ? ', сцеженное' : d.milk === 'formula' ? ', смесь' : ''}` : `Грудь: ${breastLine(r, now(), durNoPad)}`;
     case 'diaper': return `Подгузник, ${DIAPER[d.kind] || 'мокрый'}`;
     case 'potty': return `Горшок, ${POTTY[d.result] || 'получилось'}`;
     case 'walk': return r.end == null ? 'Прогулка — идёт' : `Прогулка ${len}`;

@@ -95,7 +95,7 @@ export function now() {
   if (!tod) return t;
   const d = new Date(t);
   const hours = { day: 14, evening: 20, night: 3 }[tod];
-  d.setHours(hours, d.getMinutes(), 0, 0);
+  d.setHours(hours, d.getMinutes(), d.getSeconds(), d.getMilliseconds()); // секунды идут — таймеры тикают и в режиме показа
   return d.getTime();
 }
 

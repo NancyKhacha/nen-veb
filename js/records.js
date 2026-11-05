@@ -43,7 +43,7 @@ export function addRecord(childIds, type, data = {}, { start, end, timer } = {})
       ids.push(id);
       s.records.push({ id, childId, type, start: start ?? t, end: timer ? null : (end ?? start ?? t), data, at: Date.now() });
     }
-    if (type === 'feed' && data.method) s.settings.lastFeed = { method: data.method, side: data.side, ml: data.ml };
+    if (type === 'feed' && data.method) s.settings.lastFeed = { ...(s.settings.lastFeed || {}), method: data.method, side: data.side, ...(data.ml ? { ml: data.ml } : {}), ...(data.milk ? { milk: data.milk } : {}) };
   });
   return ids;
 }
@@ -64,17 +64,36 @@ export function switchSide(id) {
   });
 }
 
+// Сколько у каждой груди: по отрезкам кормления (как segments в приложении)
+export function sideTimes(r, t = now()) {
+  const d = r.data || {};
+  const log = d.log && d.log.length ? d.log : [{ side: d.side, start: r.start }];
+  const out = { left: 0, right: 0 };
+  log.forEach((x, i) => { const end = i + 1 < log.length ? log[i + 1].start : (r.end ?? t); if (x.side in out) out[x.side] += Math.max(0, end - x.start); });
+  return out;
+}
+const MILK = { formula: 'смесь', expressed: 'сцеженное молоко' };
+// «левая 8 мин, правая 5 мин» или «левая, 8 мин»
+export function breastLine(r, t = now(), fmt = dur) {
+  const st = sideTimes(r, t);
+  const both = st.left >= 60000 && st.right >= 60000;
+  if (both) return `левая ${fmt(st.left)}, правая ${fmt(st.right)}`;
+  const side = st.right > st.left ? 'right' : st.left > 0 ? 'left' : (r.data || {}).side;
+  const len = r.end != null && r.end > r.start ? fmt(r.end - r.start) : '';
+  return `${SIDE[side] || ''}${len ? ', ' + len : ''}`;
+}
+
 // Подпись записи: «Бутылочка · 120 мл», «Грудь · левая · 14 мин»
 export function describe(r, t = now()) {
   const d = r.data || {};
   const len = r.end != null && r.end > r.start ? dur(r.end - r.start) : '';
   switch (r.type) {
     case 'sleep': return r.end == null ? 'Сон · идёт' : `Сон · ${len}`;
-    case 'feed': return d.method === 'bottle' ? `Бутылочка · ${d.ml || '—'} мл${d.what ? ' · ' + d.what : ''}` : `Грудь · ${SIDE[d.side] || ''}${len ? ' · ' + len : ''}`;
+    case 'feed': return d.method === 'bottle' ? `Бутылочка · ${d.ml || '—'} мл${d.milk ? ' · ' + MILK[d.milk] : d.what ? ' · ' + d.what : ''}` : `Грудь · ${breastLine(r, t)}`;
     case 'diaper': return `Подгузник · ${DIAPER[d.kind] || 'мокрый'}`;
     case 'potty': return `Горшок · ${POTTY[d.result] || 'получилось'}`;
     case 'food': return d.what ? `Еда · ${d.what}` : 'Еда';
-    case 'pump': return `Сцеживание · ${d.ml || '—'} мл`;
+    case 'pump': return `Сцеживание · ${d.ml || '—'} мл${d.side === 'both' ? ' · обе' : d.side ? ' · ' + SIDE[d.side] : ''}`;
     case 'solids': return `Прикорм · ${d.what || ''}${d.amount ? ', ' + d.amount : ''}`;
     case 'measure': return `Замер · ${[d.weight && d.weight + ' кг', d.height && d.height + ' см'].filter(Boolean).join(', ')}`;
     case 'med': return `Лекарство · ${d.name || ''}`;

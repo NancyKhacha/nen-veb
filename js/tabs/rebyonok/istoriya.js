@@ -5,7 +5,7 @@ import { html, useState } from '../../lib.js';
 import { useStore, useTick, now } from '../../store.js';
 import { Header, SecTitle, Row, openSheet } from '../../ui.js';
 import { DAY, startOfDay, dayKey, weekdayShort, hhmm, ageMonths, pl } from '../../age.js';
-import { recordsOf, daySummary, sleepNorm, SIDE, DIAPER } from '../../records.js';
+import { recordsOf, daySummary, sleepNorm, sideTimes, SIDE, DIAPER } from '../../records.js';
 import { ARTICLES } from '../../content/articles.js';
 import { Ill } from '../../ui.js';
 import { EditSheet, tapSleep, tapFeed, tapDiaper, tapPotty, tapFood } from '../../strip.js';
@@ -59,9 +59,10 @@ function todayFacts(child, type, t) {
     const breast = feeds.filter((r) => (r.data || {}).method !== 'bottle');
     const bottle = feeds.filter((r) => (r.data || {}).method === 'bottle');
     if (breast.length) {
-      const l = breast.filter((r) => r.data && r.data.side === 'left').length;
-      const mins = breast.reduce((m, r) => m + (r.end ? r.end - r.start : 0), 0);
-      facts.push(`грудь: левая ${l}, правая ${breast.length - l}${mins > 60000 ? ' · ' + durNoPad(mins) : ''}`);
+      // Минуты у каждой груди — по отрезкам кормления: в одно кормление бывают обе
+      const st = breast.reduce((acc, r) => { const x = sideTimes(r, t); return { left: acc.left + x.left, right: acc.right + x.right }; }, { left: 0, right: 0 });
+      const part = (ms) => (ms >= 60000 ? durNoPad(ms) : '—');
+      facts.push(`грудь ${pl(breast.length, 'раз', 'раза', 'раз')}: левая ${part(st.left)}, правая ${part(st.right)}`);
     }
     if (bottle.length) facts.push(`бутылочка: ${bottle.length} · ${bottle.reduce((m, r) => m + (+(r.data || {}).ml || 0), 0)} мл`);
     const pump = day.filter((r) => r.type === 'pump');
