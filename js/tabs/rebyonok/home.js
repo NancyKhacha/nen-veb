@@ -13,6 +13,8 @@ import { lastSeen, currentSheet, sheetGen } from './razvitie.js';
 import { MomentCard, openNewMoment } from './momenty.js';
 import { talesFav } from './skazki.js';
 import { docsLine } from './zdorovye.js';
+import { TodayTiles } from './istoriya.js';
+import { FamilyNudge } from '../../semya.js';
 import { POST_BIRTH as POST } from '../../content/rebyonok-spravka.js';
 
 // Переключатель близнецов — без «Оба»: история у каждого своя
@@ -101,7 +103,9 @@ function Dashboard({ child, s }) {
   return html`
     <${TwinPills} child=${child} s=${s} />
     <${BlockTitle} more="Вся неделя" to="/rebyonok/dnevnik?vid=nedelya" ev="дневник">Дневник<//>
+    <${TodayTiles} child=${child} types=${ageMonths(child, t) < 12 ? ['sleep', 'feed', 'diaper'] : ['sleep', 'food', 'potty']} />
     <${WeekStrip} child=${child} onPick=${(d) => { track('ребёнок:день'); go('/rebyonok/dnevnik?den=' + dayKey(d)); }} />
+    <${FamilyNudge} s=${s} />
     <${HealthBlock} child=${child} s=${s} />
     <${GrowthBlock} child=${child} s=${s} />
     <${DevBlock} child=${child} s=${s} />

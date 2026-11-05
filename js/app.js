@@ -11,6 +11,7 @@ import { onboardingRoutes, isPreview, markPreview, endPreview } from './onboardi
 import { back } from './router.js';
 import { commonRoutes, setTabModules } from './common.js';
 import { profileRoutes } from './profile.js';
+import { semyaRoutes } from './semya.js';
 import { Header, setNewsCheck } from './ui.js';
 
 // Вкладки грузятся по отдельности: ошибка в одной не роняет остальные
@@ -30,6 +31,7 @@ if (news) setNewsCheck(news.hasNews);
 addRoutes(onboardingRoutes);
 mods.forEach((m) => addRoutes(m.routes || []));
 addRoutes(profileRoutes);
+addRoutes(semyaRoutes);
 addRoutes(commonRoutes);
 
 // Экран загрузки: логотип НЭН и одна строка о том, что это (журнал, 4 ноября).
@@ -55,7 +57,7 @@ function Splash() {
 function App() {
   const s = useStore();
   const { path, query } = useRoute();
-  const free = path.startsWith('/start') || path === '/s';
+  const free = path.startsWith('/start') || path === '/s' || path === '/semya/kod';
   if (path === '/start' && query && query.pokaz) markPreview();
   if (!path.startsWith('/start') && isPreview()) endPreview();
 

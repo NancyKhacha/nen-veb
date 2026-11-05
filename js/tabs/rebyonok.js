@@ -12,15 +12,18 @@ import { skazkiRoutes } from './rebyonok/skazki.js';
 import { zdorovyeRoutes } from './rebyonok/zdorovye.js';
 import { rostRoutes } from './rebyonok/rost.js';
 import { momentyRoutes } from './rebyonok/momenty.js';
+import { istoriyaRoutes } from './rebyonok/istoriya.js';
 
 export const routes = [
-  ...homeRoutes, ...dnevnikRoutes, ...razvitieRoutes, ...skazkiRoutes, ...zdorovyeRoutes, ...rostRoutes, ...momentyRoutes,
+  ...homeRoutes, ...dnevnikRoutes, ...razvitieRoutes, ...skazkiRoutes, ...zdorovyeRoutes, ...rostRoutes, ...momentyRoutes, ...istoriyaRoutes,
 ];
 
 // Что найдёт поиск: разделы, занятия возраста, симптомы, сказки и колыбельные, «Когда начинает», документы
 const SECTIONS = [
   ['Дневник', 'Дни ребёнка: что было и что в планах', '/rebyonok/dnevnik', 'календарь неделя план дела записи сон кормление'],
-  ['Сон за неделю', 'Сколько спал по дням и ориентир возраста', '/rebyonok/dnevnik/son', 'сон норма ориентир'],
+  ['Сон за неделю', 'Сколько спал по дням и ориентир возраста', '/rebyonok/istoriya/son', 'сон норма ориентир история'],
+  ['Кормления', 'Сколько раз за день, грудь и бутылочка, по дням', '/rebyonok/istoriya/kormleniya', 'кормление грудь бутылочка смесь история сколько ест'],
+  ['Подгузники', 'Сколько за день, мокрые и грязные, по дням', '/rebyonok/istoriya/podguzniki', 'подгузник мокрый грязный стул история'],
   ['Здоровье', 'Прививки, осмотры, медкарта', '/rebyonok/zdorovye', 'медкарта врач поликлиника'],
   ['Календарь прививок', 'Что сделано и что впереди', '/rebyonok/zdorovye/privivki', 'прививки вакцинация акдс бцж гепатит пневмококк корь'],
   ['Болезни и лекарства', 'Температура и лекарства по часам', '/rebyonok/zdorovye/bolezni', 'болеет температура лекарство жаропонижающее'],

@@ -53,7 +53,7 @@ function SleepSheet({ runId }) {
     <p class="small">С ${hhmm(run.start)}.</p>
     <button class="btn btn-primary" onClick=${() => { closeSheet(); finishSleep(run.id); }}>Проснулись — закончить</button>
     <button class="btn btn-gray" onClick=${() => openSheet(EditSheet, { id: run.id })}>Поправить начало</button>
-    <button class="btn-quiet" onClick=${closeSheet}>Не сейчас</button>`;
+    <button class="btn-quiet" onClick=${() => { closeSheet(); go('/rebyonok/istoriya/son'); }}>Вся история сна ›</button>`;
   return html`
     <div class="h2">Начинаем сон?</div>
     <p class="small">Время пойдёт с этой минуты. Уснули раньше — выберите, когда.</p>
@@ -148,9 +148,12 @@ function StripButton({ type, child }) {
   const run = ongoing(child.id).find((r) => r.type === type);
   const lp = useLongPress(() => { const r = lastOf(child.id, type); if (r) openSheet(EditSheet, { id: r.id }); }, TAP[type]);
   // Одна строка состояния под названием: полоса ниже, а последняя запись всё равно видна
+  // «7 ч 48 мин» → «7 ч»: на плитке коротко, подробности — в истории
+  const short = (x) => String(x || '').replace(/(\d+ ч) \d+ мин/, '$1');
   let a = '';
   if (run) a = 'идёт ' + clock(now() - run.start);
-  else if (since) a = `${since.a} ${since.b}`.trim();
+  else if (since && type === 'sleep') a = since.a === 'только что' ? 'только проснулись' : 'не спит ' + short(since.a);
+  else if (since) a = [short(since.a), since.b].filter(Boolean).join(' · ');
   else a = 'нет записей';
   return html`<button class=${'strip-btn' + (run ? ' on' : '')} ...${lp}><b>${LABEL[type]}</b><span>${a}</span></button>`;
 }
@@ -253,6 +256,9 @@ export function Stepper({ value, step, unit, onChange, min = 0, fmt }) {
     </div>`;
 }
 
+// История вида записи — «Ребёнок → Дневник» (istoriya.js)
+const HIST = { sleep: ['son', 'Вся история сна'], feed: ['kormleniya', 'Все кормления'], pump: ['kormleniya', 'Все кормления'], diaper: ['podguzniki', 'Все подгузники'], food: ['eda', 'Вся еда'], solids: ['eda', 'Вся еда'], potty: ['gorshok', 'Весь горшок'] };
+
 // ——— Лист «Поправить запись»: время и объём кнопками, без клавиатуры ———
 export function EditSheet({ id }) {
   const s = useStore();
@@ -291,6 +297,7 @@ export function EditSheet({ id }) {
     ${r.end == null && html`<button class="btn btn-gray" onClick=${() => { closeSheet(); r.type === 'feed' ? finishFeed(id) : r.type === 'sleep' ? finishSleep(id) : finishRecord(id); }}>Закончить сейчас</button>`}
     <button class="btn btn-primary" onClick=${() => { track('запись:поправить'); closeSheet(); }}>Готово</button>
     <button class="btn-quiet" onClick=${() => { removeRecord(id); closeSheet(); toast({ text: 'Запись убрали', ms: 2000 }); }}>Удалить запись</button>
+    ${HIST[r.type] && html`<button class="btn-quiet" onClick=${() => { closeSheet(); go('/rebyonok/istoriya/' + HIST[r.type][0]); }}>${HIST[r.type][1]} ›</button>`}
   `;
 }
 

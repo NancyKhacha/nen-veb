@@ -5,6 +5,7 @@ import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy, chil
 import { go, back } from './router.js';
 import { Back, Row, SecTitle, Pill, Field, Avatar, toast, confirmAction } from './ui.js';
 import { TOPICS, Transfer, startPreview } from './onboarding.js';
+import { familyLine } from './semya.js';
 import { statsReport, statsCode, resetStats, track } from './stats.js';
 
 function Profile() {
@@ -16,6 +17,10 @@ function Profile() {
       <div class="rows">
         ${s.children.map((c) => html`<${Row} left=${html`<${Avatar} child=${c} />`} title=${c.name || 'Малыш'} sub=${childAgeLine(c)} onClick=${() => go('/profil/rebyonok/' + c.id)} />`)}
         <${Row} title="+ Добавить ребёнка" sub="Или малыша, которого ждёте" onClick=${() => go('/profil/rebyonok/novyy')} />
+      </div>
+      <${SecTitle}>Семья<//>
+      <div class="rows">
+        <${Row} title="Вести дневник вместе" sub=${familyLine(s)} onClick=${() => { track('профиль:семья'); go('/profil/semya'); }} />
       </div>
       <${SecTitle}>Приложение<//>
       <div class="rows">
@@ -130,8 +135,8 @@ function City() {
 function Backup() {
   const pack = () => JSON.stringify({ app: 'nen-veb', v: 1, at: Date.now(), state: { ...getState(), demo: {} } });
   const copy = async () => {
-    try { await navigator.clipboard.writeText(pack()); track('копия:скопирована'); toast({ text: 'Копия скопирована. Сохраните её в заметках или отправьте себе в мессенджер', ms: 4000 }); }
-    catch (e) { toast({ text: 'Не получилось скопировать. Попробуйте «Сохранить файл»', ms: 3000 }); }
+    try { await navigator.clipboard.writeText(pack()); track('копия:скопирована'); toast({ text: 'Скопировали. Вставьте текст в заметки или отправьте себе в мессенджер', ms: 4000 }); }
+    catch (e) { toast({ text: 'Не получилось скопировать. Попробуйте «Сохранить файлом»', ms: 3000 }); }
   };
   const download = () => {
     const blob = new Blob([pack()], { type: 'application/json' });
@@ -144,11 +149,11 @@ function Backup() {
   return html`
     <div class="screen">
       <${Back} title="Копия записей" />
-      <p class="lead">Все записи, дети и заметки одним текстом. На другом телефоне: первый экран → «Перенести записи» → вставить.</p>
+      <p class="lead">Все записи, дети и заметки — одним текстом или файлом. Пригодится для нового телефона: на нём на первом экране нажмите «Перенести записи» и вставьте копию.</p>
       <p class="small">Фото в копию не попадают.</p>
-      <button class="btn btn-primary" onClick=${copy}>Скопировать копию</button>
-      <button class="btn btn-gray" onClick=${download}>Сохранить файл</button>
-      <button class="btn btn-gray" onClick=${() => go('/profil/perenos')}>Перенести записи с другого телефона</button>
+      <button class="btn btn-primary" onClick=${copy}>Скопировать текстом</button>
+      <button class="btn btn-gray" onClick=${download}>Сохранить файлом</button>
+      <button class="btn btn-gray" onClick=${() => go('/profil/perenos')}>Перенести с другого телефона</button>
     </div>`;
 }
 

@@ -1,0 +1,194 @@
+// «Ребёнок → Дневник»: история и итоги по каждому виду записи — сон, кормления, подгузники, еда, горшок
+// (журнал, 5 ноября). Вход — плитками «Сегодня» на дашборде «Ребёнка» и из листов записи.
+// Данные — те же записи, что пишет полоса записи; хранение не меняется.
+import { html, useState } from '../../lib.js';
+import { useStore, useTick, now } from '../../store.js';
+import { Header, SecTitle, Row, openSheet } from '../../ui.js';
+import { DAY, startOfDay, dayKey, weekdayShort, hhmm, ageMonths, pl } from '../../age.js';
+import { recordsOf, daySummary, sleepNorm, SIDE, DIAPER } from '../../records.js';
+import { EditSheet, tapSleep, tapFeed, tapDiaper, tapPotty, tapFood } from '../../strip.js';
+import { go } from '../../router.js';
+import { track } from '../../stats.js';
+import { bornChild, nameOf, dayTitle, recTitle, recTime, durNoPad, NotBorn } from './util.js';
+
+// Адрес → вид записи
+export const KINDS = {
+  son: { type: 'sleep', title: 'Сон', add: 'Записать сон', tap: tapSleep },
+  kormleniya: { type: 'feed', title: 'Кормления', add: 'Записать кормление', tap: tapFeed },
+  podguzniki: { type: 'diaper', title: 'Подгузники', add: 'Записать подгузник', tap: tapDiaper },
+  eda: { type: 'food', title: 'Еда', add: 'Записать еду', tap: tapFood },
+  gorshok: { type: 'potty', title: 'Горшок', add: 'Записать горшок', tap: tapPotty },
+};
+export const slugOf = (type) => Object.keys(KINDS).find((k) => KINDS[k].type === type);
+export const historyPath = (type) => '/rebyonok/istoriya/' + slugOf(type);
+
+// Записи этого вида: к кормлениям относим и сцеживание, к еде — прикорм
+const matches = (type) => (r) => r.type === type || (type === 'feed' && r.type === 'pump') || (type === 'food' && r.type === 'solids');
+const H = (ms) => ms / 3600e3;
+const ago = (ms) => (ms < 60000 ? 'только что' : durNoPad(ms) + ' назад');
+
+// Итог одного дня по виду записи
+function dayValue(child, type, d, t) {
+  if (type === 'sleep') return H(daySummary(child.id, d, t).sleep);
+  return recordsOf(child.id).filter((r) => matches(type)(r) && r.type !== 'pump' && r.start >= d && r.start < d + DAY).length;
+}
+
+// Плашка «Сегодня»: главные цифры и последняя запись
+function todayFacts(child, type, t) {
+  const today = startOfDay(t);
+  const all = recordsOf(child.id).filter(matches(type)).sort((a, b) => b.start - a.start);
+  const day = all.filter((r) => r.start >= today);
+  const last = all[0];
+  const facts = [];
+  let big;
+  if (type === 'sleep') {
+    const run = all.find((r) => r.end == null);
+    const total = daySummary(child.id, today, t).sleep;
+    big = total ? durNoPad(total) : '—';
+    const naps = day.filter((r) => r.end != null);
+    if (naps.length) facts.push(pl(naps.length, 'раз', 'раза', 'раз') + ' за день');
+    const longest = naps.reduce((m, r) => Math.max(m, r.end - r.start), 0);
+    if (longest) facts.push('самый долгий — ' + durNoPad(longest));
+    if (run) facts.unshift('спит уже ' + durNoPad(t - run.start));
+    else if (last && last.end) facts.unshift('не спит ' + durNoPad(t - last.end));
+  } else if (type === 'feed') {
+    const feeds = day.filter((r) => r.type === 'feed');
+    big = String(feeds.length);
+    const breast = feeds.filter((r) => (r.data || {}).method !== 'bottle');
+    const bottle = feeds.filter((r) => (r.data || {}).method === 'bottle');
+    if (breast.length) {
+      const l = breast.filter((r) => r.data && r.data.side === 'left').length;
+      const mins = breast.reduce((m, r) => m + (r.end ? r.end - r.start : 0), 0);
+      facts.push(`грудь: левая ${l}, правая ${breast.length - l}${mins > 60000 ? ' · ' + durNoPad(mins) : ''}`);
+    }
+    if (bottle.length) facts.push(`бутылочка: ${bottle.length} · ${bottle.reduce((m, r) => m + (+(r.data || {}).ml || 0), 0)} мл`);
+    const pump = day.filter((r) => r.type === 'pump');
+    if (pump.length) facts.push(`сцедили ${pump.reduce((m, r) => m + (+(r.data || {}).ml || 0), 0)} мл`);
+    if (feeds.length > 1) { const gap = (feeds[0].start - feeds[feeds.length - 1].start) / (feeds.length - 1); facts.push('в среднем раз в ' + durNoPad(gap)); }
+    const lf = all.find((r) => r.type === 'feed');
+    if (lf) facts.unshift('последнее — ' + ago(t - lf.start) + ((lf.data || {}).method === 'bottle' ? `, ${(lf.data || {}).ml || ''} мл` : lf.data && lf.data.side ? `, ${SIDE[lf.data.side]} грудь` : ''));
+  } else if (type === 'diaper') {
+    big = String(day.length);
+    const k = (x) => day.filter((r) => ((r.data || {}).kind || 'wet') === x).length;
+    const wet = k('wet') + k('both'); const dirty = k('dirty') + k('both');
+    if (day.length) facts.push(`мокрых ${wet}, грязных ${dirty}`);
+    if (last) facts.unshift('последний — ' + ago(t - last.start) + ', ' + (DIAPER[(last.data || {}).kind] || 'мокрый'));
+  } else {
+    big = String(day.length);
+    if (last) facts.unshift('последний раз — ' + ago(t - last.start));
+  }
+  return { big, facts, any: all.length > 0 };
+}
+
+// «3 кормления», «5 подгузников», «10 ч сна»
+function unitWord(type, big) {
+  const n = parseInt(big, 10);
+  if (type === 'sleep') return big === '—' ? 'сна пока нет' : 'сна';
+  if (isNaN(n)) return '';
+  const w = (a, b, c) => pl(n, a, b, c).replace(/^\d+\s*/, '');
+  return type === 'feed' ? w('кормление', 'кормления', 'кормлений') : type === 'diaper' ? w('подгузник', 'подгузника', 'подгузников') : w('раз', 'раза', 'раз');
+}
+
+function Bars({ bars, norm, unit }) {
+  const W = 340, Hh = 160, L = 30, T = 22, B = 24;
+  const max = Math.max(...bars.map((b) => b.v), norm ? norm[1] + 1 : 0, unit === 'ч' ? 8 : 4);
+  const y = (v) => T + (1 - v / max) * (Hh - T - B);
+  const bw = (W - L - 6) / bars.length;
+  const ticks = norm ? [norm[1], norm[0]] : [Math.round(max), Math.round(max / 2)];
+  return html`
+    <svg viewBox=${`0 0 ${W} ${Hh}`} role="img" aria-label="По дням">
+      ${norm && html`<rect x=${L} y=${y(norm[1])} width=${W - L - 4} height=${y(norm[0]) - y(norm[1])} class="band" />`}
+      ${ticks.map((v) => html`<text x="2" y=${y(v) + 4} class="lbl">${v}${unit === 'ч' ? ' ч' : ''}</text>`)}
+      ${bars.map((b, i) => html`
+        <g onClick=${b.onClick} style="cursor:pointer">
+          <rect x=${L + i * bw + bw * 0.2} y=${y(b.v)} width=${bw * 0.6} height=${Math.max(b.v ? 3 : 0, y(0) - y(b.v))} rx="6" class=${'bar' + (b.today ? ' light' : '')} />
+          ${b.v ? html`<text x=${L + i * bw + bw / 2} y=${y(b.v) - 4} class="lbl" text-anchor="middle">${unit === 'ч' ? String(Math.round(b.v * 10) / 10).replace('.', ',') : b.v}</text>` : ''}
+          <text x=${L + i * bw + bw / 2} y=${Hh - 6} class="lbl" text-anchor="middle">${b.label}</text>
+        </g>`)}
+    </svg>`;
+}
+
+function History({ params }) {
+  const s = useStore();
+  useTick(30000);
+  const kind = KINDS[params.slug] || KINDS.kormleniya;
+  const { type } = kind;
+  const child = bornChild(s);
+  const [days, setDays] = useState(3);
+  if (!child) return html`<${NotBorn} title=${kind.title} text="История появится, когда малыш родится." />`;
+  const t = now();
+  const today = startOfDay(t);
+  const f = todayFacts(child, type, t);
+  const week = Array.from({ length: 7 }, (_, i) => startOfDay(today - (6 - i) * DAY + 3 * 3600e3));
+  const bars = week.map((d) => ({ v: dayValue(child, type, d, t), label: weekdayShort(d), today: d === today, onClick: () => { track('история:день'); go('/rebyonok/dnevnik?den=' + dayKey(d)); } }));
+  const past = bars.filter((b) => !b.today && b.v);
+  const avg = past.length ? past.reduce((m, b) => m + b.v, 0) / past.length : 0;
+  const norm = type === 'sleep' ? sleepNorm(ageMonths(child, t)) : null;
+  const unit = type === 'sleep' ? 'ч' : '';
+  const recs = recordsOf(child.id).filter(matches(type)).sort((a, b) => b.start - a.start);
+  const groups = [];
+  for (const r of recs) {
+    const d = startOfDay(r.start);
+    let g = groups[groups.length - 1];
+    if (!g || g.d !== d) { if (groups.length >= days) break; g = { d, list: [] }; groups.push(g); }
+    g.list.push(r);
+  }
+  const moreDays = new Set(recs.map((r) => startOfDay(r.start))).size > groups.length;
+  const avgText = !avg ? '' : type === 'sleep' ? `В среднем ${durNoPad(avg * 3600e3)} в сутки за неделю.` : `В среднем ${String(Math.round(avg * 10) / 10).replace('.', ',')} в день за неделю.`;
+  return html`
+    <div class="screen">
+      <${Header} />
+      <h1 class="h1">${kind.title}</h1>
+      <div class="card rb-today">
+        <div class="tiny">Сегодня · ${nameOf(child)}</div>
+        <div class="rb-big">${f.big}<span>${unitWord(type, f.big)}</span></div>
+        ${f.facts.map((x) => html`<div class="rb-fact">${x}</div>`)}
+        ${!f.any && html`<p class="small">Пока ни одной записи. Кнопка «${kind.title === 'Кормления' ? 'Кормление' : kind.title === 'Подгузники' ? 'Подгузник' : kind.title}» — внизу, над меню.</p>`}
+      </div>
+      <${SecTitle}>Неделя<//>
+      <div class="rb-chart">
+        <${Bars} bars=${bars} norm=${norm} unit=${unit} />
+        <p class="tiny">${[avgText, norm ? `Полоса — ориентир возраста: ${norm[0]}–${norm[1]} ч в сутки, бывает и больше, и меньше.` : '', 'Сегодня — день ещё не кончился.'].filter(Boolean).join(' ')}</p>
+      </div>
+      ${groups.map((g) => html`
+        <${SecTitle}>${dayTitle(g.d, t)} · ${pl(g.list.length, 'запись', 'записи', 'записей')}<//>
+        <div class="rows">${g.list.map((r) => html`<${Row} key=${r.id} title=${recTitle(r)} sub=${recTime(r)} onClick=${() => { track('история:запись'); openSheet(EditSheet, { id: r.id }); }} />`)}</div>`)}
+      ${moreDays && html`<button class="rb-more" onClick=${() => { track('история:ещё'); setDays(days + 7); }}>Ещё дни ›</button>`}
+      ${type === 'sleep' && html`<button class="rb-more" onClick=${() => { track('история:сон-месяц'); go('/rebyonok/dnevnik/son?vid=mesyac'); }}>Сон по месяцам ›</button>`}
+      <button class="btn btn-primary" onClick=${() => { track('история:записать'); kind.tap(); }}>${kind.add}</button>
+    </div>`;
+}
+
+// Плитки «Сегодня» на дашборде «Ребёнка»: что было за день и сколько прошло с последней записи
+// Коротко для плитки: «7 ч назад», «спит 20 мин», «не спит 3 ч»
+function tileLine(child, type, t) {
+  const all = recordsOf(child.id).filter((r) => matches(type)(r) && r.type !== 'pump').sort((a, b) => b.start - a.start);
+  const last = all[0];
+  if (!last) return 'нет записей';
+  const short = (ms) => (ms < 60000 ? 'только что' : durNoPad(ms).replace(/(\d+ ч) \d+ мин/, '$1'));
+  if (type === 'sleep') return last.end == null ? 'спит ' + short(t - last.start) : 'не спит ' + short(t - last.end);
+  const x = short(t - last.start);
+  return x === 'только что' ? x : x + ' назад';
+}
+
+export function TodayTiles({ child, types }) {
+  useTick(30000);
+  const t = now();
+  return html`
+    <div class="rb-tiles">
+      ${types.map((type) => {
+        const f = todayFacts(child, type, t);
+        const kind = KINDS[slugOf(type)];
+        return html`
+          <button class="rb-tile" onClick=${() => { track('ребёнок:история-' + type); go(historyPath(type)); }}>
+            <span class="l">${kind.title}</span>
+            <b>${f.big}</b>
+            <span class="s">${tileLine(child, type, t)}</span>
+          </button>`;
+      })}
+    </div>`;
+}
+
+export const istoriyaRoutes = [
+  { path: '/rebyonok/istoriya/:slug', view: History, tab: '/rebyonok', strip: true },
+];

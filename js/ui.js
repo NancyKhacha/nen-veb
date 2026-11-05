@@ -141,6 +141,9 @@ export function ChildSwitcher() {
       <button class="row" onClick=${() => { closeSheet(); go('/profil/rebyonok/novyy'); }}>
         <span class="row-text"><span class="row-title">+ Добавить ребёнка</span><span class="row-sub">Или малыша, которого ждёте</span></span><span class="chev">›</span>
       </button>
+      <button class="row" onClick=${() => { track('шапка:семья'); closeSheet(); go('/profil/semya'); }}>
+        <span class="row-text"><span class="row-title">Вести дневник вместе</span><span class="row-sub">Позвать второго родителя, бабушку или няню</span></span><span class="chev">›</span>
+      </button>
     </div>`;
 }
 
