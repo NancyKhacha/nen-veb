@@ -1,33 +1,33 @@
 // Вкладка «Сегодня» — Фигма «32 · V3 · Сегодня», экраны 1–17, и «36 · V3 · Первый вход», экраны 4, 6, 8.
 // Что показать, решают этап, возраст (у недоношенных до двух лет — исправленный), время суток и записи.
-import { html, useState, useEffect } from '../lib.js?v=21';
-import { useStore, useTick, update, now, activeChild } from '../store.js?v=21';
-import { DAY, startOfDay, dayKey, ageMonths, dateWithWeekday, pl, partOfDay, durShort } from '../age.js?v=21';
-import { summaryLine, finishRecord, SIDE } from '../records.js?v=21';
-import { Plaques, OtherSheet, finishSleep, finishFeed } from '../strip.js?v=21';
-import { Header, Back, Row, SecTitle, Ill, SaveButton, Field, openSheet, toast } from '../ui.js?v=21';
-import { go } from '../router.js?v=21';
-import { track } from '../stats.js?v=21';
-import { playNoise, usePlayer, stop as stopPlayer } from '../player.js?v=21';
-import { FACTS, factsFor, factById } from '../content/facts.js?v=21';
-import { activitiesFor } from '../content/activities.js?v=21';
-import { articleById } from '../content/articles.js?v=21';
-import { PREP } from '../content/segodnya-expecting.js?v=21';
+import { html, useState, useEffect } from '../lib.js?v=22';
+import { useStore, useTick, update, now, activeChild } from '../store.js?v=22';
+import { DAY, startOfDay, dayKey, ageMonths, dateWithWeekday, pl, partOfDay, durShort } from '../age.js?v=22';
+import { summaryLine, finishRecord, SIDE } from '../records.js?v=22';
+import { Plaques, OtherSheet, finishSleep, finishFeed } from '../strip.js?v=22';
+import { Header, Back, Row, SecTitle, Ill, SaveButton, Field, openSheet, toast } from '../ui.js?v=22';
+import { go } from '../router.js?v=22';
+import { track } from '../stats.js?v=22';
+import { playNoise, usePlayer, stop as stopPlayer } from '../player.js?v=22';
+import { FACTS, factsFor, factById } from '../content/facts.js?v=22';
+import { activitiesFor } from '../content/activities.js?v=22';
+import { articleById } from '../content/articles.js?v=22';
+import { PREP } from '../content/segodnya-expecting.js?v=22';
 import {
   ROUTES, seg, stageOf, splitFact, articleByUrl, shortUrl, hash, lowerFirst,
   sleepNormLine, promiseLine, firstHint, FIRST_WEEKS, everNightSleep, anyRecords, hardSleepWeek,
   factsOfDay, activityPick, activityTitle, activityText, articlePool, nenToday, newInAge,
   calendarVaccine, plannedVaccines, calendarCheckup, tasksOf, isVisit, whenLine, dayPlan, urgentItem,
   weekDays, expectingWeek, weekArticle, nextClubLive, newsItems, hasNews,
-} from './segodnya/logic.js?v=21';
+} from './segodnya/logic.js?v=22';
 import {
   setSeg, markOpened, WeekStrip, Total, Note, DayCard, Feed, ThisWeek, WeatherCard,
   NewTaskSheet, TaskSheet, VaccineSheet, CheckupSheet,
-} from './segodnya/parts.js?v=21';
-import { refreshWeather, useOnline } from './segodnya/weather.js?v=21';
-import { KidsBar } from '../ui.js?v=21';
-import { clubsOn, checkupNow, sadLine } from './rebyonok/etapy.js?v=21';
-import { sectionOn, schoolSeason } from '../stages.js?v=21';
+} from './segodnya/parts.js?v=22';
+import { refreshWeather, useOnline } from './segodnya/weather.js?v=22';
+import { KidsBar } from '../ui.js?v=22';
+import { clubsOn, checkupNow, sadLine } from './rebyonok/etapy.js?v=22';
+import { sectionOn, schoolSeason } from '../stages.js?v=22';
 
 // ——— «Важно сейчас» по возрасту: кружки сегодня, профосмотр, сад, запись в школу (журнал, 5 ноября) ———
 function StageToday({ child, s, t }) {
@@ -40,6 +40,8 @@ function StageToday({ child, s, t }) {
     rows.push(html`<${Row} key=${'note' + n.id} title=${'Заметка: ' + title} sub=${n.remindAt < startOfDay(t) ? 'напоминание с ' + dateWithWeekday(n.remindAt).toLowerCase() : 'напоминание на сегодня'} onClick=${() => { track('сегодня:напоминание-заметки'); update((d) => { const x = (d.notes || []).find((y) => y.id === n.id); if (x) x.remindDone = true; }); go('/dlya-sebya/zametki?id=' + n.id); }} />`);
   }
   for (const c of clubsOn(child, s, t)) rows.push(html`<${Row} key=${'club' + c.id} title=${`${c.time ? c.time + ' · ' : ''}${c.name}`} sub=${[c.bring && 'взять: ' + c.bring, c.place].filter(Boolean).join(' · ') || 'сегодня'} onClick=${() => { track('сегодня:кружок'); go('/rebyonok/kruzhki'); }} />`);
+  const lastB = (s.settings && s.settings.lastBackupAt) || 0;
+  if (s.records.length >= 20 && t - Math.max(lastB, s.createdAt || 0) > 7 * DAY) rows.push(html`<${Row} key="backup" title="Сделать копию записей" sub=${lastB ? 'Последняя — больше недели назад' : 'Пригодится, если телефон сломается или потеряется'} onClick=${() => { track('сегодня:копия'); go('/profil/kopiya'); }} />`);
   const ch = m >= 36 ? checkupNow(child, t) : null;
   if (ch) rows.push(html`<${Row} key="checkup" title=${ch.title} sub=${ch.note || 'кого пройти — в «Здоровье»'} onClick=${() => { track('сегодня:профосмотр'); go('/rebyonok/zdorovye'); }} />`);
   const e = (s.etapy || {})[child.id] || {};

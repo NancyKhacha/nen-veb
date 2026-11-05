@@ -1,15 +1,16 @@
 // Профиль родителя — всё служебное: дети, темы, кнопки записи, копия, вход, «Для исследования».
-import { html, useState } from './lib.js?v=21';
-import { useStore, update, uid, getState, resetAll, savePhoto, now, storage } from './store.js?v=21';
-import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy, childAgeLine } from './age.js?v=21';
-import { go, back, current } from './router.js?v=21';
-import { Back, Row, SecTitle, Pill, Field, Avatar, toast, confirmAction, GestStepper } from './ui.js?v=21';
-import { TOPICS, Transfer, startPreview, genitive } from './onboarding.js?v=21';
-import { familyLine } from './semya.js?v=21';
-import { TodayTiles } from './tabs/rebyonok/istoriya.js?v=21';
-import { quickTypes, recordAllowed, prefsOf } from './stages.js?v=21';
-import { ageMonths } from './age.js?v=21';
-import { statsReport, statsCode, resetStats, track } from './stats.js?v=21';
+import { html, useState } from './lib.js?v=22';
+import { useStore, update, uid, getState, resetAll, savePhoto, now, storage } from './store.js?v=22';
+import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy, childAgeLine } from './age.js?v=22';
+import { go, back, current } from './router.js?v=22';
+import { Back, Row, SecTitle, Pill, Field, Avatar, toast, confirmAction, GestStepper } from './ui.js?v=22';
+import { TOPICS, Transfer, startPreview, genitive } from './onboarding.js?v=22';
+import { familyLine } from './semya.js?v=22';
+import { TodayTiles } from './tabs/rebyonok/istoriya.js?v=22';
+import { quickTypes, recordAllowed, prefsOf } from './stages.js?v=22';
+import { ageMonths } from './age.js?v=22';
+import { statsReport, statsCode, resetStats, track } from './stats.js?v=22';
+import { describe } from './records.js?v=22';
 
 function Profile() {
   const s = useStore();
@@ -32,7 +33,7 @@ function Profile() {
         <${Row} title="Город для погоды" sub=${s.settings.city} onClick=${() => go('/profil/gorod')} />
         <${Row} title="Напоминания" sub="Визиты, прививки, лекарства, заметки, тихие часы" onClick=${() => go('/profil/napominaniya')} />
         <${Row} title="НЭН Плюс" sub="Что даёт подписка и что бесплатно всегда" onClick=${() => go('/profil/plus')} />
-        <${Row} title="Копия записей" sub="Файл, чтобы перенести всё на другой телефон" onClick=${() => go('/profil/kopiya')} />
+        <${Row} title="Копия записей" sub="Файлом — на новый телефон; таблицей — для себя и врача" onClick=${() => go('/profil/kopiya')} />
         <${Row} title="Войти" sub="Для Клуба и Школы НЭН. Дневник работает и без входа" onClick=${() => go('/start/vhod')} />
       </div>
       <${SecTitle}>Проверка<//>
@@ -165,7 +166,7 @@ function City() {
   const find = async () => {
     if (q.trim().length < 2) return;
     setBusy(true);
-    try { const { searchCities } = await import('./tabs/segodnya/weather.js?v=21'); setFound(await searchCities(q.trim())); } catch (e) { setFound([]); toast({ text: 'Не нашли — нужна сеть. Попробуйте ещё раз', ms: 2500 }); }
+    try { const { searchCities } = await import('./tabs/segodnya/weather.js?v=22'); setFound(await searchCities(q.trim())); } catch (e) { setFound([]); toast({ text: 'Не нашли — нужна сеть. Попробуйте ещё раз', ms: 2500 }); }
     setBusy(false);
   };
   const here = () => {
@@ -187,28 +188,45 @@ function City() {
 }
 
 // Копия записей — файл, который открывается на другом телефоне
+// Таблица всех записей и заметок — открывается в Excel, Numbers, Google Таблицах (как выгрузка CSV в приложении)
+function csvOf(st) {
+  const q = (x) => '"' + String(x == null ? '' : x).replace(/"/g, '""') + '"';
+  const two = (n) => String(n).padStart(2, '0');
+  const d = (t) => { const x = new Date(t); return `${two(x.getDate())}.${two(x.getMonth() + 1)}.${x.getFullYear()}`; };
+  const tm = (t) => { const x = new Date(t); return `${two(x.getHours())}:${two(x.getMinutes())}`; };
+  const kid = (id) => (st.children.find((c) => c.id === id) || {}).name || '';
+  const rows = [['Ребёнок', 'Дата', 'Время', 'Что', 'Подробности', 'Минут']];
+  for (const r of st.records.slice().sort((a, b) => a.start - b.start)) {
+    const what = describe(r);
+    const [head, ...rest] = what.split(' · ');
+    rows.push([kid(r.childId), d(r.start), tm(r.start), head, rest.join(', '), r.end && r.end > r.start ? Math.round((r.end - r.start) / 60000) : '']);
+  }
+  for (const n of (st.notes || [])) rows.push(['', d(n.at), tm(n.at), 'Заметка', (n.text || '').replace(/\n/g, ' '), '']);
+  return '\ufeff' + rows.map((r) => r.map(q).join(';')).join('\r\n');
+}
+const saveFile = (text, name, type) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click(); };
+
 function Backup() {
+  const s = useStore();
   const pack = () => JSON.stringify({ app: 'nen-veb', v: 1, at: Date.now(), state: { ...getState(), demo: {} } });
+  const done = (what) => { update((d) => { d.settings.lastBackupAt = Date.now(); }); track('копия:' + what); };
+  const day = new Date().toISOString().slice(0, 10);
   const copy = async () => {
-    try { await navigator.clipboard.writeText(pack()); track('копия:скопирована'); toast({ text: 'Скопировали. Вставьте текст в заметки или отправьте себе в мессенджер', ms: 4000 }); }
+    try { await navigator.clipboard.writeText(pack()); done('скопирована'); toast({ text: 'Скопировали. Вставьте текст в заметки или отправьте себе в мессенджер', ms: 4000 }); }
     catch (e) { toast({ text: 'Не получилось скопировать. Попробуйте «Сохранить файлом»', ms: 3000 }); }
   };
-  const download = () => {
-    const blob = new Blob([pack()], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `nen-kopiya-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    track('копия:сделана');
-  };
+  const last = s.settings.lastBackupAt;
   return html`
     <div class="screen">
       <${Back} title="Копия записей" />
-      <p class="lead">Все записи, дети и заметки — одним текстом или файлом. Пригодится для нового телефона: на нём на первом экране нажмите «Перенести записи» и вставьте копию.</p>
-      <p class="small">Фото в копию не попадают.</p>
-      <button class="btn btn-primary" onClick=${copy}>Скопировать текстом</button>
-      <button class="btn btn-gray" onClick=${download}>Сохранить файлом</button>
+      <p class="lead">Записи хранятся на этом телефоне и не зависят от сервера: если сайт или облако недоступны, дневник работает. Копия нужна на случай нового, сломанного или потерянного телефона.</p>
+      <p class="small">${last ? `Последняя копия — ${new Date(last).toLocaleDateString('ru')}.` : 'Копию ещё не делали.'} Фото в копию не попадают.</p>
+      <button class="btn btn-primary" onClick=${() => { saveFile(pack(), `nen-kopiya-${day}.json`, 'application/json'); done('файл'); }}>Сохранить файлом</button>
+      <button class="btn btn-gray" onClick=${copy}>Скопировать текстом</button>
       <button class="btn btn-gray" onClick=${() => go('/profil/perenos')}>Перенести с другого телефона</button>
+      <${SecTitle}>Таблицей<//>
+      <p class="small">Все записи и заметки — одной таблицей: открывается в Excel, Numbers или Google Таблицах. Удобно показать врачу или сохранить у себя. Обратно в приложение таблица не переносится — для этого копия файлом.</p>
+      <button class="btn btn-gray" onClick=${() => { saveFile(csvOf(getState()), `nen-zapisi-${day}.csv`, 'text/csv;charset=utf-8'); track('копия:таблица'); }}>Выгрузить таблицей</button>
     </div>`;
 }
 

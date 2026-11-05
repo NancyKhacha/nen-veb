@@ -1,25 +1,25 @@
 // «Ребёнок» — дашборд (экраны 1–3, 13, 16–18, 20, 21): блок на каждый раздел, под названием — факт о ребёнке.
 // Порядок один для всех: Дневник, Здоровье, Рост, Развитие, Моменты, Сказки и звуки, в первый год — Документы.
-import { html } from '../../lib.js?v=21';
-import { useStore, update, now, activeChild } from '../../store.js?v=21';
-import { Header, Row, SecTitle, Avatar } from '../../ui.js?v=21';
-import { DAY, startOfDay, dateLong, hhmm, ageMonths, isPreterm, dayKey, expectingLine } from '../../age.js?v=21';
-import { articlesFor } from '../../content/articles.js?v=21';
-import { go } from '../../router.js?v=21';
-import { track } from '../../stats.js?v=21';
+import { html } from '../../lib.js?v=22';
+import { useStore, update, now, activeChild } from '../../store.js?v=22';
+import { Header, Row, SecTitle, Avatar } from '../../ui.js?v=22';
+import { DAY, startOfDay, dateLong, hhmm, ageMonths, isPreterm, dayKey, expectingLine } from '../../age.js?v=22';
+import { articlesFor } from '../../content/articles.js?v=22';
+import { go } from '../../router.js?v=22';
+import { track } from '../../stats.js?v=22';
 import { bornChild, nameOf, WeekStrip, BlockTitle, FeedCard, lastDoneVaccine, vaccineGroups, vaccineSub, measures, measureLine, illness,
-  momentsOf, memory, monthBirthday, ageWords, inFirstYear, cap } from './util.js?v=21';
-import { lastSeen, currentSheet, sheetGen } from './razvitie.js?v=21';
-import { MomentCard, openNewMoment } from './momenty.js?v=21';
-import { talesFav } from './skazki.js?v=21';
-import { docsLine } from './zdorovye.js?v=21';
-import { TodayTiles } from './istoriya.js?v=21';
-import { FamilyNudge } from '../../semya.js?v=21';
-import { quickTypes, sectionOn, stageFor, prefsOf } from '../../stages.js?v=21';
-import { sadLine, schoolLine, clubsLine, docsCount, checkupNow } from './etapy.js?v=21';
-import { STAGE_NOTES, DOCS } from '../../content/etapy.js?v=21';
-import { KidsBar } from '../../ui.js?v=21';
-import { POST_BIRTH as POST } from '../../content/rebyonok-spravka.js?v=21';
+  momentsOf, memory, monthBirthday, ageWords, inFirstYear, cap } from './util.js?v=22';
+import { lastSeen, currentSheet, sheetGen } from './razvitie.js?v=22';
+import { MomentCard, openNewMoment } from './momenty.js?v=22';
+import { talesFav } from './skazki.js?v=22';
+import { docsLine } from './zdorovye.js?v=22';
+import { TodayTiles } from './istoriya.js?v=22';
+import { FamilyNudge } from '../../semya.js?v=22';
+import { quickTypes, sectionOn, stageFor, prefsOf } from '../../stages.js?v=22';
+import { sadLine, schoolLine, clubsLine, docsCount, checkupNow } from './etapy.js?v=22';
+import { STAGE_NOTES, DOCS } from '../../content/etapy.js?v=22';
+import { KidsBar } from '../../ui.js?v=22';
+import { POST_BIRTH as POST } from '../../content/rebyonok-spravka.js?v=22';
 
 // Переключатель близнецов — без «Оба»: история у каждого своя
 function TwinPills({ child, s }) {

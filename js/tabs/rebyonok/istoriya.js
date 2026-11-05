@@ -1,17 +1,17 @@
 // «Ребёнок → Дневник»: история и итоги по каждому виду записи — сон, кормления, подгузники, еда, горшок
 // (журнал, 5 ноября). Вход — плитками «Сегодня» на дашборде «Ребёнка» и из листов записи.
 // Данные — те же записи, что пишет «Записать»; хранение не меняется.
-import { html, useState } from '../../lib.js?v=21';
-import { useStore, useTick, now, update } from '../../store.js?v=21';
-import { Header, SecTitle, Row, openSheet, toast } from '../../ui.js?v=21';
-import { DAY, startOfDay, dayKey, weekdayShort, hhmm, ageMonths, pl } from '../../age.js?v=21';
-import { recordsOf, daySummary, sleepNorm, sideTimes, SIDE, DIAPER } from '../../records.js?v=21';
-import { ARTICLES } from '../../content/articles.js?v=21';
-import { Ill } from '../../ui.js?v=21';
-import { EditSheet, tapSleep, tapFeed, tapDiaper, tapPotty, tapFood } from '../../strip.js?v=21';
-import { go } from '../../router.js?v=21';
-import { track } from '../../stats.js?v=21';
-import { bornChild, nameOf, dayTitle, recTitle, recTime, durNoPad, NotBorn } from './util.js?v=21';
+import { html, useState } from '../../lib.js?v=22';
+import { useStore, useTick, now, update } from '../../store.js?v=22';
+import { Header, SecTitle, Row, openSheet, toast } from '../../ui.js?v=22';
+import { DAY, startOfDay, dayKey, weekdayShort, hhmm, ageMonths, pl } from '../../age.js?v=22';
+import { recordsOf, daySummary, sleepNorm, sideTimes, SIDE, DIAPER } from '../../records.js?v=22';
+import { ARTICLES } from '../../content/articles.js?v=22';
+import { Ill } from '../../ui.js?v=22';
+import { EditSheet, tapSleep, tapFeed, tapDiaper, tapPotty, tapFood } from '../../strip.js?v=22';
+import { go } from '../../router.js?v=22';
+import { track } from '../../stats.js?v=22';
+import { bornChild, nameOf, dayTitle, recTitle, recTime, durNoPad, NotBorn } from './util.js?v=22';
 
 // Адрес → вид записи
 export const KINDS = {

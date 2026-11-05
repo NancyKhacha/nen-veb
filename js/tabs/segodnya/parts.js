@@ -1,14 +1,14 @@
 // Детали «Сегодня»: неделя, итог, карточка дня, «Для вас», «На этой неделе», погода и листы.
-import { html, useState, useEffect } from '../../lib.js?v=21';
-import { useStore, update, uid, now, getState } from '../../store.js?v=21';
-import { DAY, startOfDay, dayKey, weekdayShort, weekdayLong, dateWithWeekday, hhmm, diffYMD } from '../../age.js?v=21';
-import { Row, SecTitle, Ill, Pill, Field, SaveButton, openSheet, closeSheet, toast } from '../../ui.js?v=21';
-import { cover, coverOfUrl } from '../../content/covers.js?v=21';
-import { go } from '../../router.js?v=21';
-import { track } from '../../stats.js?v=21';
-import { selectWear, WEAR_SOURCES, WEAR_WEATHER, WEAR_MODES, wearCat, wearNow } from '../../content/segodnya-wear.js?v=21';
-import { ROUTES, seg, lowerFirst, whenLine, articleByUrl, shortUrl, diseasesOf } from './logic.js?v=21';
-import { weatherLine, describeCode, staleLabel, WeatherIcon, isOffline } from './weather.js?v=21';
+import { html, useState, useEffect } from '../../lib.js?v=22';
+import { useStore, update, uid, now, getState } from '../../store.js?v=22';
+import { DAY, startOfDay, dayKey, weekdayShort, weekdayLong, dateWithWeekday, hhmm, diffYMD } from '../../age.js?v=22';
+import { Row, SecTitle, Ill, Pill, Field, SaveButton, openSheet, closeSheet, toast } from '../../ui.js?v=22';
+import { cover, coverOfUrl } from '../../content/covers.js?v=22';
+import { go } from '../../router.js?v=22';
+import { track } from '../../stats.js?v=22';
+import { selectWear, WEAR_SOURCES, WEAR_WEATHER, WEAR_MODES, wearCat, wearNow } from '../../content/segodnya-wear.js?v=22';
+import { ROUTES, seg, lowerFirst, whenLine, articleByUrl, shortUrl, diseasesOf } from './logic.js?v=22';
+import { weatherLine, describeCode, staleLabel, WeatherIcon, isOffline } from './weather.js?v=22';
 
 // ——— Состояние вкладки ———
 export function setSeg(fn) { update((d) => { d.segodnya = d.segodnya || {}; fn(d.segodnya, d); }); }

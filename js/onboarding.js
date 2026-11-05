@@ -1,10 +1,10 @@
 // Первый вход — Фигма «36 · V3 · Первый вход», экраны 1, 2, 3, 7, 9, 10, 11.
-import { html, useState } from './lib.js?v=21';
-import { useStore, update, uid, getState, replaceAll, savePhoto, now } from './store.js?v=21';
-import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy } from './age.js?v=21';
-import { go, back, current } from './router.js?v=21';
-import { Row, Pill, Field, toast, GestStepper, gestShort } from './ui.js?v=21';
-import { track } from './stats.js?v=21';
+import { html, useState } from './lib.js?v=22';
+import { useStore, update, uid, getState, replaceAll, savePhoto, now } from './store.js?v=22';
+import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy } from './age.js?v=22';
+import { go, back, current } from './router.js?v=22';
+import { Row, Pill, Field, toast, GestStepper, gestShort } from './ui.js?v=22';
+import { track } from './stats.js?v=22';
 
 export const TOPICS = [
   ['sleep', 'Сон'], ['food', 'Еда'], ['development', 'Развитие'],
@@ -58,6 +58,7 @@ function Start() {
       <div class="onb-logo"><img src="img/logo.svg" alt="НЭН" /></div>
       <h1 class="h1">Нет, это нормально</h1>
       <p class="lead">Для родителей, которые хотят разобраться, а не соответствовать.</p>
+      <p class="onb-first">Первое приложение, где вся жизнь ребёнка — от первого дня до школы — собрана в одном месте. А рядом редакция, которая объясняет, что нормально.</p>
       <div class="sec-title center">Это для вас, если</div>
       <div class="onb-stage">
         <${Row} title="Ребёнок уже родился" sub="и каждый день приносит новые вопросы" onClick=${pick('born', '/start/rebyonok')} />
@@ -180,15 +181,27 @@ function Topics() {
     </div>`;
 }
 
-// Родительный падеж для простых имён: Соня → Сони, Миша → Миши, Лёва → Лёвы, Тимур → Тимура
+// Родительный падеж имени: Соня → Сони, Миша → Миши, Лёва → Лёвы, Тимур → Тимура.
+// Домашние имена с беглой гласной (журнал, 5 ноября: было «записи пирожока»): Пирожок → Пирожка,
+// Котёнок → Котёнка, Огонёк → Огонька, Огурец → Огурца; Лев → Льва, Павел → Павла, Игорь → Игоря.
+// Не склоняются: Нико, Мари, Лулу. Регистр — как ввёл человек.
+const GEN_EXCEPT = { 'лев': 'льва', 'павел': 'павла', 'пётр': 'петра', 'петр': 'петра', 'игорь': 'игоря' };
+const keepCase = (src, out) => (src[0] !== src[0].toLowerCase() ? out[0].toUpperCase() + out.slice(1) : out);
 export function genitive(n = '') {
-  if (!n) return 'ребёнка';
-  if (/[кгхжчшщ]а$/i.test(n)) return n.slice(0, -1) + 'и';
-  if (/[ья]$/i.test(n)) return n.slice(0, -1) + 'и';
-  if (/а$/i.test(n)) return n.slice(0, -1) + 'ы';
-  if (/й$/i.test(n)) return n.slice(0, -1) + 'я';
-  if (/[бвгдзклмнпрстфхцчшщж]$/i.test(n)) return n + 'а';
-  return n;
+  const w = (n || '').trim();
+  if (!w) return 'ребёнка';
+  const low = w.toLowerCase();
+  if (GEN_EXCEPT[low]) return keepCase(w, GEN_EXCEPT[low]);
+  if (/[оеиуюэы]$/i.test(w)) return w;
+  if (/[кгхжчшщ]а$/i.test(w)) return w.slice(0, -1) + 'и';
+  if (/[ья]$/i.test(w)) return w.slice(0, -1) + 'и';
+  if (/а$/i.test(w)) return w.slice(0, -1) + 'ы';
+  if (/й$/i.test(w)) return w.slice(0, -1) + 'я';
+  if (w.length > 3 && /ок$/i.test(w)) return w.slice(0, -2) + 'ка';
+  if (w.length > 3 && /[лнр][ёе]к$/i.test(w)) return w.slice(0, -2) + 'ька';
+  if (w.length > 3 && /ец$/i.test(w)) return w.slice(0, -2) + 'ца';
+  if (/[бвгдзклмнпрстфхцчшщж]$/i.test(w)) return w + 'а';
+  return w;
 }
 
 // 9. Перенести записи — из файла копии веб-версии

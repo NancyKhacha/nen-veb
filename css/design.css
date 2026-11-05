@@ -380,3 +380,4 @@ body.night .allergy-box { background: #3a3020; color: #f3dfa8; }
   radial-gradient(110% 90% at 0% 100%, rgba(255, 164, 192, 0.45) 0%, rgba(255, 164, 192, 0) 62%), #fff; }
 .ds-cry-a { position: absolute; right: 14px; top: 10px; font-size: 30px; font-weight: 700; letter-spacing: -1px; color: rgba(65, 55, 107, 0.16); transform: rotate(-6deg); }
 body.night .ds-cry { background: var(--bg); }
+.onb-first { text-align: center; font-size: 15px; line-height: 1.45; color: var(--ink); margin: -4px 8px 2px; padding: 10px 14px; border-radius: 18px; background: linear-gradient(var(--bg), var(--bg)) padding-box, var(--brand) border-box; border: 1.5px solid transparent; }

@@ -1,14 +1,14 @@
 // Запись: лист «Записать» по левой кнопке меню (журнал, 5 ноября: полосы над меню больше нет),
 // плашки идущей записи и листы «Кормление», «Поправить» и формы остальных записей.
-import { html, useState, useRef } from './lib.js?v=21';
-import { useStore, useTick, activeChild, update, now, getState, savePhoto, uid } from './store.js?v=21';
-import { ageMonths, clock, hhmm, dur, startOfDay } from './age.js?v=21';
-import { addRecord, finishRecord, removeRecord, editRecord, switchSide, lastOf, ongoing, sinceLine, describe, whenText, recentTypes, sideTimes, breastLine, SIDE, DIAPER, POTTY } from './records.js?v=21';
-import { openSheet, closeSheet, toast, Pill, Field, KidsBar } from './ui.js?v=21';
-import { playNoise, usePlayer, playing, stop as stopPlayer } from './player.js?v=21';
-import { track } from './stats.js?v=21';
-import { go } from './router.js?v=21';
-import { quickTypes, recordAllowed, prefsOf, weaned } from './stages.js?v=21';
+import { html, useState, useRef } from './lib.js?v=22';
+import { useStore, useTick, activeChild, update, now, getState, savePhoto, uid } from './store.js?v=22';
+import { ageMonths, clock, hhmm, dur, startOfDay } from './age.js?v=22';
+import { addRecord, finishRecord, removeRecord, editRecord, switchSide, lastOf, ongoing, sinceLine, describe, whenText, recentTypes, sideTimes, breastLine, SIDE, DIAPER, POTTY } from './records.js?v=22';
+import { openSheet, closeSheet, toast, Pill, Field, KidsBar } from './ui.js?v=22';
+import { playNoise, usePlayer, playing, stop as stopPlayer } from './player.js?v=22';
+import { track } from './stats.js?v=22';
+import { go } from './router.js?v=22';
+import { quickTypes, recordAllowed, prefsOf, weaned } from './stages.js?v=22';
 
 // Для кого запись: выбранный ребёнок, а у близнецов в режиме «Оба» — каждый
 export function targets(s = getState()) {
@@ -465,7 +465,7 @@ const openOther = (k) => {
   if (k === 'visit') { closeSheet(); go('/rebyonok/zdorovye?zapis=1'); return; }
   if (k === 'feed') { tapFeed(); return; }
   if (k === 'club') { closeSheet(); go('/rebyonok/kruzhki?novyy=1'); return; }
-  if (k === 'task') { const c = activeChild(getState()); import('./tabs/rebyonok/dnevnik.js?v=21').then((mod) => mod.openNewTask(c, startOfDay(now()))); return; }
+  if (k === 'task') { const c = activeChild(getState()); import('./tabs/rebyonok/dnevnik.js?v=22').then((mod) => mod.openNewTask(c, startOfDay(now()))); return; }
   openSheet(OtherForm, { kind: k });
 };
 // Прежний лист «Другая запись» — теперь тот же «Записать»: один список на всё

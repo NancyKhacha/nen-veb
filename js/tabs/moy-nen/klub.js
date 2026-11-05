@@ -1,12 +1,12 @@
 // Клуб НЭН — экраны 6, 7, 10, 15 и карточка Клуба на главном (экраны 1, 2, 12, 14, 18).
 // В веб-версии вход выключен: Клуб — для примера, по флагу «В Клубе» в «Для исследования».
-import { html, useState } from '../../lib.js?v=21';
-import { useStore, now } from '../../store.js?v=21';
-import { dateLong } from '../../age.js?v=21';
-import { Row, SecTitle, Pill, openSheet, closeSheet, toast } from '../../ui.js?v=21';
-import { go } from '../../router.js?v=21';
-import { track } from '../../stats.js?v=21';
-import { mn, setMN, access, useOffline, Inner, EFIR, RECORDS, nextEfir, efirWhen, efirDayAcc, efirFits } from './util.js?v=21';
+import { html, useState } from '../../lib.js?v=22';
+import { useStore, now } from '../../store.js?v=22';
+import { dateLong } from '../../age.js?v=22';
+import { Row, SecTitle, Pill, openSheet, closeSheet, toast } from '../../ui.js?v=22';
+import { go } from '../../router.js?v=22';
+import { track } from '../../stats.js?v=22';
+import { mn, setMN, access, useOffline, Inner, EFIR, RECORDS, nextEfir, efirWhen, efirDayAcc, efirFits } from './util.js?v=22';
 
 const TRIAL = 'В пробной версии Клуб показан для примера: здесь этого нет.';
 const trial = (what) => { track('мой-нэн:клуб-' + what); toast({ text: TRIAL, ms: 3500 }); };
