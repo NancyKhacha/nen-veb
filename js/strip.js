@@ -1,5 +1,5 @@
 // Запись: лист «Записать» по левой кнопке меню (журнал, 5 ноября: полосы над меню больше нет),
-// плашки идущей записи и листы «Кормление», «Поправить», «Другое».
+// плашки идущей записи и листы «Кормление», «Поправить» и формы остальных записей.
 import { html, useState, useRef } from './lib.js';
 import { useStore, useTick, activeChild, update, now, getState, savePhoto, uid } from './store.js';
 import { ageMonths, clock, hhmm, dur } from './age.js';
@@ -205,10 +205,8 @@ export function RecordHub() {
           </button>
           <button class="hub-add" aria-label=${'Записать: ' + LABEL[type]} onClick=${() => { track('записать:' + type); closeSheet(); TAP[type](); }}>＋</button>
         </div>`)}
-      ${born && html`
-        <button class="row" onClick=${() => { track('записать:другое'); openSheet(OtherSheet, {}); }}>
-          <span class="row-text"><span class="row-title">Другое</span><span class="row-sub">Бутылочка, к врачу, температура, замер, момент</span></span><span class="chev">›</span>
-        </button>`}
+      ${born && otherItems(s, child).filter(([k]) => !types.includes(k)).map(([k, t, sub]) => html`
+        <button class="row" key=${k} onClick=${() => openOther(k)}><span class="row-text"><span class="row-title">${t}</span><span class="row-sub">${sub}</span></span><span class="chev">›</span></button>`)}
     </div>
     ${born && html`<p class="tiny">«＋» — записать сейчас. Касание названия — вся история.</p>`}`;
 }
@@ -357,9 +355,8 @@ export function EditSheet({ id }) {
 }
 
 // ——— «Другая запись» ———
-export function OtherSheet() {
-  const s = useStore();
-  const child = activeChild(s);
+// Все остальные виды записи — сразу списком в «Записать», как в первой веб-версии (журнал, 5 ноября)
+function otherItems(s, child) {
   const m = ageMonths(child, now());
   // Болеет — температура или лекарство за последние трое суток: эти записи первыми
   const sick = child && s.records.some((r) => r.childId === child.id && (r.type === 'temp' || r.type === 'med') && r.start > now() - 3 * 864e5);
@@ -378,12 +375,11 @@ export function OtherSheet() {
     ['bath', 'Купание', 'Одним касанием'],
   ];
   if (sick) items = [...items.filter(([k]) => k === 'temp' || k === 'med'), ...items.filter(([k]) => k !== 'temp' && k !== 'med')];
-  return html`
-    <div class="h2">Записать</div>
-    <div class="rows">
-      ${items.map(([k, t, sub]) => html`<button class="row" onClick=${() => { track('запись:другая:' + k); if (k === 'visit') { closeSheet(); go('/rebyonok/zdorovye?zapis=1'); return; } openSheet(OtherForm, { kind: k }); }}><span class="row-text"><span class="row-title">${t}</span><span class="row-sub">${sub}</span></span><span class="chev">›</span></button>`)}
-    </div>`;
+  return items;
 }
+const openOther = (k) => { track('запись:другая:' + k); if (k === 'visit') { closeSheet(); go('/rebyonok/zdorovye?zapis=1'); return; } openSheet(OtherForm, { kind: k }); };
+// Прежний лист «Другая запись» — теперь тот же «Записать»: один список на всё
+export const OtherSheet = (props) => RecordHub(props);
 
 function OtherForm({ kind }) {
   const [ml, setMl] = useState(kind === 'pump' ? 60 : ((getState().settings.lastFeed || {}).ml || 90));
@@ -415,7 +411,7 @@ function OtherForm({ kind }) {
     bath: () => html`<button class="btn btn-primary" onClick=${() => done(addRecord(ids, 'bath', {}), 'Записано: купание')}>Записать</button>`,
   };
   return html`
-    <button class="back" onClick=${() => openSheet(OtherSheet, {})}>‹ Другая запись</button>
+    <button class="back" onClick=${() => openSheet(RecordHub, {})}>‹ Записать</button>
     <div class="h2">${titles[kind]}</div>
     ${body[kind]()}
   `;
