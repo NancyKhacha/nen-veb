@@ -1,12 +1,12 @@
 // «Мой НЭН»: общее для экранов вкладки — состояние, возраст, имена, эфир, курс, подборки статей.
-import { html, useState, useEffect } from '../../lib.js?v=23';
-import { getState, update, activeChild, bornChildren, now } from '../../store.js?v=23';
-import { diffYMD, ageMonths, isPreterm, correctedDob, dayKey, dateLong, pl, weekdayLong, startOfDay, DAY } from '../../age.js?v=23';
-import { ARTICLES, articlesFor, freshFor } from '../../content/articles.js?v=23';
-import { ideaOfDay } from '../../content/moy-nen-kuhnya.js?v=23';
-import { Header, Row } from '../../ui.js?v=23';
-import { go, back } from '../../router.js?v=23';
-import { track } from '../../stats.js?v=23';
+import { html, useState, useEffect } from '../../lib.js?v=24';
+import { getState, update, activeChild, bornChildren, now } from '../../store.js?v=24';
+import { diffYMD, ageMonths, isPreterm, correctedDob, dayKey, dateLong, pl, weekdayLong, startOfDay, DAY } from '../../age.js?v=24';
+import { ARTICLES, articlesFor, freshFor } from '../../content/articles.js?v=24';
+import { ideaOfDay } from '../../content/moy-nen-kuhnya.js?v=24';
+import { Header, Row } from '../../ui.js?v=24';
+import { go, back } from '../../router.js?v=24';
+import { track } from '../../stats.js?v=24';
 
 // ——— Своё состояние: s.moyNen ———
 export const mn = (s = getState()) => s.moyNen || {};

@@ -154,10 +154,10 @@ body.night .bottom { background: rgba(20, 18, 28, 0.82); }
 .solo .h1 { text-align: center; margin-top: 8px; }
 .solo > .lead { text-align: center; color: var(--muted); font-size: 16px; }
 .solo .back { min-height: 40px; }
-.onb-logo { display: flex; justify-content: center; padding: 28px 0 4px; }
+.onb-logo { display: flex; justify-content: center; padding: 16px 0 4px; }
 .onb-logo img { width: 112px; height: auto; }
 .onb-stage { display: flex; flex-direction: column; gap: 10px; }
-.onb-stage .row { background: var(--bg); border: 0; border-radius: 22px; padding: 16px 18px; box-shadow: var(--shadow); }
+.onb-stage .row { background: var(--bg); border: 0; border-radius: 22px; padding: 13px 18px; box-shadow: var(--shadow); }
 .onb-stage .row-title { font-size: 17px; font-weight: 600; }
 .onb-dots { display: flex; justify-content: center; gap: 6px; padding-top: 4px; }
 .onb-dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--faint); }
@@ -381,3 +381,4 @@ body.night .allergy-box { background: #3a3020; color: #f3dfa8; }
 .ds-cry-a { position: absolute; right: 14px; top: 10px; font-size: 30px; font-weight: 700; letter-spacing: -1px; color: rgba(65, 55, 107, 0.16); transform: rotate(-6deg); }
 body.night .ds-cry { background: var(--bg); }
 .onb-first { text-align: center; font-size: 15px; line-height: 1.45; color: var(--ink); margin: -4px 8px 2px; padding: 10px 14px; border-radius: 18px; background: linear-gradient(var(--bg), var(--bg)) padding-box, var(--brand) border-box; border: 1.5px solid transparent; }
+.onb-first b { display: block; font-size: 17px; font-weight: 600; line-height: 1.3; margin-bottom: 4px; }

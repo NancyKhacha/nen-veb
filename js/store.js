@@ -1,6 +1,6 @@
 // Всё хранится на этом телефоне: localStorage для записей, IndexedDB для фото.
 // На сервер ничего не уходит.
-import { useState, useEffect } from './lib.js?v=23';
+import { useState, useEffect } from './lib.js?v=24';
 
 const KEY = 'nen-veb-1';
 

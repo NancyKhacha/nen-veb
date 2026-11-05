@@ -1,10 +1,10 @@
 // Первый вход — Фигма «36 · V3 · Первый вход», экраны 1, 2, 3, 7, 9, 10, 11.
-import { html, useState } from './lib.js?v=23';
-import { useStore, update, uid, getState, replaceAll, savePhoto, now } from './store.js?v=23';
-import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy } from './age.js?v=23';
-import { go, back, current } from './router.js?v=23';
-import { Row, Pill, Field, toast, GestStepper, gestShort } from './ui.js?v=23';
-import { track } from './stats.js?v=23';
+import { html, useState } from './lib.js?v=24';
+import { useStore, update, uid, getState, replaceAll, savePhoto, now } from './store.js?v=24';
+import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy } from './age.js?v=24';
+import { go, back, current } from './router.js?v=24';
+import { Row, Pill, Field, toast, GestStepper, gestShort } from './ui.js?v=24';
+import { track } from './stats.js?v=24';
 
 export const TOPICS = [
   ['sleep', 'Сон'], ['food', 'Еда'], ['development', 'Развитие'],
@@ -58,7 +58,7 @@ function Start() {
       <div class="onb-logo"><img src="img/logo.svg" alt="НЭН" /></div>
       <h1 class="h1">Нет, это нормально</h1>
       <p class="lead">Для родителей, которые хотят разобраться, а не соответствовать.</p>
-      <p class="onb-first">Первое приложение, где вся жизнь ребёнка — от первого дня до школы — собрана в одном месте. А рядом редакция, которая объясняет, что нормально.</p>
+      <p class="onb-first"><b>Первое приложение, которое растёт вместе с ребёнком</b>Сон и кормления, врачи и прививки, сад, кружки и школа — в одном месте, с первого дня до выпускного. А редакция НЭН объяснит, что нормально.</p>
       <div class="sec-title center">Это для вас, если</div>
       <div class="onb-stage">
         <${Row} title="Ребёнок уже родился" sub="и каждый день приносит новые вопросы" onClick=${pick('born', '/start/rebyonok')} />
