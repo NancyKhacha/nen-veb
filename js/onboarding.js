@@ -3,7 +3,7 @@ import { html, useState } from './lib.js';
 import { useStore, update, uid, getState, replaceAll, savePhoto, now } from './store.js';
 import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy } from './age.js';
 import { go, back, current } from './router.js';
-import { Row, Pill, Field, toast } from './ui.js';
+import { Row, Pill, Field, toast, GestStepper, gestShort } from './ui.js';
 import { track } from './stats.js';
 
 export const TOPICS = [
@@ -111,15 +111,9 @@ function ChildStep({ fromSite }) {
       </div>
       ${!fromSite && html`
         <div class="rows">
-          <${Row} title="Срок рождения" sub=${gest ? (gest >= 37 ? 'В срок' : `${gest} недель — развитие по исправленному возрасту`) : 'Раньше 37 недель — развитие по исправленному'} onClick=${() => setShowGest(!showGest)} />
+          <${Row} title="Срок рождения" sub=${gest != null ? gestShort(gest) : 'По желанию. Раньше 37 недель — развитие по исправленному возрасту'} onClick=${() => setShowGest(!showGest)} />
           ${showGest && html`
-            <div style="padding:12px 0" class="stack">
-              <div style="display:flex;align-items:center;gap:12px">
-                <button class="pill" onClick=${() => setGest(Math.max(22, (gest || 37) - 1))}>−</button>
-                <span class="big-num">${gest && gest < 37 ? gest + ' нед.' : 'в срок'}</span>
-                <button class="pill" onClick=${() => setGest(Math.min(37, (gest || 36) + 1))}>+</button>
-              </div>
-            </div>`}
+            <div style="padding:12px 0" class="stack"><${GestStepper} value=${gest} onChange=${setGest} /></div>`}
           <label class="row" style="cursor:pointer">
             <span class="row-text"><span class="row-title">Фото</span><span class="row-sub">${photo ? 'Выбрано' : 'По желанию — будет в шапке рядом с именем'}</span></span><span class="chev">›</span>
             <input type="file" accept="image/*" style="display:none" onChange=${(e) => setPhoto(e.target.files[0])} />

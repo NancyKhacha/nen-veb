@@ -3,7 +3,7 @@ import { html, useState } from './lib.js';
 import { useStore, update, uid, getState, resetAll, savePhoto, now } from './store.js';
 import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy, childAgeLine } from './age.js';
 import { go, back } from './router.js';
-import { Back, Row, SecTitle, Pill, Field, Avatar, toast, confirmAction } from './ui.js';
+import { Back, Row, SecTitle, Pill, Field, Avatar, toast, confirmAction, GestStepper } from './ui.js';
 import { TOPICS, Transfer, startPreview } from './onboarding.js';
 import { familyLine } from './semya.js';
 import { TodayTiles } from './tabs/rebyonok/istoriya.js';
@@ -95,13 +95,8 @@ function ChildCard({ params }) {
       ${!expecting && html`
         <div class="sec-title">Пол · по желанию</div>
         <div class="pills">${[['girl', 'Девочка'], ['boy', 'Мальчик'], ['none', 'Не указывать']].map(([k, l]) => html`<${Pill} on=${sex === k} onClick=${() => setSex(k)}>${l}<//>`)}</div>
-        <div class="sec-title">Срок рождения</div>
-        <div style="display:flex;align-items:center;gap:12px">
-          <button class="pill" onClick=${() => setGest(Math.max(22, (gest || 37) - 1))}>−</button>
-          <span class="big-num">${gest && gest < 37 ? gest + ' нед.' : 'в срок'}</span>
-          <button class="pill" onClick=${() => setGest(Math.min(37, (gest || 36) + 1))}>+</button>
-        </div>
-        <p class="small">Раньше 37 недель — до двух лет ориентиры и материалы по исправленному возрасту, прививки — от даты рождения.</p>
+        <div class="sec-title">Срок рождения · по желанию</div>
+        <${GestStepper} value=${gest} onChange=${setGest} />
         ${others.length > 0 && html`
           <div class="sec-title">Близнецы</div>
           <div class="pills">${others.map((o) => html`<${Pill} on=${twin === o.id} onClick=${() => setTwin(twin === o.id ? null : o.id)}>Двойня с ${o.name}<//>`)}</div>`}`}

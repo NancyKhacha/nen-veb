@@ -320,3 +320,7 @@ body.night .fam-nudge { background: var(--bg); }
 .rb-add-top { margin-top: 8px; }
 .rb-tile-add { top: auto; bottom: 8px; right: 8px; }
 .rb-tiles:not(.two) .rb-tile-main { padding-bottom: 44px; }
+.gest { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.gest .big-num { min-width: 110px; text-align: center; }
+.gest .pill:disabled { opacity: 0.35; }
+.gest-clear { font-size: 14px; font-weight: 500; }

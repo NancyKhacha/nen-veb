@@ -1,7 +1,7 @@
 // Общие детали экранов — те же, что в Фигме: шапка, строка, карточка, лист, сообщение, меню.
 import { html, useState, useEffect } from './lib.js';
 import { useStore, activeChild, update, isSaved, toggleSaved, usePhoto, now } from './store.js';
-import { childAgeLine } from './age.js';
+import { childAgeLine, pl } from './age.js';
 import { go, back, current } from './router.js';
 import { track } from './stats.js';
 import { usePlayer } from './player.js';
@@ -220,6 +220,25 @@ export const Ill = ({ text, big, id, src, from, keep, seed }) => {
   const video = /видео/i.test(text || '');
   return html`<div class=${'ill' + (big ? ' big' : '')} style=${{ background: blobBg(seed || id || from || text || 'НЭН') }} aria-hidden=${label ? null : 'true'}>${video ? html`<span class="ill-play" aria-label="Видео"></span>` : label}</div>`;
 };
+
+// Срок рождения — как в приложении (app/src/children: от 22 до 44 недель, по умолчанию 40).
+// 37 — не предел: в срок рожают и в 38–41 неделю, позже срока — с 42.
+export const gestShort = (w) => (w == null ? '' : `${pl(w, 'неделя', 'недели', 'недель')} — ${w < 37 ? 'по исправленному возрасту' : w < 42 ? 'в срок' : 'позже срока'}`);
+export function GestStepper({ value, onChange }) {
+  const shown = value == null ? 40 : value;
+  const step = (d) => onChange(Math.min(44, Math.max(22, shown + d)));
+  const hint = value == null ? 'Не помните точно — можно не указывать.'
+    : value < 37 ? 'Раньше 37 недель — до двух лет ориентиры и материалы по исправленному возрасту, прививки — от даты рождения.'
+    : value < 42 ? 'В срок: ориентиры и прививки — от даты рождения.' : 'Позже срока: ориентиры и прививки — от даты рождения.';
+  return html`
+    <div class="gest">
+      <button class="pill" aria-label="На неделю раньше" disabled=${shown <= 22} onClick=${() => step(-1)}>−</button>
+      <span class="big-num">${value == null ? 'не указан' : pl(value, 'неделя', 'недели', 'недель')}</span>
+      <button class="pill" aria-label="На неделю позже" disabled=${shown >= 44} onClick=${() => step(1)}>+</button>
+      ${value != null && html`<button class="link gest-clear" onClick=${() => onChange(null)}>Не указывать</button>`}
+    </div>
+    <p class="small">${hint}</p>`;
+}
 
 export function Pill({ on, children, onClick }) {
   return html`<button class=${'pill' + (on ? ' on' : '')} onClick=${onClick}>${on ? '✓ ' : ''}${children}</button>`;
