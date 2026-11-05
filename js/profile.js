@@ -1,6 +1,6 @@
 // Профиль родителя — всё служебное: дети, темы, кнопки записи, копия, вход, «Для исследования».
 import { html, useState } from './lib.js';
-import { useStore, update, uid, getState, resetAll, savePhoto, now } from './store.js';
+import { useStore, update, uid, getState, resetAll, savePhoto, now, storage } from './store.js';
 import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy, childAgeLine } from './age.js';
 import { go, back } from './router.js';
 import { Back, Row, SecTitle, Pill, Field, Avatar, toast, confirmAction, GestStepper } from './ui.js';
@@ -34,6 +34,7 @@ function Profile() {
       <${SecTitle}>Проверка<//>
       <div class="rows">
         <${Row} title="Посмотреть первый вход" sub="Пройти его ещё раз, как в первый день. Записи не тронутся" onClick=${startPreview} />
+        <${Row} title="Если что-то не работает" sub="Версия, телефон и браузер — чтобы прислать нам" onClick=${() => go('/profil/pomosh')} />
         <${Row} title="Для исследования" sub=${`Участник ${statsCode()} · отчёт за неделю`} onClick=${() => go('/profil/issledovanie')} />
       </div>
       <p class="tiny">Пробная веб-версия приложения НЭН. Всё, что вы записываете, хранится только на этом телефоне.</p>
@@ -58,7 +59,9 @@ function ChildCard({ params }) {
   const d = parseDate(date);
   const ok = expecting ? d && d > now() - 14 * 864e5 : name.trim() && d && d <= now();
   const save = async () => {
-    const photoId = photo ? await savePhoto(photo) : (c ? c.photo : null);
+    const fresh = photo ? await savePhoto(photo) : null;
+    const photoId = fresh || (c ? c.photo : null);
+    if (photo && !fresh) toast({ text: 'Фото не сохранилось — остальное сохранили. Попробуйте другое фото.', ms: 4000 });
     const id = c ? c.id : uid();
     update((st) => {
       const data = expecting
@@ -204,7 +207,34 @@ function Research() {
     </div>`;
 }
 
+// Для проверки на людях: что за телефон и браузер, работает ли хранение. Без имён и записей.
+function Diagnostics() {
+  const ua = navigator.userAgent;
+  const ios = (/OS (\d+)_(\d+)/.exec(ua) || []).slice(1).join('.');
+  const where = /Telegram/i.test(ua) ? 'браузер Telegram' : /CriOS/.test(ua) ? 'Chrome на айфоне' : /FxiOS/.test(ua) ? 'Firefox на айфоне' : /Safari/.test(ua) && /iPhone|iPad/.test(ua) ? 'Safari' : /Android/.test(ua) ? 'Android' : 'компьютер';
+  const standalone = navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+  const ver = ((document.querySelector('script[src*="app.js"]') || {}).src || '').split('v=')[1] || '—';
+  const lines = [
+    `Версия веб-версии: ${ver}`,
+    `Телефон: ${/iPhone/.test(ua) ? 'iPhone' : /iPad/.test(ua) ? 'iPad' : /Android/.test(ua) ? 'Android' : 'другое'}${ios ? ', iOS ' + ios : ''}`,
+    `Открыто: ${standalone ? 'с экрана телефона (как приложение)' : where}`,
+    `Хранение записей: ${storage.ok ? 'работает' : 'не работает — ' + storage.error}`,
+    `Сохранение без structuredClone: ${typeof structuredClone === 'function' ? 'не нужно' : 'включено'}`,
+    `Детей: ${getState().children.length}, записей: ${getState().records.length}`,
+  ];
+  const text = lines.join('\n') + '\n' + ua;
+  const copy = async () => { try { await navigator.clipboard.writeText(text); toast({ text: 'Скопировали — отправьте Анастасии', ms: 2500 }); } catch (e) { toast({ text: 'Не скопировалось — сделайте снимок экрана', ms: 3000 }); } };
+  return html`
+    <div class="screen">
+      <${Back} title="Если что-то не работает" />
+      <p class="lead">Сделайте снимок этого экрана или скопируйте текст и пришлите нам — так мы быстрее поймём, что сломалось. Имён и записей здесь нет.</p>
+      <div class="note-box" style="white-space:pre-wrap;font-size:13px">${lines.join('\n')}</div>
+      <button class="btn btn-primary" onClick=${copy}>Скопировать</button>
+    </div>`;
+}
+
 export const profileRoutes = [
+  { path: '/profil/pomosh', view: Diagnostics },
   { path: '/profil', view: Profile },
   { path: '/profil/rebyonok/:id', view: ChildCard },
   { path: '/profil/temy', view: TopicsSettings },

@@ -36,14 +36,23 @@ function load() {
 let state = load();
 const listeners = new Set();
 
+// Можно ли хранить записи в этом браузере. Нельзя — в частном режиме, при запрете cookie
+// и в некоторых встроенных браузерах: тогда записи живут, пока открыта страница.
+export const storage = { ok: true, error: '' };
+try { localStorage.setItem('nen-veb-test', '1'); localStorage.removeItem('nen-veb-test'); } catch (e) { storage.ok = false; storage.error = String(e && e.name || e); }
+
 function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* место кончилось — работаем дальше */ }
+  try { localStorage.setItem(KEY, JSON.stringify(state)); storage.ok = true; } catch (e) { storage.ok = false; storage.error = String(e && e.name || e); }
 }
+
+// structuredClone есть не на всех айфонах (Safari с 15.4): без него не сохранялось ничего — ни ребёнок,
+// ни записи. Запасной путь — через JSON: в состоянии только данные.
+const clone = (x) => (typeof structuredClone === 'function' ? structuredClone(x) : JSON.parse(JSON.stringify(x)));
 
 export const getState = () => state;
 
 export function update(fn) {
-  const draft = structuredClone(state);
+  const draft = clone(state);
   const r = fn(draft);
   state = r || draft;
   save();
@@ -121,7 +130,11 @@ function idb() {
     r.onerror = () => rej(r.error);
   });
 }
+// Фото не мешает сохранить остальное: не уменьшилось или не записалось — вернём null
 export async function savePhoto(file) {
+  try { return await savePhotoStrict(file); } catch (e) { console.warn('Фото не сохранилось', e); return null; }
+}
+async function savePhotoStrict(file) {
   const url = await shrink(file, 1200);
   const id = uid();
   const db = await idb();

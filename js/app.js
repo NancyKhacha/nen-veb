@@ -1,6 +1,6 @@
 // Каркас: какой экран показать, шапка, полоса записи, меню, листы и сообщения.
 import { html, render, useEffect, useState } from './lib.js';
-import { useStore, now, getState } from './store.js';
+import { useStore, now, getState, storage } from './store.js';
 import { addRoutes, match, useRoute, go } from './router.js';
 import { Menu, OverlayHost, AskButton, openSheet } from './ui.js';
 import { RecordHub, RunningPill } from './strip.js';
@@ -74,11 +74,13 @@ function App() {
   useEffect(() => { const el = document.querySelector('.scroll'); if (el) el.scrollTop = 0; }, [path]);
 
   const View = r.view;
+  const noStore = !storage.ok && html`<div class="store-warn" role="alert">Этот браузер не даёт сохранять записи — так бывает в частном режиме, при запрете cookie и во встроенном браузере мессенджера. Откройте ссылку в обычном окне Safari или Chrome.</div>`;
   if (r.solo) {
-    return html`<div class="app"><div class="scroll"><${View} params=${m.params} query=${query} /></div><${OverlayHost} /><${Splash} /></div>`;
+    return html`<div class="app">${noStore}<div class="scroll"><${View} params=${m.params} query=${query} /></div><${OverlayHost} /><${Splash} /></div>`;
   }
   return html`
     <div class="app">
+      ${noStore}
       <div class="scroll"><${View} params=${m.params} query=${query} /></div>
       <div class="bottom">
         ${!r.noAsk && html`<${AskButton} />`}
@@ -106,6 +108,16 @@ if (standalone) {
     sx = null;
   }, { passive: true });
 }
+
+// Ошибка — не тишина: короткое сообщение, по которому понятно, что пошло не так (снимок экрана — нам)
+let lastErr = 0;
+const showErr = (msg) => {
+  if (Date.now() - lastErr < 4000) return;
+  lastErr = Date.now();
+  import('./ui.js').then(({ toast }) => toast({ text: `Не получилось. Если повторится, пришлите снимок экрана: ${String(msg).slice(0, 120)}`, ms: 7000 }));
+};
+window.addEventListener('error', (e) => showErr(e.message || e.error));
+window.addEventListener('unhandledrejection', (e) => showErr((e.reason && (e.reason.message || e.reason.name)) || e.reason));
 
 trackOpen();
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') trackOpen(); });

@@ -85,6 +85,7 @@ function ChildStep({ fromSite }) {
   const save = async () => {
     if (isPreview()) { previewChild = { name: name.trim() }; go('/start/temy'); return; }
     const photoId = photo ? await savePhoto(photo) : null;
+    if (photo && !photoId) toast({ text: 'Фото не сохранилось — ребёнка добавили без него. Фото можно поставить потом в карточке.', ms: 4000 });
     const id = uid();
     update((s) => {
       s.stage = 'born';
