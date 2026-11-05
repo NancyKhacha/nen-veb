@@ -3,8 +3,8 @@
 // Возраст — полные месяцы по дате рождения; развитие по исправленному возрасту считает свой раздел.
 // Подробно — до 7 лет (как в приложении: «для родителей детей 0–7 лет»); старше — школьный этап,
 // без младенческих записей.
-import { ageMonths } from './age.js?v=19';
-import { now } from './store.js?v=19';
+import { ageMonths } from './age.js?v=20';
+import { now } from './store.js?v=20';
 
 export const STAGES = [
   { key: 'newborn', from: 0, to: 3, title: 'Первые недели' },

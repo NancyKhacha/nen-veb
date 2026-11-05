@@ -1,23 +1,23 @@
 // Вкладка «Для себя» — раздел о самом родителе (бриф docs/razdely/dlya-sebya.md,
 // Фигма «34 · V3 · Для себя», экраны 1–18). Главный экран меняется по времени суток:
 // днём полный состав, вечером — вечерние практики, ночью — тёмный экран с ночными практиками.
-import { html, useState, useEffect } from '../lib.js?v=19';
-import { useStore, update, getState, activeChild, now, uid, isSaved, toggleSaved, useTick } from '../store.js?v=19';
-import { Header, Back, Row, SecTitle, Ill, Pill, SaveButton, openSheet, closeSheet, toast } from '../ui.js?v=19';
-import { go, back } from '../router.js?v=19';
-import { track } from '../stats.js?v=19';
-import { usePlayer } from '../player.js?v=19';
-import { stripButtons } from '../strip.js?v=19';
-import { partOfDay, diffYMD, dateLong, weekdayShort, startOfDay, fromKey, clock, DAY, pl } from '../age.js?v=19';
+import { html, useState, useEffect } from '../lib.js?v=20';
+import { useStore, update, getState, activeChild, now, uid, isSaved, toggleSaved, useTick } from '../store.js?v=20';
+import { Header, Back, Row, SecTitle, Ill, Pill, SaveButton, openSheet, closeSheet, toast } from '../ui.js?v=20';
+import { go, back } from '../router.js?v=20';
+import { track } from '../stats.js?v=20';
+import { usePlayer } from '../player.js?v=20';
+import { stripButtons } from '../strip.js?v=20';
+import { partOfDay, diffYMD, dateLong, weekdayShort, startOfDay, fromKey, clock, DAY, pl } from '../age.js?v=20';
 import {
   PRACTICES, practiceById, locked, hasPlus, isDownloaded, startPractice, stopPractice, pauseOrResume, skipStep,
   isRunning, usePractice, elapsedSec, totalSec, stepAt, stepText, savedItem,
-} from './dlya-sebya/minutka.js?v=19';
+} from './dlya-sebya/minutka.js?v=20';
 import {
   PODBORKI, podborkaById, ORDER_FIRST_YEAR, ORDER_LATER, ORDER_NO_CHILD, TESTS, TOPIC_TESTS, HELP, PHONES,
   anyArticle, articleRoute, rowText,
-} from '../content/dlya-sebya-podborki.js?v=19';
-import { STATI } from '../content/dlya-sebya-stati.js?v=19';
+} from '../content/dlya-sebya-podborki.js?v=20';
+import { STATI } from '../content/dlya-sebya-stati.js?v=20';
 
 // ——— Общее ———
 const ds = (s = getState()) => s.dlyaSebya || {};

@@ -1,14 +1,14 @@
 // Детали «Сегодня»: неделя, итог, карточка дня, «Для вас», «На этой неделе», погода и листы.
-import { html, useState, useEffect } from '../../lib.js?v=19';
-import { useStore, update, uid, now, getState } from '../../store.js?v=19';
-import { DAY, startOfDay, dayKey, weekdayShort, weekdayLong, dateWithWeekday, hhmm, diffYMD } from '../../age.js?v=19';
-import { Row, SecTitle, Ill, Pill, Field, SaveButton, openSheet, closeSheet, toast } from '../../ui.js?v=19';
-import { cover, coverOfUrl } from '../../content/covers.js?v=19';
-import { go } from '../../router.js?v=19';
-import { track } from '../../stats.js?v=19';
-import { selectWear, WEAR_SOURCES, WEAR_WEATHER, WEAR_MODES } from '../../content/segodnya-wear.js?v=19';
-import { ROUTES, seg, lowerFirst, whenLine, articleByUrl, shortUrl, diseasesOf } from './logic.js?v=19';
-import { weatherLine, describeCode, staleLabel, WeatherIcon, isOffline } from './weather.js?v=19';
+import { html, useState, useEffect } from '../../lib.js?v=20';
+import { useStore, update, uid, now, getState } from '../../store.js?v=20';
+import { DAY, startOfDay, dayKey, weekdayShort, weekdayLong, dateWithWeekday, hhmm, diffYMD } from '../../age.js?v=20';
+import { Row, SecTitle, Ill, Pill, Field, SaveButton, openSheet, closeSheet, toast } from '../../ui.js?v=20';
+import { cover, coverOfUrl } from '../../content/covers.js?v=20';
+import { go } from '../../router.js?v=20';
+import { track } from '../../stats.js?v=20';
+import { selectWear, WEAR_SOURCES, WEAR_WEATHER, WEAR_MODES, wearCat, wearNow } from '../../content/segodnya-wear.js?v=20';
+import { ROUTES, seg, lowerFirst, whenLine, articleByUrl, shortUrl, diseasesOf } from './logic.js?v=20';
+import { weatherLine, describeCode, staleLabel, WeatherIcon, isOffline } from './weather.js?v=20';
 
 // ——— Состояние вкладки ———
 export function setSeg(fn) { update((d) => { d.segodnya = d.segodnya || {}; fn(d.segodnya, d); }); }
@@ -281,35 +281,36 @@ export function WeatherCard({ wear = true, child }) {
 export function WearSheet({ childId }) {
   const s = useStore();
   const child = s.children.find((c) => c.id === childId);
-  const infant = !!child && !child.expecting && diffYMD(child.dob, now()).months < 12;
+  const m = child && !child.expecting ? diffYMD(child.dob, now()).months : 0;
+  const infant = m < 12;
   const choice = seg(s).wear || {};
-  const [all, setAll] = useState(false);
   const set = (k, v) => { setSeg((g) => { g.wear = { ...(g.wear || {}), [k]: v }; }); track('сегодня:что-надеть:' + k); };
-  const sel = selectWear(choice, infant);
-  const SourceLink = ({ id }) => {
-    const src = WEAR_SOURCES[id];
-    const a = articleByUrl(src.url);
-    return a
-      ? html`<${Row} title=${src.title} onClick=${() => { closeSheet(); go(ROUTES.article(a.id)); }} />`
-      : html`<a class="row" href=${src.url} target="_blank" rel="noopener"><span class="row-text"><span class="row-title">${src.title}</span><span class="row-sub">${isOffline() ? 'Нужна сеть · n-e-n.ru' : 'n-e-n.ru'}</span></span><span class="chev">›</span></a>`;
-  };
+  const w = s.weather;
+  const city = s.settings.city || 'Москва';
+  const known = w && w.city === city && typeof w.t === 'number';
+  // Погоду знаем — не спрашиваем; нет прогноза — тогда спросим
+  const cat = known ? wearCat(w.t) : (choice.cat || null);
+  const icon = known ? describeCode(w.code).icon : null;
+  const precip = icon === 'rain' || icon === 'storm' ? 'rain' : icon === 'snow' ? 'snow' : null;
+  const mode = choice.mode || (m < 24 ? 'stroller' : 'walk');
+  const now0 = cat ? wearNow({ cat, age: m < 24 ? 'baby' : 'kid', mode, precip, windy: known && w.wind >= 7 }) : null;
+  const sel = cat ? selectWear({ cat: cat === 'hardfrost' ? 'frost' : cat, mode, activity: m < 12 ? 'inactive' : 'active', sling: 'under' }, infant) : { advice: [], related: ['GUL', 'WIN', 'ZH'] };
+  const openSrc = (id) => { const src = WEAR_SOURCES[id]; const a = articleByUrl(src.url); track('что-надеть:статья'); if (a) { closeSheet(); go(ROUTES.article(a.id)); } else window.open(src.url, '_blank', 'noopener'); };
   return html`
     <div class="h2">Что надеть</div>
-    <div class="small">Короткие советы из материалов НЭН. Выберите погоду и как гуляете — работает и без сети.</div>
-    <div class="label">Какая погода на улице?</div>
-    <div class="pills">${WEAR_WEATHER.map(([k, l]) => html`<${Pill} on=${choice.cat === k} onClick=${() => set('cat', k)}>${l}<//>`)}</div>
-    <div class="label">Как гуляете?</div>
-    <div class="pills">${WEAR_MODES.map(([k, l]) => html`<${Pill} on=${choice.mode === k} onClick=${() => set('mode', k)}>${l}<//>`)}</div>
-    ${sel.needs.includes('activity') && html`
-      <div class="label">Малыш сидит или лежит либо двигается сам?</div>
-      <div class="pills"><${Pill} on=${choice.activity === 'inactive'} onClick=${() => set('activity', 'inactive')}>Сидит или лежит<//><${Pill} on=${choice.activity === 'active'} onClick=${() => set('activity', 'active')}>Двигается сам<//></div>`}
-    ${sel.needs.includes('sling') && html`
-      <div class="label">Где малыш в слинге?</div>
-      <div class="pills"><${Pill} on=${choice.sling === 'under'} onClick=${() => set('sling', 'under')}>Под общей верхней одеждой<//><${Pill} on=${choice.sling === 'over'} onClick=${() => set('sling', 'over')}>Поверх одежды взрослого<//></div>`}
-    ${sel.ready && html`
-      ${sel.advice.map((a) => html`<div class="note-box sg-advice">«${a.text}»</div>`)}
-      ${!sel.advice.length && html`<p class="small">Для этих условий короткого совета пока нет. Вот материалы НЭН целиком.</p>`}
-      ${(all || !sel.advice.length) ? html`<div class="rows">${sel.related.map((id) => html`<${SourceLink} id=${id} />`)}</div>`
-        : html`<button class="btn-quiet" onClick=${() => setAll(true)}>Материалы НЭН целиком</button>`}`}
+    ${known ? html`<p class="small">Сейчас ${weatherLine(w)} · ${city}</p>` : html`
+      <p class="small">Прогноза пока нет — какая погода на улице?</p>
+      <div class="pills">${WEAR_WEATHER.map(([k, l]) => html`<${Pill} on=${choice.cat === k} onClick=${() => set('cat', k)}>${l}<//>`)}</div>`}
+    <div class="pills wear-mode">${WEAR_MODES.map(([k, l]) => html`<${Pill} on=${mode === k} onClick=${() => set('mode', k)}>${l}<//>`)}</div>
+    ${now0 && html`
+      <div class="card wear-now">
+        <ul class="wear-list">${now0.layers.map((x) => html`<li>${x}</li>`)}</ul>
+        <p class="small">${now0.rule}${infant ? ' Проверьте шею сзади: тёплая и сухая — всё хорошо.' : ''}</p>
+      </div>`}
+    ${sel.advice.length > 0 && html`
+      <div class="label">Советы НЭН</div>
+      ${sel.advice.map((a, i, arr) => html`<button class="note-box sg-advice wear-quote" onClick=${() => openSrc(a.src)}>«${a.text}»${(i === arr.length - 1 || arr[i + 1].src !== a.src) ? html`<span class="wear-src">${WEAR_SOURCES[a.src].title} ›</span>` : ''}</button>`)}`}
+    <div class="label">Почему так — почитать</div>
+    <div class="rows">${sel.related.map((id) => html`<${Row} key=${id} title=${WEAR_SOURCES[id].title} sub=${isOffline() ? 'Нужна сеть' : ''} onClick=${() => openSrc(id)} />`)}</div>
   `;
 }

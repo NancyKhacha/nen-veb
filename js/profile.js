@@ -1,15 +1,15 @@
 // Профиль родителя — всё служебное: дети, темы, кнопки записи, копия, вход, «Для исследования».
-import { html, useState } from './lib.js?v=19';
-import { useStore, update, uid, getState, resetAll, savePhoto, now, storage } from './store.js?v=19';
-import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy, childAgeLine } from './age.js?v=19';
-import { go, back } from './router.js?v=19';
-import { Back, Row, SecTitle, Pill, Field, Avatar, toast, confirmAction, GestStepper } from './ui.js?v=19';
-import { TOPICS, Transfer, startPreview, genitive } from './onboarding.js?v=19';
-import { familyLine } from './semya.js?v=19';
-import { TodayTiles } from './tabs/rebyonok/istoriya.js?v=19';
-import { quickTypes, recordAllowed, prefsOf } from './stages.js?v=19';
-import { ageMonths } from './age.js?v=19';
-import { statsReport, statsCode, resetStats, track } from './stats.js?v=19';
+import { html, useState } from './lib.js?v=20';
+import { useStore, update, uid, getState, resetAll, savePhoto, now, storage } from './store.js?v=20';
+import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy, childAgeLine } from './age.js?v=20';
+import { go, back } from './router.js?v=20';
+import { Back, Row, SecTitle, Pill, Field, Avatar, toast, confirmAction, GestStepper } from './ui.js?v=20';
+import { TOPICS, Transfer, startPreview, genitive } from './onboarding.js?v=20';
+import { familyLine } from './semya.js?v=20';
+import { TodayTiles } from './tabs/rebyonok/istoriya.js?v=20';
+import { quickTypes, recordAllowed, prefsOf } from './stages.js?v=20';
+import { ageMonths } from './age.js?v=20';
+import { statsReport, statsCode, resetStats, track } from './stats.js?v=20';
 
 function Profile() {
   const s = useStore();
@@ -162,7 +162,7 @@ function City() {
   const find = async () => {
     if (q.trim().length < 2) return;
     setBusy(true);
-    try { const { searchCities } = await import('./tabs/segodnya/weather.js?v=19'); setFound(await searchCities(q.trim())); } catch (e) { setFound([]); toast({ text: 'Не нашли — нужна сеть. Попробуйте ещё раз', ms: 2500 }); }
+    try { const { searchCities } = await import('./tabs/segodnya/weather.js?v=20'); setFound(await searchCities(q.trim())); } catch (e) { setFound([]); toast({ text: 'Не нашли — нужна сеть. Попробуйте ещё раз', ms: 2500 }); }
     setBusy(false);
   };
   const here = () => {

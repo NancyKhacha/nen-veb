@@ -1,14 +1,14 @@
 // «Ребёнок → Сказки и звуки» (экраны 7, 19): колыбельные, шум, потешки и стихи, сказки — лентами;
 // шум — одним касанием, таймер — листом; избранное, без сети, «Ваш голос».
-import { html, useState, useEffect } from '../../lib.js?v=19';
-import { useStore, useTick, getState, now, uid } from '../../store.js?v=19';
-import { Header, Back, SecTitle, Row, Ill, Pill, SaveButton, openSheet, closeSheet, toast } from '../../ui.js?v=19';
-import { ageMonths, dateLong } from '../../age.js?v=19';
-import { NOISE, playNoise, play, usePlayer, toggle, stop } from '../../player.js?v=19';
-import { go } from '../../router.js?v=19';
-import { track } from '../../stats.js?v=19';
-import { TALES, SONGS } from '../../content/rebyonok-skazki.js?v=19';
-import { R, rUpdate, bornChild, isOffline, FeedCard } from './util.js?v=19';
+import { html, useState, useEffect } from '../../lib.js?v=20';
+import { useStore, useTick, getState, now, uid } from '../../store.js?v=20';
+import { Header, Back, SecTitle, Row, Ill, Pill, SaveButton, openSheet, closeSheet, toast } from '../../ui.js?v=20';
+import { ageMonths, dateLong } from '../../age.js?v=20';
+import { NOISE, playNoise, play, usePlayer, toggle, stop } from '../../player.js?v=20';
+import { go } from '../../router.js?v=20';
+import { track } from '../../stats.js?v=20';
+import { TALES, SONGS } from '../../content/rebyonok-skazki.js?v=20';
+import { R, rUpdate, bornChild, isOffline, FeedCard } from './util.js?v=20';
 
 const NOISE_TEXT = { white: 'Ровное шипение, как у радио между станциями. Приглушает звуки квартиры: разговор за стеной, шаги, дверь.', pink: 'Тоже ровный, но ниже и мягче белого: больше похож на ветер или далёкий водопад, чем на шипение.' };
 const NOISE_SHORT = { white: 'Как радио между станциями', pink: 'Мягче на высоких' };
