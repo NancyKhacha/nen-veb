@@ -247,7 +247,7 @@ const TAB_ICONS = {
   '/dlya-sebya': () => html`<svg viewBox="0 0 24 24"><path d="M5 10h11v4a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z"/><path d="M16 11h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M9 3.5c-.8 1 .8 2-.1 3M12.5 3.5c-.8 1 .8 2-.1 3"/></svg>`,
   '/moy-nen': () => html`<svg viewBox="0 0 24 24"><path d="M12 6.5C10 5 7.5 4.6 4 5v13c3.5-.4 6 0 8 1.5 2-1.5 4.5-1.9 8-1.5V5c-3.5-.4-6 0-8 1.5z"/><path d="M12 6.5v13"/></svg>`,
 };
-const NoteIcon = () => html`<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z"/><path d="M14 8l3 3"/></svg>`;
+const NoteIcon = () => html`<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>`;
 
 // Нижнее меню: слева — новая заметка (журнал, 4 ноября), дальше четыре вкладки;
 // поиск — в шапке, помощник — капсулой над меню.
@@ -257,10 +257,10 @@ export const TABS = [
   { path: '/dlya-sebya', label: 'Для себя' },
   { path: '/moy-nen', label: 'Мой НЭН' },
 ];
-export function Menu({ tab }) {
+export function Menu({ tab, onRecord, running }) {
   return html`
     <nav class="menu">
-      <button class="note-btn" aria-label="Новая заметка" onClick=${() => { track('меню:заметка'); go('/zametka'); }}><${NoteIcon} /></button>
+      <button class=${'note-btn' + (running ? ' on' : '')} aria-label="Записать" onClick=${() => { track('меню:записать'); onRecord ? onRecord() : go('/zametka'); }}><${NoteIcon} /></button>
       ${TABS.map((t) => html`
         <button class=${'tab' + (tab === t.path ? ' on' : '')} aria-current=${tab === t.path ? 'page' : null} onClick=${() => { track('вкладка:' + t.label); go(t.path, { replace: true }); }}>
           ${TAB_ICONS[t.path]()}${t.label}

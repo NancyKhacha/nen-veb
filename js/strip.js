@@ -1,4 +1,5 @@
-// Полоса записи над меню, плашки идущей записи и листы «Кормление», «Поправить», «Другая запись».
+// Запись: лист «Записать» по левой кнопке меню (журнал, 5 ноября: полосы над меню больше нет),
+// плашки идущей записи и листы «Кормление», «Поправить», «Другое».
 import { html, useState, useRef } from './lib.js';
 import { useStore, useTick, activeChild, update, now, getState, savePhoto, uid } from './store.js';
 import { ageMonths, clock, hhmm, dur } from './age.js';
@@ -171,6 +172,60 @@ export function RecordStrip() {
     <div class="strip">
       <button class="strip-btn strip-plus" aria-label=${line ? 'Записать' : 'Другая запись'} onClick=${() => { track('запись:другая'); openSheet(OtherSheet, {}); }}><b>＋</b><span>${line ? 'Записать' : 'Другое'}</span></button>
       ${buttons.map((t) => html`<${StripButton} key=${t} type=${t} child=${child} />`)}
+    </div>`;
+}
+
+// ——— Лист «Записать» — левая кнопка меню. Название — вся история вида, «＋» — записать сейчас ———
+function hubStatus(child, type) {
+  const run = ongoing(child.id).find((r) => r.type === type);
+  if (run) return 'идёт ' + dur(now() - run.start);
+  const since = sinceLine(child.id, type, now());
+  if (!since) return 'ещё не записывали';
+  const short = (x) => String(x || '').replace(/(\d+ ч) \d+ мин/, '$1');
+  if (type === 'sleep') return since.a === 'только что' ? 'только проснулись' : 'не спит ' + short(since.a);
+  return [short(since.a) + (since.a === 'только что' ? '' : ' назад'), since.b].filter(Boolean).join(' · ');
+}
+export function RecordHub() {
+  const s = useStore();
+  useTick(15000);
+  const child = activeChild(s);
+  const born = child && !child.expecting;
+  const { buttons } = stripButtons(child, s);
+  const types = born ? (buttons.length ? buttons : ['sleep', 'food', 'potty']) : [];
+  return html`
+    <div class="h2">Записать</div>
+    <div class="rows hub">
+      <button class="row" onClick=${() => { track('записать:заметка'); closeSheet(); go('/zametka'); }}>
+        <span class="row-text"><span class="row-title">Заметка</span><span class="row-sub">Мысль, вопрос к врачу — своими словами</span></span><span class="hub-add" aria-hidden="true">＋</span>
+      </button>
+      ${types.map((type) => html`
+        <div class="row hub-row">
+          <button class="hub-main" onClick=${() => { track('записать:история-' + type); closeSheet(); go('/rebyonok/istoriya/' + HIST[type][0]); }}>
+            <span class="row-text"><span class="row-title">${LABEL[type]}</span><span class="row-sub">${hubStatus(child, type)} · история ›</span></span>
+          </button>
+          <button class="hub-add" aria-label=${'Записать: ' + LABEL[type]} onClick=${() => { track('записать:' + type); closeSheet(); TAP[type](); }}>＋</button>
+        </div>`)}
+      ${born && html`
+        <button class="row" onClick=${() => { track('записать:другое'); openSheet(OtherSheet, {}); }}>
+          <span class="row-text"><span class="row-title">Другое</span><span class="row-sub">Бутылочка, к врачу, температура, замер, момент</span></span><span class="chev">›</span>
+        </button>`}
+    </div>
+    ${born && html`<p class="tiny">«＋» — записать сейчас. Касание названия — вся история.</p>`}`;
+}
+
+// Идёт сон, кормление или прогулка — короткая плашка над меню на всех экранах, кроме «Сегодня»
+export function RunningPill() {
+  const s = useStore();
+  useTick(1000);
+  const r = s.records.find((x) => x.end == null && (x.type === 'sleep' || x.type === 'feed' || x.type === 'walk'));
+  if (!r) return null;
+  const c = s.children.find((x) => x.id === r.childId);
+  const label = r.type === 'sleep' ? 'Сон' : r.type === 'feed' ? 'Кормление' : 'Прогулка';
+  const done = () => { if (r.type === 'sleep') finishSleep(r.id); else if (r.type === 'feed') finishFeed(r.id); else { finishRecord(r.id); recorded([r.id], 'Записано: прогулка'); } };
+  return html`
+    <div class="run-pill">
+      <button class="run-main" onClick=${() => openSheet(EditSheet, { id: r.id })}><i></i><b>${label}${s.children.length > 1 && c ? ' · ' + c.name : ''}</b><span>${clock(now() - r.start)}</span></button>
+      <button class="run-stop" onClick=${() => { track('плашка-меню:закончить'); done(); }}>Закончить</button>
     </div>`;
 }
 

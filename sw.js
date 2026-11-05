@@ -1,6 +1,6 @@
 // Работа без сети. Когда сеть есть — всегда свежая версия с сайта (и она же кладётся в кэш);
 // без сети — то, что уже в кэше. Звуки большие и не меняются — их сначала из кэша.
-const CACHE = 'nen-veb-v8';
+const CACHE = 'nen-veb-v9';
 const CORE = ['./', 'index.html', 'css/app.css', 'js/app.js', 'vendor/preact-htm.js', 'manifest.webmanifest', 'icon.svg'];
 
 self.addEventListener('install', (e) => {

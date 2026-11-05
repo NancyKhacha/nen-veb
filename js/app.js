@@ -2,8 +2,8 @@
 import { html, render, useEffect, useState } from './lib.js';
 import { useStore, now, getState } from './store.js';
 import { addRoutes, match, useRoute, go } from './router.js';
-import { Menu, OverlayHost, AskButton } from './ui.js';
-import { RecordStrip } from './strip.js';
+import { Menu, OverlayHost, AskButton, openSheet } from './ui.js';
+import { RecordHub, RunningPill } from './strip.js';
 import { MiniPlayer } from './player.js';
 import { partOfDay } from './age.js';
 import { trackOpen } from './stats.js';
@@ -82,8 +82,8 @@ function App() {
       <div class="bottom">
         ${!r.noAsk && html`<${AskButton} />`}
         <${MiniPlayer} />
-        ${r.strip && html`<${RecordStrip} />`}
-        <${Menu} tab=${r.tab} />
+        ${path !== '/segodnya' && html`<${RunningPill} />`}
+        <${Menu} tab=${r.tab} onRecord=${() => openSheet(RecordHub)} running=${s.records.some((x) => x.end == null && ['sleep', 'feed', 'walk'].includes(x.type))} />
       </div>
       <${OverlayHost} bottomOffset=${r.strip ? 190 : 86} />
       <${Splash} />

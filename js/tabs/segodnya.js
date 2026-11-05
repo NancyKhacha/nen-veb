@@ -255,11 +255,11 @@ function DayScreen({ s, child, t }) {
     <${WeekStrip} days=${weekDays(s, ids, t)} />
     ${both ? html`<${TwinPlaques} />` : html`<${Plaques} />`}
     ${evening ? html`<${EveningCard} child=${child} />` : summary}
-    ${!evening && html`<${DayCard} card=${big} />`}
-    <${Feed} cards=${feed} />
     ${evening && summary}
     <${ThisWeek} items=${week} onAdd=${() => { track('сегодня:добавить-дело'); openSheet(NewTaskSheet, { childId: child.id }); }} />
-    <${WeatherCard} child=${child} />`;
+    <${WeatherCard} child=${child} />
+    ${!evening && html`<${DayCard} card=${big} />`}
+    <${Feed} cards=${feed} />`;
 }
 
 // Экран 8 страницы 32 — черновик до брифа «Беременность и ребёнок»

@@ -112,7 +112,7 @@ function DayView({ child, d }) {
         ${shown.map((r) => html`<${DotRow} key=${r.id} title=${recTitle(r)} sub=${recTime(r)} onClick=${() => { track('дневник:запись'); openSheet(EditSheet, { id: r.id }); }} />`)}
         <${DoneRows} child=${child} d=${d} />
       </div>
-      ${!recs.length && !doneTasksOn(child, d).length && html`<p class="small">${d === today ? 'Сегодня пока ничего не записано. Запись — кнопками внизу, одним касанием.' : 'В этот день записей нет.'}</p>`}
+      ${!recs.length && !doneTasksOn(child, d).length && html`<p class="small">${d === today ? 'Сегодня пока ничего не записано. Запись — «＋» слева в меню.' : 'В этот день записей нет.'}</p>`}
       ${recs.length > 4 && !all && html`<button class="rb-more" onClick=${() => { track('дневник:все-записи'); setAll(true); }}>Все записи дня — ещё ${recs.length - 4} ›</button>`}`}
     <${SecTitle}>В планах<//>
     <div class="rows"><${PlanRows} child=${child} d=${d} /></div>
@@ -251,7 +251,7 @@ function SleepWeek({ query }) {
         <p class="tiny">${norm ? `Полоса — ориентир ${ageIn}: ${norm[0]}–${norm[1]} ч в сутки. ` : ''}${vid === 'week' ? 'Сегодня — день ещё не кончился.' : 'Столбик — сколько в среднем спал в сутки за неделю.'}</p>
       </div>
       ${ys && norm && html`<p class="quote">Вчера ${nameOf(child)} спал${child.sex === 'girl' ? 'а' : ''} ${durNoPad(ys)}. Ориентир ${ageIn} — ${norm[0]}–${norm[1]} ч в сутки, бывает и больше, и меньше.</p>`}
-      ${!max && html`<p class="small">Сна за эти дни пока не записано. «Сон» внизу — одним касанием: начать и закончить.</p>`}
+      ${!max && html`<p class="small">Сна за эти дни пока не записано. «＋» слева в меню → «Сон»: начать и закончить.</p>`}
       ${rows.length > 0 && html`
         <${SecTitle}>По дням<//>
         <div class="rows">${rows.map((x) => html`<${Row} title=${dayTitle(x.d, t).replace(' · вчера', '')} sub=${durNoPad(x.v)} onClick=${() => to(x.d)} />`)}</div>`}

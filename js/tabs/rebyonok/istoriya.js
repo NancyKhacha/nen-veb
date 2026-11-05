@@ -1,6 +1,6 @@
 // «Ребёнок → Дневник»: история и итоги по каждому виду записи — сон, кормления, подгузники, еда, горшок
 // (журнал, 5 ноября). Вход — плитками «Сегодня» на дашборде «Ребёнка» и из листов записи.
-// Данные — те же записи, что пишет полоса записи; хранение не меняется.
+// Данные — те же записи, что пишет «Записать»; хранение не меняется.
 import { html, useState } from '../../lib.js';
 import { useStore, useTick, now } from '../../store.js';
 import { Header, SecTitle, Row, openSheet } from '../../ui.js';
@@ -66,7 +66,7 @@ function todayFacts(child, type, t) {
     if (bottle.length) facts.push(`бутылочка: ${bottle.length} · ${bottle.reduce((m, r) => m + (+(r.data || {}).ml || 0), 0)} мл`);
     const pump = day.filter((r) => r.type === 'pump');
     if (pump.length) facts.push(`сцедили ${pump.reduce((m, r) => m + (+(r.data || {}).ml || 0), 0)} мл`);
-    if (feeds.length > 1) { const gap = (feeds[0].start - feeds[feeds.length - 1].start) / (feeds.length - 1); facts.push('в среднем раз в ' + durNoPad(gap)); }
+    if (feeds.length > 2) { const gap = (feeds[0].start - feeds[feeds.length - 1].start) / (feeds.length - 1); if (gap > 20 * 60000) facts.push('в среднем раз в ' + durNoPad(gap)); }
     const lf = all.find((r) => r.type === 'feed');
     if (lf) facts.unshift('последнее — ' + ago(t - lf.start) + ', в ' + hhmm(lf.start) + ((lf.data || {}).method === 'bottle' ? `, ${(lf.data || {}).ml || ''} мл` : lf.data && lf.data.side ? `, ${SIDE[lf.data.side]} грудь` : ''));
   } else if (type === 'diaper') {
@@ -171,7 +171,8 @@ function History({ params }) {
         <div class="rb-big">${f.big}<span>${unitWord(type, f.big)}</span></div>
         ${f.facts.map((x) => html`<div class="rb-fact">${x}</div>`)}
         ${f.any && html`<${DayRhythm} child=${child} type=${type} t=${t} />`}
-        ${!f.any && html`<p class="small">Пока ни одной записи. Кнопка «${kind.title === 'Кормления' ? 'Кормление' : kind.title === 'Подгузники' ? 'Подгузник' : kind.title}» — внизу, над меню.</p>`}
+        ${!f.any && html`<p class="small">Пока ни одной записи.</p>`}
+        <button class="btn btn-primary rb-add-top" onClick=${() => { track('история:записать'); kind.tap(); }}>＋ ${kind.add}</button>
       </div>
       <${SecTitle}>Неделя<//>
       <div class="rb-chart">
@@ -186,7 +187,6 @@ function History({ params }) {
         <div class="rows">${g.list.map((r) => html`<${Row} key=${r.id} title=${recTitle(r)} sub=${recTime(r)} onClick=${() => { track('история:запись'); openSheet(EditSheet, { id: r.id }); }} />`)}</div>`)}
       ${moreDays && html`<button class="rb-more" onClick=${() => { track('история:ещё'); setDays(days + 7); }}>Ещё дни ›</button>`}
       ${type === 'sleep' && html`<button class="rb-more" onClick=${() => { track('история:сон-месяц'); go('/rebyonok/dnevnik/son?vid=mesyac'); }}>Сон по месяцам ›</button>`}
-      <button class="btn btn-primary" onClick=${() => { track('история:записать'); kind.tap(); }}>${kind.add}</button>
     </div>`;
 }
 
@@ -211,11 +211,14 @@ export function TodayTiles({ child, types }) {
         const f = todayFacts(child, type, t);
         const kind = KINDS[slugOf(type)];
         return html`
-          <button class="rb-tile" onClick=${() => { track('ребёнок:история-' + type); go(historyPath(type)); }}>
-            <span class="l">${kind.title}</span>
-            <b>${f.big}</b>
-            <span class="s">${tileLine(child, type, t)}</span>
-          </button>`;
+          <div class="rb-tile">
+            <button class="rb-tile-main" onClick=${() => { track('ребёнок:история-' + type); go(historyPath(type)); }}>
+              <span class="l">${kind.title}</span>
+              <b>${f.big}</b>
+              <span class="s">${tileLine(child, type, t)}</span>
+            </button>
+            <button class="rb-tile-add" aria-label=${kind.add} onClick=${() => { track('ребёнок:плитка-записать-' + type); kind.tap(); }}>＋</button>
+          </div>`;
       })}
     </div>`;
 }

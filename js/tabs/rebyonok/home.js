@@ -26,52 +26,18 @@ function TwinPills({ child, s }) {
   return html`<div class="pills">${pair.map((c) => html`<button class=${'pill' + (c.id === child.id ? ' on' : '')} onClick=${() => pick(c.id)}>${nameOf(c)}</button>`)}</div>`;
 }
 
-function HealthBlock({ child, s }) {
-  const t = now();
-  const ill = illness(child, s, t);
-  const pre = isPreterm(child) ? ' — по дате рождения' : '';
-  let rows;
-  if (ill) {
-    rows = html`
-      <${Row} title=${`Болеет с ${dateLong(ill.from)}`} sub=${ill.temp ? `Последняя температура ${ill.temp.data.t} в ${hhmm(ill.temp.start)}` : 'Записать температуру — «Другая запись»'} onClick=${() => go('/rebyonok/zdorovye/bolezni')} />
-      ${ill.med && html`<${Row} title=${ill.med.data.name} sub=${`Последний приём в ${hhmm(ill.med.start)}`} onClick=${() => go('/rebyonok/zdorovye/bolezni')} />`}`;
-  } else {
-    const last = lastDoneVaccine(child, s);
-    const visit = (s.tasks || []).filter((x) => x.childId === child.id && (x.kind === 'doctor' || x.kind === 'tests') && x.done).sort((a, b) => b.done - a.done)[0];
-    if (visit && (!last || visit.done > last.doneAt)) rows = html`<${Row} title=${visit.title} sub=${`Был${visit.title.startsWith('Осмотр') ? '' : 'и'} ${dateLong(visit.done)}`} onClick=${() => go('/rebyonok/zdorovye')} />`;
-    else if (last) rows = html`<${Row} title=${last.title} sub=${vaccineSub(child, last) + (last.age ? pre : '')} onClick=${() => go('/rebyonok/zdorovye')} />`;
-    else {
-      const first = vaccineGroups(child, s)[0];
-      const young = t - child.dob < 60 * DAY;
-      rows = young ? html`<${Row} title=${first.title} sub="Отметьте, если сделали" onClick=${() => go('/rebyonok/zdorovye')} />`
-        : html`<${Row} title="Прививки и осмотры" sub="Отметьте сделанные — они останутся с датой" onClick=${() => go('/rebyonok/zdorovye')} />`;
-    }
-  }
-  return html`<${BlockTitle} more="Вся медкарта" to="/rebyonok/zdorovye" ev="здоровье">Здоровье<//><div class="rows">${rows}</div>`;
+// Плитка «Здоровье» — та же логика, что была у блока: болеет → последний визит или прививка → первая прививка
+function health(child, s, t, ill, last) {
+  const to = '/rebyonok/zdorovye';
+  if (ill) return { k: 'здоровье', l: 'Здоровье', v: 'Болеет', sub: `с ${dateLong(ill.from)}` + (ill.temp ? ` · ${ill.temp.data.t}° в ${hhmm(ill.temp.start)}` : '') + (ill.med ? ` · ${ill.med.data.name}` : ''), to: '/rebyonok/zdorovye/bolezni' };
+  const visit = (s.tasks || []).filter((x) => x.childId === child.id && (x.kind === 'doctor' || x.kind === 'tests') && x.done).sort((a, b) => b.done - a.done)[0];
+  if (visit && (!last || visit.done > last.doneAt)) return { k: 'здоровье', l: 'Здоровье', v: visit.title, sub: `${visit.title.startsWith('Осмотр') ? 'был' : 'были'} ${dateLong(visit.done)}`, to };
+  if (last) return { k: 'здоровье', l: 'Здоровье', v: last.title, sub: vaccineSub(child, last) + (last.age && isPreterm(child) ? ' — по дате рождения' : ''), to };
+  const first = vaccineGroups(child, s)[0];
+  return t - child.dob < 60 * DAY && first
+    ? { k: 'здоровье', l: 'Здоровье', v: first.title, sub: 'отметьте, если сделали', to }
+    : { k: 'здоровье', l: 'Здоровье', v: 'Прививки и осмотры', sub: 'отметьте сделанные', to };
 }
-
-function GrowthBlock({ child, s }) {
-  const last = measures(child, s)[0];
-  const t = now();
-  const when = last ? (startOfDay(last.start) === startOfDay(t) ? 'Замер сегодня' : `Замер ${dateLong(last.start)}`) : '';
-  return html`
-    <${BlockTitle} more="Все замеры" to="/rebyonok/rost" ev="рост">Рост<//>
-    <div class="rows">${last ? html`<${Row} title=${measureLine(last, ' и ')} sub=${when} onClick=${() => go('/rebyonok/rost')} />`
-      : html`<${Row} title="Первое измерение" sub="Запишите вес, рост или окружность головы" onClick=${() => go('/rebyonok/rost')} />`}</div>`;
-}
-
-function DevBlock({ child, s }) {
-  const t = now();
-  const m = ageMonths(child, t);
-  const seen = lastSeen(child, s);
-  const pre = isPreterm(child) && m < 24;
-  let row;
-  if (seen) row = html`<${Row} title=${seen.it.ru} sub=${`Видели ${dateLong(seen.at)}${pre ? ' · ориентиры ' + sheetGen(currentSheet(Math.max(0, m))) : ''}`} onClick=${() => go('/rebyonok/razvitie')} />`;
-  else if (m < 2) row = html`<${Row} title="Первые ориентиры — к 2 месяцам" sub="Пока — занятия для первых недель" onClick=${() => go('/rebyonok/razvitie')} />`;
-  else { const sh = currentSheet(m); row = html`<${Row} title=${sh.items[0].ru} sub=${`Отметьте, когда увидите${pre ? ' · ориентиры ' + sheetGen(sh) : ''}`} onClick=${() => go('/rebyonok/razvitie')} />`; }
-  return html`<${BlockTitle} more=${seen || m >= 2 ? 'Все ориентиры' : 'Все'} to="/rebyonok/razvitie" ev="развитие">Развитие<//><div class="rows">${row}</div>`;
-}
-
 function MomentsBlock({ child, s }) {
   const t = now();
   const list = momentsOf(child, s);
@@ -98,17 +64,41 @@ function TalesBlock({ child, s }) {
     <div class="rows"><${Row} title=${title} sub=${sub} onClick=${() => go('/rebyonok/skazki')} /></div>`;
 }
 
+// Плитки разделов — как виджеты May Baby: что было последним и куда нажать (журнал, 5 ноября)
+function InfoTiles({ child, s }) {
+  const t = now();
+  const last = measures(child, s)[0];
+  const lastVac = lastDoneVaccine(child, s);
+  const ill = illness(child, s, t);
+  const seen = lastSeen(child, s);
+  const m = ageMonths(child, t);
+  const sheet = m >= 2 ? currentSheet(m) : null;
+  const tiles = [
+    { k: 'рост', l: 'Рост', v: last ? measureLine(last, ', ') : 'Первый замер', sub: last ? (startOfDay(last.start) === startOfDay(t) ? 'сегодня' : dateLong(last.start)) : 'вес, рост, голова', to: '/rebyonok/rost' },
+    health(child, s, t, ill, lastVac),
+    { k: 'развитие', l: 'Развитие', v: seen ? seen.it.ru : sheet ? sheet.items[0].ru : 'Первые недели', sub: (seen ? `видели ${dateLong(seen.at)}` : sheet ? 'отметьте, когда увидите' : 'ориентиры — к 2 месяцам') + (isPreterm(child) && m < 24 && sheet ? ` · ориентиры ${sheetGen(sheet)}` : ''), to: '/rebyonok/razvitie' },
+    { k: 'дневник', l: 'Дневник', v: 'По дням', sub: 'что было и что в планах', to: '/rebyonok/dnevnik' },
+  ];
+  return html`
+    <div class="rb-tiles two">
+      ${tiles.map((x) => html`
+        <div class="rb-tile">
+          <button class="rb-tile-main" onClick=${() => { track('ребёнок:плитка-' + x.k); go(x.to); }}>
+            <span class="l">${x.l}</span><b class="txt">${x.v}</b><span class="s">${x.sub}</span>
+          </button>
+        </div>`)}
+    </div>`;
+}
+
 function Dashboard({ child, s }) {
   const t = now();
   return html`
     <${TwinPills} child=${child} s=${s} />
-    <${BlockTitle} more="Вся неделя" to="/rebyonok/dnevnik?vid=nedelya" ev="дневник">Дневник<//>
     <${TodayTiles} child=${child} types=${ageMonths(child, t) < 12 ? ['sleep', 'feed', 'diaper'] : ['sleep', 'food', 'potty']} />
+    <${InfoTiles} child=${child} s=${s} />
+    <${BlockTitle} more="Вся неделя" to="/rebyonok/dnevnik?vid=nedelya" ev="дневник">Неделя<//>
     <${WeekStrip} child=${child} onPick=${(d) => { track('ребёнок:день'); go('/rebyonok/dnevnik?den=' + dayKey(d)); }} />
     <${FamilyNudge} s=${s} />
-    <${HealthBlock} child=${child} s=${s} />
-    <${GrowthBlock} child=${child} s=${s} />
-    <${DevBlock} child=${child} s=${s} />
     <${MomentsBlock} child=${child} s=${s} />
     <${TalesBlock} child=${child} s=${s} />
     ${inFirstYear(child, t) && (() => { const d = docsLine(child, s); return html`

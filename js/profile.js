@@ -26,7 +26,7 @@ function Profile() {
       <${SecTitle}>Приложение<//>
       <div class="rows">
         <${Row} title="Что сейчас волнует" sub=${s.topics.length ? TOPICS.filter(([k]) => s.topics.includes(k)).map(([, l]) => l).join(', ') : 'Темы не выбраны — статьи по возрасту'} onClick=${() => go('/profil/temy')} />
-        <${Row} title="Полоса записи" sub=${(s.settings.hiddenButtons || []).length ? 'Часть кнопок убрана' : 'Сон, кормление, подгузник — как по возрасту'} onClick=${() => go('/profil/knopki')} />
+        <${Row} title="Быстрая запись" sub=${(s.settings.hiddenButtons || []).length ? 'Часть кнопок убрана' : 'Сон, кормление, подгузник — как по возрасту'} onClick=${() => go('/profil/knopki')} />
         <${Row} title="Город для погоды" sub=${s.settings.city} onClick=${() => go('/profil/gorod')} />
         <${Row} title="Копия записей" sub="Файл, чтобы перенести всё на другой телефон" onClick=${() => go('/profil/kopiya')} />
         <${Row} title="Войти" sub="Для Клуба и Школы НЭН. Дневник работает и без входа" onClick=${() => go('/start/vhod')} />
@@ -128,8 +128,8 @@ function Buttons() {
   const items = [['sleep', 'Сон'], ['feed', 'Кормление'], ['diaper', 'Подгузник'], ['food', 'Еда'], ['potty', 'Горшок']];
   return html`
     <div class="screen">
-      <${Back} title="Полоса записи" />
-      <p class="lead">Что не записываете — уберите. Прошлые записи останутся.</p>
+      <${Back} title="Быстрая запись" />
+      <p class="lead">Что показывать в «Записать» и на «Ребёнке». Что не записываете — уберите, прошлые записи останутся.</p>
       <div class="pills">${items.map(([k, l]) => html`<${Pill} on=${!hidden.includes(k)} onClick=${() => toggle(k)}>${l}<//>`)}</div>
     </div>`;
 }
