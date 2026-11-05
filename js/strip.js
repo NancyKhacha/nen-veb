@@ -1,14 +1,14 @@
 // Запись: лист «Записать» по левой кнопке меню (журнал, 5 ноября: полосы над меню больше нет),
 // плашки идущей записи и листы «Кормление», «Поправить» и формы остальных записей.
-import { html, useState, useRef } from './lib.js?v=20';
-import { useStore, useTick, activeChild, update, now, getState, savePhoto, uid } from './store.js?v=20';
-import { ageMonths, clock, hhmm, dur, startOfDay } from './age.js?v=20';
-import { addRecord, finishRecord, removeRecord, editRecord, switchSide, lastOf, ongoing, sinceLine, describe, whenText, recentTypes, sideTimes, breastLine, SIDE, DIAPER, POTTY } from './records.js?v=20';
-import { openSheet, closeSheet, toast, Pill, Field, KidsBar } from './ui.js?v=20';
-import { playNoise, usePlayer, playing, stop as stopPlayer } from './player.js?v=20';
-import { track } from './stats.js?v=20';
-import { go } from './router.js?v=20';
-import { quickTypes, recordAllowed, prefsOf, weaned } from './stages.js?v=20';
+import { html, useState, useRef } from './lib.js?v=21';
+import { useStore, useTick, activeChild, update, now, getState, savePhoto, uid } from './store.js?v=21';
+import { ageMonths, clock, hhmm, dur, startOfDay } from './age.js?v=21';
+import { addRecord, finishRecord, removeRecord, editRecord, switchSide, lastOf, ongoing, sinceLine, describe, whenText, recentTypes, sideTimes, breastLine, SIDE, DIAPER, POTTY } from './records.js?v=21';
+import { openSheet, closeSheet, toast, Pill, Field, KidsBar } from './ui.js?v=21';
+import { playNoise, usePlayer, playing, stop as stopPlayer } from './player.js?v=21';
+import { track } from './stats.js?v=21';
+import { go } from './router.js?v=21';
+import { quickTypes, recordAllowed, prefsOf, weaned } from './stages.js?v=21';
 
 // Для кого запись: выбранный ребёнок, а у близнецов в режиме «Оба» — каждый
 export function targets(s = getState()) {
@@ -203,6 +203,7 @@ export function RecordHub() {
       ${born && otherItems(s, child).filter(([k]) => !types.includes(k)).map(([k, t, sub]) => html`
         <button class="row" key=${k} onClick=${() => openOther(k)}><span class="row-text"><span class="row-title">${t}</span><span class="row-sub">${sub}</span></span><span class="chev">›</span></button>`)}
     </div>
+    ${child && child.expecting && html`<div class="rows"><button class="row" onClick=${() => openOther('task')}><span class="row-text"><span class="row-title">Дело или напоминание</span><span class="row-sub">УЗИ, анализы, сумка в роддом</span></span><span class="chev">›</span></button></div>`}
     ${born && html`<p class="tiny">«＋» — записать сейчас. Касание названия — вся история.</p>`}`;
 }
 
@@ -464,7 +465,7 @@ const openOther = (k) => {
   if (k === 'visit') { closeSheet(); go('/rebyonok/zdorovye?zapis=1'); return; }
   if (k === 'feed') { tapFeed(); return; }
   if (k === 'club') { closeSheet(); go('/rebyonok/kruzhki?novyy=1'); return; }
-  if (k === 'task') { const c = activeChild(getState()); import('./tabs/rebyonok/dnevnik.js?v=20').then((mod) => mod.openNewTask(c, startOfDay(now()))); return; }
+  if (k === 'task') { const c = activeChild(getState()); import('./tabs/rebyonok/dnevnik.js?v=21').then((mod) => mod.openNewTask(c, startOfDay(now()))); return; }
   openSheet(OtherForm, { kind: k });
 };
 // Прежний лист «Другая запись» — теперь тот же «Записать»: один список на всё

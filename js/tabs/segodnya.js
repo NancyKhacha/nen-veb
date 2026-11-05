@@ -1,33 +1,33 @@
 // Вкладка «Сегодня» — Фигма «32 · V3 · Сегодня», экраны 1–17, и «36 · V3 · Первый вход», экраны 4, 6, 8.
 // Что показать, решают этап, возраст (у недоношенных до двух лет — исправленный), время суток и записи.
-import { html, useState, useEffect } from '../lib.js?v=20';
-import { useStore, useTick, update, now, activeChild } from '../store.js?v=20';
-import { DAY, startOfDay, dayKey, ageMonths, dateWithWeekday, pl, partOfDay, durShort } from '../age.js?v=20';
-import { summaryLine, finishRecord, SIDE } from '../records.js?v=20';
-import { Plaques, OtherSheet, finishSleep, finishFeed } from '../strip.js?v=20';
-import { Header, Back, Row, SecTitle, Ill, SaveButton, Field, openSheet, toast } from '../ui.js?v=20';
-import { go } from '../router.js?v=20';
-import { track } from '../stats.js?v=20';
-import { playNoise, usePlayer, stop as stopPlayer } from '../player.js?v=20';
-import { FACTS, factsFor, factById } from '../content/facts.js?v=20';
-import { activitiesFor } from '../content/activities.js?v=20';
-import { articleById } from '../content/articles.js?v=20';
-import { PREP } from '../content/segodnya-expecting.js?v=20';
+import { html, useState, useEffect } from '../lib.js?v=21';
+import { useStore, useTick, update, now, activeChild } from '../store.js?v=21';
+import { DAY, startOfDay, dayKey, ageMonths, dateWithWeekday, pl, partOfDay, durShort } from '../age.js?v=21';
+import { summaryLine, finishRecord, SIDE } from '../records.js?v=21';
+import { Plaques, OtherSheet, finishSleep, finishFeed } from '../strip.js?v=21';
+import { Header, Back, Row, SecTitle, Ill, SaveButton, Field, openSheet, toast } from '../ui.js?v=21';
+import { go } from '../router.js?v=21';
+import { track } from '../stats.js?v=21';
+import { playNoise, usePlayer, stop as stopPlayer } from '../player.js?v=21';
+import { FACTS, factsFor, factById } from '../content/facts.js?v=21';
+import { activitiesFor } from '../content/activities.js?v=21';
+import { articleById } from '../content/articles.js?v=21';
+import { PREP } from '../content/segodnya-expecting.js?v=21';
 import {
   ROUTES, seg, stageOf, splitFact, articleByUrl, shortUrl, hash, lowerFirst,
   sleepNormLine, promiseLine, firstHint, FIRST_WEEKS, everNightSleep, anyRecords, hardSleepWeek,
   factsOfDay, activityPick, activityTitle, activityText, articlePool, nenToday, newInAge,
   calendarVaccine, plannedVaccines, calendarCheckup, tasksOf, isVisit, whenLine, dayPlan, urgentItem,
   weekDays, expectingWeek, weekArticle, nextClubLive, newsItems, hasNews,
-} from './segodnya/logic.js?v=20';
+} from './segodnya/logic.js?v=21';
 import {
   setSeg, markOpened, WeekStrip, Total, Note, DayCard, Feed, ThisWeek, WeatherCard,
   NewTaskSheet, TaskSheet, VaccineSheet, CheckupSheet,
-} from './segodnya/parts.js?v=20';
-import { refreshWeather, useOnline } from './segodnya/weather.js?v=20';
-import { KidsBar } from '../ui.js?v=20';
-import { clubsOn, checkupNow, sadLine } from './rebyonok/etapy.js?v=20';
-import { sectionOn, schoolSeason } from '../stages.js?v=20';
+} from './segodnya/parts.js?v=21';
+import { refreshWeather, useOnline } from './segodnya/weather.js?v=21';
+import { KidsBar } from '../ui.js?v=21';
+import { clubsOn, checkupNow, sadLine } from './rebyonok/etapy.js?v=21';
+import { sectionOn, schoolSeason } from '../stages.js?v=21';
 
 // ——— «Важно сейчас» по возрасту: кружки сегодня, профосмотр, сад, запись в школу (журнал, 5 ноября) ———
 function StageToday({ child, s, t }) {
@@ -52,6 +52,14 @@ function StageToday({ child, s, t }) {
   }
   if (!rows.length) return null;
   return html`<${SecTitle}>Важно сейчас<//><div class="rows">${rows}</div>`;
+}
+
+// Напоминания из заметок — отдельным блоком там, где нет «Важно сейчас» (ждём малыша, без ребёнка)
+function NoteReminders({ s, t }) {
+  const end = startOfDay(t) + DAY;
+  const list = (s.notes || []).filter((x) => x.remindAt && x.remindAt < end && !x.remindDone);
+  if (!list.length) return null;
+  return html`<${SecTitle}>Напоминания<//><div class="rows">${list.map((n) => html`<${Row} key=${n.id} title=${'Заметка: ' + ((n.text || '').split('\n')[0].slice(0, 60) || 'Заметка')} sub="напоминание на сегодня" onClick=${() => { track('сегодня:напоминание-заметки'); update((d) => { const x = (d.notes || []).find((y) => y.id === n.id); if (x) x.remindDone = true; }); go('/dlya-sebya/zametki?id=' + n.id); }} />`)}</div>`;
 }
 
 // ——— Все дети сегодня: одна строка на каждого, касание — переключиться ———
@@ -321,6 +329,7 @@ function ExpectingScreen({ s, child, t }) {
   const week = thisWeek(s, child, [child.id], t, null);
   return html`
     <div class="small sg-date">${dateWithWeekday(t)}</div>
+    <${NoteReminders} s=${s} t=${t} />
     <div class="card sg-day">
       <button class="sg-day-main" onClick=${() => { if (!a) return; track('сегодня:ваша-неделя'); markOpened(a.id); go(ROUTES.article(a.id)); }}>
         <${Ill} id=${a && a.id} />
@@ -349,6 +358,7 @@ function NoChildScreen({ s, t }) {
   const lastNote = (s.notes || [])[0];
   return html`
     <div class="small sg-date">${dateWithWeekday(t)}</div>
+    <${NoteReminders} s=${s} t=${t} />
     ${top && html`
       <div class="card sg-day">
         <button class="sg-day-main" onClick=${open(top)}>
@@ -371,7 +381,7 @@ function NoChildScreen({ s, t }) {
       <${Row} title="Минутка для себя" sub="Практики редакции на 3–12 минут" onClick=${() => { track('сегодня:минутка'); go(ROUTES.self); }} />
       ${s.stage === 'born'
         ? html`<${Row} title="Добавить ребёнка" sub="Имя и дата рождения — появятся записи, прививки и ориентиры" onClick=${() => { track('сегодня:добавить-ребёнка'); go('/profil/rebyonok/novyy'); }} />`
-        : html`<${Row} title="Ждёте малыша?" sub="Добавьте дату родов — появится срок" onClick=${() => { track('сегодня:ждёте-малыша'); go('/start/zhdyom'); }} />`}
+        : html`<${Row} title="Ждёте малыша?" sub="Добавьте дату родов — появится срок" onClick=${() => { track('сегодня:ждёте-малыша'); go('/profil/rebyonok/novyy?zhdyom=1'); }} />`}
     </div>
     <${WeatherCard} wear=${false} />`;
 }
@@ -538,5 +548,7 @@ export function searchItems(s) {
   return [
     ...facts.map((f) => ({ title: splitFact(f.text)[0], sub: 'Факт по возрасту', path: '/fakt/' + f.id, text: f.text })),
     ...acts.map((a) => ({ title: activityTitle(a), sub: 'Занятие на сегодня', path: ROUTES.activity(a.id), text: a.text })),
+    { title: 'Сумка в роддом', sub: 'Список по шагам — на «Сегодня», пока ждёте малыша', path: '/segodnya', text: 'роддом сумка что взять подготовка к родам список' },
+    { title: 'Выбираем имя', sub: 'Список имён — на «Сегодня», пока ждёте малыша', path: '/segodnya', text: 'имя имена как назвать' },
   ];
 }

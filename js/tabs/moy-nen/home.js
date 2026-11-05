@@ -2,18 +2,18 @@
 // Сверху — что начато (урок, эфир), потом продукты НЭН (Школа, Клуб), потом статьи и идея дня
 // (журнал, 5 ноября: было — продукты в конце).
 // Состояния для показа: #/moy-nen?sostoyanie=pusto | bez-seti | pervyy-zapusk | bez-akkaunta
-import { html } from '../../lib.js?v=20';
-import { useStore, activeChild, now } from '../../store.js?v=20';
-import { Header, Row, SecTitle, Ill, SaveButton } from '../../ui.js?v=20';
-import { go } from '../../router.js?v=20';
-import { track } from '../../stats.js?v=20';
-import { playNoise } from '../../player.js?v=20';
+import { html } from '../../lib.js?v=21';
+import { useStore, activeChild, now } from '../../store.js?v=21';
+import { Header, Row, SecTitle, Ill, SaveButton } from '../../ui.js?v=21';
+import { go } from '../../router.js?v=21';
+import { track } from '../../stats.js?v=21';
+import { playNoise } from '../../player.js?v=21';
 import {
   access, useOffline, readingFor, todays, freshToday, ideaToday, openArticle, ArticleRow, savedItem, courseFor,
-} from './util.js?v=20';
-import { ContinueCard, SchoolRow } from './kurs.js?v=20';
-import { ClubBlock, ClubInvite } from './klub.js?v=20';
-import { IdeaCard } from './ideya.js?v=20';
+} from './util.js?v=21';
+import { ContinueCard, SchoolRow } from './kurs.js?v=21';
+import { ClubBlock, ClubInvite } from './klub.js?v=21';
+import { IdeaCard } from './ideya.js?v=21';
 
 // Первая статья для возраста — карточкой
 function ArticleCard({ a }) {
@@ -40,8 +40,8 @@ function FirstLaunch({ band }) {
     <${SecTitle}>Работает без сети<//>
     <div class="rows">
       <${Row} title="Белый шум" sub="Включится сразу · в «Ребёнке»" onClick=${() => { track('мой-нэн:шум'); playNoise('white'); go('/rebyonok/skazki'); }} />
-      <${Row} title="Когда поговорить с врачом" sub="Справочник · в «Развитии»" onClick=${() => { track('мой-нэн:справочник'); go('/rebyonok/razvitie'); }} />
-      <${Row} title="Сон, экраны и движение" sub="Справочник · в «Развитии»" onClick=${() => { track('мой-нэн:справочник'); go('/rebyonok/razvitie'); }} />
+      <${Row} title="Когда поговорить с врачом" sub="Признаки, с которыми не ждут" onClick=${() => { track('мой-нэн:справочник'); go('/rebyonok/razvitie/k-vrachu'); }} />
+      <${Row} title="Сон, экраны и движение" sub="Сколько спать, смотреть экран и двигаться" onClick=${() => { track('мой-нэн:справочник'); go('/rebyonok/razvitie/son-ekrany'); }} />
     </div>`;
 }
 

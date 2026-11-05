@@ -1,11 +1,11 @@
 // Общие экраны: «Сохранённое» (сердечко в шапке), поиск (лупа в шапке)
 // и помощник (капсула «✦ Спросить» над меню).
-import { html, useState } from './lib.js?v=20';
-import { useStore, getState, activeChild } from './store.js?v=20';
-import { go } from './router.js?v=20';
-import { Back, Row, SecTitle } from './ui.js?v=20';
-import { track } from './stats.js?v=20';
-import { genitive } from './onboarding.js?v=20';
+import { html, useState } from './lib.js?v=21';
+import { useStore, getState, activeChild } from './store.js?v=21';
+import { go } from './router.js?v=21';
+import { Back, Row, SecTitle } from './ui.js?v=21';
+import { track } from './stats.js?v=21';
+import { genitive } from './onboarding.js?v=21';
 
 // Модули вкладок передаёт каркас (app.js), когда они загрузились
 let tabModules = [];
@@ -40,7 +40,8 @@ const norm = (x) => (x || '').toLowerCase().replace(/ё/g, 'е');
 const STOP = new Set(('почему зачем когда как какой какая какое какие что чего чем сколько можно нужно надо пора ли это этот эта эти ' +
   'мой моя мое мои мне нам наш наша наши если или уже еще очень все так такое там тут где кто для про при над под без был была ' +
   'было будет есть нет она они его ее ему ей вот лет год года месяц месяца месяцев малыш малыша малышу ребенок ребенка ребенку дети детей').split(' '));
-const stem = (w) => (w.length <= 3 ? w : w.length <= 5 ? w.slice(0, -1) : w.length <= 8 ? w.slice(0, -2) : w.slice(0, -4));
+// Основа слова: короткие — целиком («сон», «спит»), иначе без окончания; меньше 4 букв не режем — «спи» ловит «список»
+const stem = (w) => (w.length <= 4 ? w : w.length <= 5 ? w.slice(0, -1) : w.length <= 8 ? w.slice(0, -2) : w.slice(0, -4));
 export function findItems(q, { name = '', limit = 40 } = {}) {
   const n = norm(q.trim());
   if (n.length < 2) return [];
@@ -97,7 +98,7 @@ function Ask({ query }) {
   return html`
     <div class="screen">
       <${Back} title="Спросите НЭН" />
-      <div class="ask-badge">✦ Помощник · в Плюсе</div>
+      <button class="ask-badge" onClick=${() => { track('помощник:что-в-плюсе'); go('/profil/plus'); }}>✦ Помощник · в Плюсе ›</button>
       <p class="p">Спросите своими словами. Помощник посмотрит ${name ? 'записи ' + genitive(name) : 'ваши записи'} и статьи НЭН и ответит коротко, со ссылками.</p>
       <label class="field"><span class="label">Ваш вопрос</span>
         <textarea value=${q} placeholder="Например, сколько сна нужно в этом возрасте" onInput=${(e) => setQ(e.target.value)}></textarea></label>

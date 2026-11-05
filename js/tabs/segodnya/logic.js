@@ -1,17 +1,17 @@
 // «Сегодня»: что показать человеку прямо сейчас — по этапу, возрасту, времени суток и записям.
 // Здесь только расчёты по состоянию на телефоне; экраны — в segodnya.js и parts.js.
-import { getState, now, activeChild } from '../../store.js?v=20';
+import { getState, now, activeChild } from '../../store.js?v=21';
 import {
   DAY, startOfDay, dayKey, ageMonths, ageDays, diffYMD, isPreterm, correctedDob, partOfDay, pl,
   ageAt, dateWithWeekday, dateLong, weekdayLong, hhmm, pregnancyWeek, dur,
-} from '../../age.js?v=20';
-import { yesterdaySleep, sleepNorm, hasRecords, recordsOf } from '../../records.js?v=20';
-import { factsFor } from '../../content/facts.js?v=20';
-import { activitiesFor } from '../../content/activities.js?v=20';
-import { ARTICLES, articlesFor } from '../../content/articles.js?v=20';
-import { weekLines } from '../../content/weekly.js?v=20';
-import { VACCINES, CDC } from '../../content/reference.js?v=20';
-import { genitive } from '../../onboarding.js?v=20';
+} from '../../age.js?v=21';
+import { yesterdaySleep, sleepNorm, hasRecords, recordsOf } from '../../records.js?v=21';
+import { factsFor } from '../../content/facts.js?v=21';
+import { activitiesFor } from '../../content/activities.js?v=21';
+import { ARTICLES, articlesFor } from '../../content/articles.js?v=21';
+import { weekLines } from '../../content/weekly.js?v=21';
+import { VACCINES, CDC } from '../../content/reference.js?v=21';
+import { genitive } from '../../onboarding.js?v=21';
 
 const H = 3600e3;
 export const hash = (s) => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h); };
@@ -24,7 +24,7 @@ const isDismissed = (s, key) => (s.dismissed || []).includes(key);
 export const ROUTES = {
   day: (t) => '/rebyonok/dnevnik?den=' + dayKey(t),
   week: '/rebyonok/dnevnik?vid=nedelya',
-  sleepWeek: '/rebyonok/dnevnik?vid=son',
+  sleepWeek: '/rebyonok/istoriya/son',
   development: '/rebyonok/razvitie',
   health: '/rebyonok/zdorovye',
   tales: '/rebyonok/skazki',
@@ -215,9 +215,9 @@ export function newInAge(s, child, t = now()) {
       action: 'Все ориентиры', path: ROUTES.development,
     });
   }
-  if (fresh(4)) out.push({ key: 'age:solids', kind: 'solids', label: 'Новое в возрасте', title: 'В «Другой записи» появился прикорм', short: 'В «Другой записи» появился прикорм', text: 'Когда начнёте, первые продукты можно записывать там же — они попадут в дневник.', action: 'Записать прикорм' });
-  if (fresh(12)) out.push({ key: 'age:potty', kind: 'potty', label: 'Новое в возрасте', title: 'С года — кнопка «Горшок»', short: 'С года — кнопка «Горшок»', text: 'Кнопки записи теперь — сон, еда и горшок. Подгузник — в «Другой записи».' });
-  if (fresh(60)) out.push({ key: 'age:school', kind: 'school', label: 'Новое в возрасте', title: 'К школе', short: 'К школе: что важно знать заранее', text: 'В «Развитии» появилась страница «К школе».', action: 'К школе', path: ROUTES.development });
+  if (fresh(4)) out.push({ key: 'age:solids', kind: 'solids', label: 'Новое в возрасте', title: 'С 4 месяцев — прикорм', short: 'С 4 месяцев можно записывать прикорм', text: 'Когда начнёте, первые продукты — во вкладке «Прикорм» листа «Кормление»: «＋» слева в меню.', action: 'Записать прикорм' });
+  if (fresh(12)) out.push({ key: 'age:potty', kind: 'potty', label: 'Новое в возрасте', title: 'С года — горшок в «Записать»', short: 'С года в «Записать» есть горшок', text: 'Подгузник остаётся, пока он нужен. Перестали — «Уже без подгузников» в истории подгузников.' });
+  if (fresh(60)) out.push({ key: 'age:school', kind: 'school', label: 'Новое в возрасте', title: 'К школе', short: 'К школе: что важно знать заранее', text: 'На «Ребёнке» появилась «Школа»: как выбрать и когда подавать заявление в 1 класс.', action: 'Школа', path: '/rebyonok/shkola' });
   return out.filter((x) => !isDismissed(s, x.key));
 }
 

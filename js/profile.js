@@ -1,15 +1,15 @@
 // Профиль родителя — всё служебное: дети, темы, кнопки записи, копия, вход, «Для исследования».
-import { html, useState } from './lib.js?v=20';
-import { useStore, update, uid, getState, resetAll, savePhoto, now, storage } from './store.js?v=20';
-import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy, childAgeLine } from './age.js?v=20';
-import { go, back } from './router.js?v=20';
-import { Back, Row, SecTitle, Pill, Field, Avatar, toast, confirmAction, GestStepper } from './ui.js?v=20';
-import { TOPICS, Transfer, startPreview, genitive } from './onboarding.js?v=20';
-import { familyLine } from './semya.js?v=20';
-import { TodayTiles } from './tabs/rebyonok/istoriya.js?v=20';
-import { quickTypes, recordAllowed, prefsOf } from './stages.js?v=20';
-import { ageMonths } from './age.js?v=20';
-import { statsReport, statsCode, resetStats, track } from './stats.js?v=20';
+import { html, useState } from './lib.js?v=21';
+import { useStore, update, uid, getState, resetAll, savePhoto, now, storage } from './store.js?v=21';
+import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy, childAgeLine } from './age.js?v=21';
+import { go, back, current } from './router.js?v=21';
+import { Back, Row, SecTitle, Pill, Field, Avatar, toast, confirmAction, GestStepper } from './ui.js?v=21';
+import { TOPICS, Transfer, startPreview, genitive } from './onboarding.js?v=21';
+import { familyLine } from './semya.js?v=21';
+import { TodayTiles } from './tabs/rebyonok/istoriya.js?v=21';
+import { quickTypes, recordAllowed, prefsOf } from './stages.js?v=21';
+import { ageMonths } from './age.js?v=21';
+import { statsReport, statsCode, resetStats, track } from './stats.js?v=21';
 
 function Profile() {
   const s = useStore();
@@ -30,6 +30,8 @@ function Profile() {
         <${Row} title="Что сейчас волнует" sub=${s.topics.length ? TOPICS.filter(([k]) => s.topics.includes(k)).map(([, l]) => l).join(', ') : 'Темы не выбраны — статьи по возрасту'} onClick=${() => go('/profil/temy')} />
         <${Row} title="Быстрая запись" sub=${(s.settings.hiddenButtons || []).length ? 'Часть кнопок убрана' : 'Сон, кормление, подгузник — как по возрасту'} onClick=${() => go('/profil/knopki')} />
         <${Row} title="Город для погоды" sub=${s.settings.city} onClick=${() => go('/profil/gorod')} />
+        <${Row} title="Напоминания" sub="Визиты, прививки, лекарства, заметки, тихие часы" onClick=${() => go('/profil/napominaniya')} />
+        <${Row} title="НЭН Плюс" sub="Что даёт подписка и что бесплатно всегда" onClick=${() => go('/profil/plus')} />
         <${Row} title="Копия записей" sub="Файл, чтобы перенести всё на другой телефон" onClick=${() => go('/profil/kopiya')} />
         <${Row} title="Войти" sub="Для Клуба и Школы НЭН. Дневник работает и без входа" onClick=${() => go('/start/vhod')} />
       </div>
@@ -37,6 +39,7 @@ function Profile() {
       <div class="rows">
         <${Row} title="Посмотреть первый вход" sub="Пройти его ещё раз, как в первый день. Записи не тронутся" onClick=${startPreview} />
         <${Row} title="Если что-то не работает" sub="Версия, телефон и браузер — чтобы прислать нам" onClick=${() => go('/profil/pomosh')} />
+        <${Row} title="Написать в поддержку" sub="support@n-e-n.ru — ответим на почту" onClick=${() => { track('профиль:поддержка'); location.href = 'mailto:support@n-e-n.ru?subject=' + encodeURIComponent('НЭН для родителей — веб-версия'); }} />
         <${Row} title="Для исследования" sub=${`Участник ${statsCode()} · отчёт за неделю`} onClick=${() => go('/profil/issledovanie')} />
       </div>
       <p class="tiny">Пробная веб-версия приложения НЭН. Всё, что вы записываете, хранится только на этом телефоне.</p>
@@ -50,7 +53,7 @@ function ChildCard({ params }) {
   const s = useStore();
   const isNew = params.id === 'novyy';
   const c = isNew ? null : s.children.find((x) => x.id === params.id);
-  const [expecting, setExpecting] = useState(c ? !!c.expecting : false);
+  const [expecting, setExpecting] = useState(c ? !!c.expecting : !!current().query.zhdyom);
   const [name, setName] = useState(c ? c.name || '' : '');
   const [date, setDate] = useState(c ? ddmmyyyy(c.expecting ? c.due : c.dob) : '');
   const [sex, setSex] = useState(c ? c.sex : null);
@@ -162,7 +165,7 @@ function City() {
   const find = async () => {
     if (q.trim().length < 2) return;
     setBusy(true);
-    try { const { searchCities } = await import('./tabs/segodnya/weather.js?v=20'); setFound(await searchCities(q.trim())); } catch (e) { setFound([]); toast({ text: 'Не нашли — нужна сеть. Попробуйте ещё раз', ms: 2500 }); }
+    try { const { searchCities } = await import('./tabs/segodnya/weather.js?v=21'); setFound(await searchCities(q.trim())); } catch (e) { setFound([]); toast({ text: 'Не нашли — нужна сеть. Попробуйте ещё раз', ms: 2500 }); }
     setBusy(false);
   };
   const here = () => {
@@ -255,11 +258,11 @@ function Diagnostics() {
   const standalone = navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
   const ver = ((document.querySelector('script[src*="app.js"]') || {}).src || '').split('v=')[1] || '—';
   const lines = [
-    `Версия веб-версии: ${ver}`,
+    `Версия: ${ver}`,
     `Телефон: ${/iPhone/.test(ua) ? 'iPhone' : /iPad/.test(ua) ? 'iPad' : /Android/.test(ua) ? 'Android' : 'другое'}${ios ? ', iOS ' + ios : ''}`,
     `Открыто: ${standalone ? 'с экрана телефона (как приложение)' : where}`,
-    `Хранение записей: ${storage.ok ? 'работает' : 'не работает — ' + storage.error}`,
-    `Сохранение без structuredClone: ${typeof structuredClone === 'function' ? 'не нужно' : 'включено'}`,
+    `Хранение записей: ${storage.ok ? 'работает' : 'не работает (' + storage.error + ')'}`,
+    `Запасное сохранение: ${typeof structuredClone === 'function' ? 'не нужно' : 'включено'}`,
     `Детей: ${getState().children.length}, записей: ${getState().records.length}`,
   ];
   const text = lines.join('\n') + '\n' + ua;
@@ -273,7 +276,52 @@ function Diagnostics() {
     </div>`;
 }
 
+// Напоминания — как «Настройки → Напоминания» в приложении. В веб-версии уведомлений нет:
+// напоминание встаёт на «Сегодня». В приложении — уведомлением, тихие часы 22–7 переносят на утро.
+const REMINDERS = [
+  ['visits', 'Визиты к врачу', 'Накануне — с адресом и временем'],
+  ['vaccines', 'Прививки по календарю', 'Когда подходит срок и за день до записи'],
+  ['meds', 'Лекарства по расписанию', 'Во время приёма'],
+  ['medkit', 'Аптечка', 'Когда кончается срок годности'],
+  ['notes', 'Заметки', 'В день, который выбрали'],
+  ['backup', 'Копия записей', 'Раз в неделю, в 19:00'],
+  ['quiet', 'Тихие часы', 'С 22 до 7 — перенесём на утро'],
+];
+function Reminders() {
+  const s = useStore();
+  const r = (s.settings && s.settings.reminders) || {};
+  const set = (k) => update((d) => { d.settings.reminders = { ...(d.settings.reminders || {}), [k]: r[k] === false }; track('напоминания:' + k); });
+  return html`
+    <div class="screen">
+      <${Back} title="Напоминания" />
+      <p class="lead">О чём напомнить. Выключенное не придёт, записи останутся.</p>
+      <div class="rows">${REMINDERS.map(([k, t, sub]) => html`<${Row} key=${k} title=${t} sub=${sub} end=${r[k] === false ? 'выключено' : 'включено'} onClick=${() => set(k)} />`)}</div>
+      <p class="small">В пробной веб-версии напоминания приходят на «Сегодня», в «Важно сейчас». В приложении — уведомлением на телефоне; подробности на заблокированном экране не показываем.</p>
+    </div>`;
+}
+
+// «НЭН Плюс» — что даёт подписка (как app/src/access/features.ts). Семья — бесплатно (журнал, 5 ноября)
+function Plus() {
+  const items = [
+    ['✦ Помощник «Спросить»', 'Ответы по вашим записям и материалам НЭН'],
+    ['Программа недели', 'Под ребёнка: по возрасту и дневнику'],
+    ['Выписка для врача в PDF', 'И ссылка врачу на неё'],
+    ['Все сказки и колыбельные', '«Минутка для себя» целиком и сказка голосом мамы'],
+    ['Психологи Балансити', 'Со скидкой на консультации'],
+  ];
+  return html`
+    <div class="screen">
+      <${Back} title="НЭН Плюс" />
+      <p class="lead">Плюс открывает помощника и всё, что редакция делает сверх бесплатного.</p>
+      <div class="rows">${items.map(([t, sub]) => html`<${Row} key=${t} title=${t} sub=${sub} />`)}</div>
+      <p class="p">Дневник, развитие, рост, здоровье, напоминания и «Вести дневник вместе» бесплатны всегда.</p>
+      <p class="small">Платный Клуб НЭН включает Плюс. В пробной версии Плюс не продаётся.</p>
+    </div>`;
+}
+
 export const profileRoutes = [
+  { path: '/profil/napominaniya', view: Reminders },
+  { path: '/profil/plus', view: Plus },
   { path: '/profil/pomosh', view: Diagnostics },
   { path: '/profil', view: Profile },
   { path: '/profil/rebyonok/:id', view: ChildCard },

@@ -1,23 +1,23 @@
 // Вкладка «Для себя» — раздел о самом родителе (бриф docs/razdely/dlya-sebya.md,
 // Фигма «34 · V3 · Для себя», экраны 1–18). Главный экран меняется по времени суток:
 // днём полный состав, вечером — вечерние практики, ночью — тёмный экран с ночными практиками.
-import { html, useState, useEffect } from '../lib.js?v=20';
-import { useStore, update, getState, activeChild, now, uid, isSaved, toggleSaved, useTick } from '../store.js?v=20';
-import { Header, Back, Row, SecTitle, Ill, Pill, SaveButton, openSheet, closeSheet, toast } from '../ui.js?v=20';
-import { go, back } from '../router.js?v=20';
-import { track } from '../stats.js?v=20';
-import { usePlayer } from '../player.js?v=20';
-import { stripButtons } from '../strip.js?v=20';
-import { partOfDay, diffYMD, dateLong, weekdayShort, startOfDay, fromKey, clock, DAY, pl } from '../age.js?v=20';
+import { html, useState, useEffect } from '../lib.js?v=21';
+import { useStore, update, getState, activeChild, now, uid, isSaved, toggleSaved, useTick } from '../store.js?v=21';
+import { Header, Back, Row, SecTitle, Ill, Pill, SaveButton, openSheet, closeSheet, toast } from '../ui.js?v=21';
+import { go, back } from '../router.js?v=21';
+import { track } from '../stats.js?v=21';
+import { usePlayer } from '../player.js?v=21';
+import { stripButtons } from '../strip.js?v=21';
+import { partOfDay, diffYMD, dateLong, weekdayShort, startOfDay, fromKey, clock, DAY, pl } from '../age.js?v=21';
 import {
   PRACTICES, practiceById, locked, hasPlus, isDownloaded, startPractice, stopPractice, pauseOrResume, skipStep,
   isRunning, usePractice, elapsedSec, totalSec, stepAt, stepText, savedItem,
-} from './dlya-sebya/minutka.js?v=20';
+} from './dlya-sebya/minutka.js?v=21';
 import {
   PODBORKI, podborkaById, ORDER_FIRST_YEAR, ORDER_LATER, ORDER_NO_CHILD, TESTS, TOPIC_TESTS, HELP, PHONES,
   anyArticle, articleRoute, rowText,
-} from '../content/dlya-sebya-podborki.js?v=20';
-import { STATI } from '../content/dlya-sebya-stati.js?v=20';
+} from '../content/dlya-sebya-podborki.js?v=21';
+import { STATI } from '../content/dlya-sebya-stati.js?v=21';
 
 // ——— Общее ———
 const ds = (s = getState()) => s.dlyaSebya || {};
@@ -263,6 +263,18 @@ function NotesRow({ s }) {
 }
 
 // ——— Главный экран (экраны 1, 5, 6, 7, 9, 11, 13–17) ———
+// «Поорать» — Стена родительского ора НЭН (n-e-n.ru/cry/): анонимно, без входа, текстом (журнал, 5 ноября)
+const CRY_URL = 'https://n-e-n.ru/cry/';
+function CryCard({ offline }) {
+  return html`
+    <a class=${'card ds-cry' + (offline ? ' mn-pale' : '')} href=${offline ? null : CRY_URL} target="_blank" rel="noopener" onClick=${() => track('для себя:поорать')}>
+      <span class="ds-cry-a" aria-hidden="true">АААА!</span>
+      <span class="mn-title">Просто поорать</span>
+      <span class="small">Стена родительского ора: напишите, кто сегодня довёл, — анонимно и без входа. И посмотрите, из-за чего орут другие.</span>
+      <span class="mn-promo-go">${offline ? 'Нужна сеть' : 'Поорать на стене ›'}</span>
+    </a>`;
+}
+
 function Home() {
   usePractice();
   useTick(30000);
@@ -275,6 +287,7 @@ function Home() {
         <${Header} />
         <${SecTitle}>Минутка для себя<//>
         <div class="feed">${FEED.night.map((id) => html`<${PracticeCard} key=${id} id=${id} ctx=${ctx} />`)}</div>
+        <${CryCard} offline=${offline} />
         <div class="rows"><${HelpRow} /></div>
       </div>`;
   }
@@ -287,6 +300,7 @@ function Home() {
       <${Header} />
       ${inviteDue(s) ? html`<${MonthlyInvite} />` : html`<${KakVyBlock} ctx=${ctx} />`}
       <div class="rows"><${NotesRow} s=${s} /></div>
+      <${CryCard} offline=${offline} />
 
       <${SecTitle} more="Все" onMore=${() => { track('для себя:все практики'); go('/dlya-sebya/minutka'); }}>Минутка для себя<//>
       <div class="feed">${feed.map((id) => html`<${PracticeCard} key=${id} id=${id} ctx=${ctx} />`)}</div>
@@ -623,7 +637,7 @@ function Podborka({ params }) {
 
       ${test && html`
         <${SecTitle}>Тест в тему<//>
-        <div class=${'rows' + (offline ? ' ds-off' : '')}><${Row} title=${test.title} sub=${offline ? NEED_NET : 'Тест НЭН на сайте'} onClick=${() => openTest(test)} /></div>`}
+        <div class=${'rows' + (offline ? ' ds-off' : '')}><${Row} title=${test.title} sub=${offline ? NEED_NET : 'Лёгкий тест — откроется на сайте'} onClick=${() => openTest(test)} /></div>`}
 
       ${pb.practice && html`
         <${SecTitle}>Минутка в тему<//>
@@ -654,7 +668,7 @@ function TestsAll() {
       <${Header} />
       <h1 class="h1">Тесты</h1>
       <p class="lead">Лёгкие тесты НЭН — открываются на сайте n-e-n.ru.</p>
-      <div class=${'rows' + (offline ? ' ds-off' : '')}>${TESTS.map((t) => html`<${Row} key=${t.id} title=${t.title} sub=${offline ? NEED_NET : 'Тест НЭН'} onClick=${() => openTest(t)} />`)}</div>
+      <div class=${'rows' + (offline ? ' ds-off' : '')}>${TESTS.map((t) => html`<${Row} key=${t.id} title=${t.title} sub=${offline ? NEED_NET : 'Откроется на сайте'} onClick=${() => openTest(t)} />`)}</div>
     </div>`;
 }
 
@@ -727,6 +741,7 @@ export function searchItems(state) {
   for (const n of notesSorted(state)) {
     items.push({ title: noteTitle(n), sub: `Заметка · ${dateLong(n.at)}`, path: `/dlya-sebya/zametki?id=${n.id}`, text: n.text });
   }
+  items.push({ title: 'Просто поорать', sub: 'Стена родительского ора НЭН — анонимно', path: '/dlya-sebya', text: 'поорать орать ор злюсь бесит довёл выговориться стена кричать' });
   items.push({ title: 'Если тяжело', sub: HELP_ROW.sub, path: '/dlya-sebya/esli-tyazhelo', text: 'тяжело нет сил плачу слёзы злость не справляюсь выгорание депрессия психолог помощь телефон 112 103' });
   items.push({ title: 'Как вы?', sub: 'Вопрос о вас и анкета раз в месяц', path: '/dlya-sebya/kak-vy', text: 'как вы настроение самочувствие анкета телефоны помощи' });
   items.push({ title: 'Заметки', sub: 'Личный дневник родителя', path: '/dlya-sebya/zametki', text: 'заметки дневник записать мысли вопросы планы' });

@@ -373,3 +373,10 @@ body.night .allergy-box { background: #3a3020; color: #f3dfa8; }
 .wear-mode { margin-top: -2px; }
 .wear-quote { display: flex; flex-direction: column; gap: 4px; text-align: left; width: 100%; }
 .wear-src { font-size: 13px; font-weight: 600; color: var(--violet); }
+
+/* «Просто поорать» — Стена родительского ора */
+.ds-cry { display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: var(--ink); position: relative; overflow: hidden; background:
+  radial-gradient(110% 90% at 100% 0%, rgba(255, 212, 120, 0.55) 0%, rgba(255, 212, 120, 0) 60%),
+  radial-gradient(110% 90% at 0% 100%, rgba(255, 164, 192, 0.45) 0%, rgba(255, 164, 192, 0) 62%), #fff; }
+.ds-cry-a { position: absolute; right: 14px; top: 10px; font-size: 30px; font-weight: 700; letter-spacing: -1px; color: rgba(65, 55, 107, 0.16); transform: rotate(-6deg); }
+body.night .ds-cry { background: var(--bg); }

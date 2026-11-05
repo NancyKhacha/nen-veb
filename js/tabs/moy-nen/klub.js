@@ -1,12 +1,12 @@
 // Клуб НЭН — экраны 6, 7, 10, 15 и карточка Клуба на главном (экраны 1, 2, 12, 14, 18).
 // В веб-версии вход выключен: Клуб — для примера, по флагу «В Клубе» в «Для исследования».
-import { html, useState } from '../../lib.js?v=20';
-import { useStore, now } from '../../store.js?v=20';
-import { dateLong } from '../../age.js?v=20';
-import { Row, SecTitle, Pill, openSheet, closeSheet, toast } from '../../ui.js?v=20';
-import { go } from '../../router.js?v=20';
-import { track } from '../../stats.js?v=20';
-import { mn, setMN, access, useOffline, Inner, EFIR, RECORDS, nextEfir, efirWhen, efirDayAcc, efirFits } from './util.js?v=20';
+import { html, useState } from '../../lib.js?v=21';
+import { useStore, now } from '../../store.js?v=21';
+import { dateLong } from '../../age.js?v=21';
+import { Row, SecTitle, Pill, openSheet, closeSheet, toast } from '../../ui.js?v=21';
+import { go } from '../../router.js?v=21';
+import { track } from '../../stats.js?v=21';
+import { mn, setMN, access, useOffline, Inner, EFIR, RECORDS, nextEfir, efirWhen, efirDayAcc, efirFits } from './util.js?v=21';
 
 const TRIAL = 'В пробной версии Клуб показан для примера: здесь этого нет.';
 const trial = (what) => { track('мой-нэн:клуб-' + what); toast({ text: TRIAL, ms: 3500 }); };
@@ -135,7 +135,7 @@ function FreeRows({ offline }) {
     <div class="rows">
       <${Row} title="Карта участника" sub="Бесплатный Клуб · карта активна" onClick=${() => openCard('free')} />
       ${offline
-        ? html`<${Row} title="Подарки и встречи" sub="Нужна сеть" chev=${false} onClick=${() => {}} />`
+        ? html`<${Row} title="Подарки и встречи" sub="Нужна сеть" />`
         : html`
           <${Row} title="Подарки партнёров" sub=${`Промокоды и скидки — ближайший срок ${dateLong(endOfMonth(now()))}`} onClick=${() => trial('подарки')} />
           <${Row} title="Встречи один на один" sub="Знакомства с участниками Клуба" onClick=${() => trial('встречи')} />`}
@@ -153,7 +153,7 @@ export function ClubBlock({ acc, offline }) {
         ${offline
           ? html`
             <${Row} title="Карта участника" sub="Платный Клуб · номер в телефоне" onClick=${() => openCard('paid')} />
-            <div class="mn-pale"><${Row} title="Канал и чат в Telegram" sub="Нужна сеть" onClick=${() => {}} /></div>`
+            <div class="mn-pale"><${Row} title="Канал и чат в Telegram" sub="Нужна сеть" /></div>`
           : html`
             <${Row} title="Канал и чат в Telegram" sub="Сообщество Клуба" onClick=${() => trial('telegram')} />
             <${Row} title="Карта участника" sub="Платный Клуб · карта активна" onClick=${() => openCard('paid')} />`}
@@ -181,14 +181,14 @@ function Club({ query }) {
         <${SecTitle} more=${offline ? null : 'Все'} onMore=${() => trial('все-записи')}>Записи эфиров<//>
         <div class="rows">
           ${offline
-            ? html`<div class="mn-pale"><${Row} title="Записи эфиров" sub="Нужна сеть" onClick=${() => {}} /></div>`
+            ? html`<div class="mn-pale"><${Row} title="Записи эфиров" sub="Нужна сеть" /></div>`
             : RECORDS.map((r) => html`<${Row} title=${r.title} sub=${r.sub} onClick=${() => trial('запись')} />`)}
         </div>
         <${SecTitle}>В Клубе<//>
         <div class="rows">
           <${Row} title="Карта участника" sub=${offline ? 'Номер в телефоне' : 'Номер для партнёров'} onClick=${() => openCard('paid')} />
           ${offline
-            ? html`<div class="mn-pale"><${Row} title="Telegram, подарки и встречи" sub="Нужна сеть" onClick=${() => {}} /></div>`
+            ? html`<div class="mn-pale"><${Row} title="Telegram, подарки и встречи" sub="Нужна сеть" /></div>`
             : html`
               <${Row} title="Канал и чат в Telegram" sub="Сообщество Клуба по темам и возрастам" onClick=${() => trial('telegram')} />
               <${Row} title="Подарки партнёров" sub="Промокоды и скидки для участников" onClick=${() => trial('подарки')} />

@@ -1,19 +1,19 @@
 // «Ребёнок → Здоровье» (экраны 8, 18): прививки и визиты — теми же строками, что «На этой неделе»,
 // что было — с отметкой; медкарта строками; болезнь и лекарства; симптомы; аптечка; документы после рождения.
-import { html, useState, useEffect } from '../../lib.js?v=20';
-import { useStore, getState, update, now, uid } from '../../store.js?v=20';
-import { Header, Back, SecTitle, Row, Pill, Field, openSheet, closeSheet, toast } from '../../ui.js?v=20';
-import { DAY, startOfDay, dateLong, dateWithWeekday, weekdayShort, dayKey, hhmm, ageMonths, isPreterm, childAgeLine, diffYMD } from '../../age.js?v=20';
-import { addRecord, removeRecord, recordsOf } from '../../records.js?v=20';
-import { EditSheet } from '../../strip.js?v=20';
-import { Stepper } from './rost.js?v=20';
-import { go } from '../../router.js?v=20';
-import { track } from '../../stats.js?v=20';
-import { CHECKUP_PLAN, SYMPTOMS, SYMPTOMS_INTRO, SYMPTOMS_SMALL, KIT, TEETH, POST_BIRTH } from '../../content/rebyonok-spravka.js?v=20';
+import { html, useState, useEffect } from '../../lib.js?v=21';
+import { useStore, getState, update, now, uid } from '../../store.js?v=21';
+import { Header, Back, SecTitle, Row, Pill, Field, openSheet, closeSheet, toast } from '../../ui.js?v=21';
+import { DAY, startOfDay, dateLong, dateWithWeekday, weekdayShort, dayKey, hhmm, ageMonths, isPreterm, childAgeLine, diffYMD } from '../../age.js?v=21';
+import { addRecord, removeRecord, recordsOf } from '../../records.js?v=21';
+import { EditSheet } from '../../strip.js?v=21';
+import { Stepper } from './rost.js?v=21';
+import { go } from '../../router.js?v=21';
+import { track } from '../../stats.js?v=21';
+import { CHECKUP_PLAN, SYMPTOMS, SYMPTOMS_INTRO, SYMPTOMS_SMALL, KIT, TEETH, POST_BIRTH } from '../../content/rebyonok-spravka.js?v=21';
 import { R, rUpdate, forChild, bornChild, nameOf, cap, vaccineGroups, dueVaccineGroups, vaccineSub, openVaccine, lastDoneVaccine,
-  illness, endIllness, startIllness, tasksOf, inAge, addTask, setTask, removeTask, timeOf, measures, measureLine, Prose, Blocks, inFirstYear, isOffline , NotBorn } from './util.js?v=20';
-import { SHEETS, notYet } from './razvitie.js?v=20';
-import { openNewMoment } from './momenty.js?v=20';
+  illness, endIllness, startIllness, tasksOf, inAge, addTask, setTask, removeTask, timeOf, measures, measureLine, Prose, Blocks, inFirstYear, isOffline , NotBorn } from './util.js?v=21';
+import { SHEETS, notYet } from './razvitie.js?v=21';
+import { openNewMoment } from './momenty.js?v=21';
 
 // ——— Визиты к врачу: дела kind 'doctor' (как на «Сегодня») ———
 const DOCTORS = [['педиатр', 'Осмотр у педиатра'], ['невролог', 'Осмотр у невролога'], ['стоматолог', 'Стоматолог, плановый осмотр'], ['другой', 'Визит к врачу']];

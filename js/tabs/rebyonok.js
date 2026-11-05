@@ -1,19 +1,19 @@
 // Вкладка «Ребёнок» — Фигма, страница «33 · V3 · Ребёнок», бриф docs/razdely/rebyonok.md.
 // Дашборд — блок на каждый раздел с фактом о ребёнке; разделы — в папке rebyonok/.
-import { activitiesFor } from '../content/activities.js?v=20';
-import { TALES, SONGS } from '../content/rebyonok-skazki.js?v=20';
-import { SYMPTOMS, SKILLS, POST_BIRTH } from '../content/rebyonok-spravka.js?v=20';
-import { activeChild, now } from '../store.js?v=20';
-import { ageMonths } from '../age.js?v=20';
-import { homeRoutes } from './rebyonok/home.js?v=20';
-import { dnevnikRoutes } from './rebyonok/dnevnik.js?v=20';
-import { razvitieRoutes } from './rebyonok/razvitie.js?v=20';
-import { skazkiRoutes } from './rebyonok/skazki.js?v=20';
-import { zdorovyeRoutes } from './rebyonok/zdorovye.js?v=20';
-import { rostRoutes } from './rebyonok/rost.js?v=20';
-import { momentyRoutes } from './rebyonok/momenty.js?v=20';
-import { istoriyaRoutes } from './rebyonok/istoriya.js?v=20';
-import { etapyRoutes } from './rebyonok/etapy.js?v=20';
+import { activitiesFor } from '../content/activities.js?v=21';
+import { TALES, SONGS } from '../content/rebyonok-skazki.js?v=21';
+import { SYMPTOMS, SKILLS, POST_BIRTH } from '../content/rebyonok-spravka.js?v=21';
+import { activeChild, now } from '../store.js?v=21';
+import { ageMonths } from '../age.js?v=21';
+import { homeRoutes } from './rebyonok/home.js?v=21';
+import { dnevnikRoutes } from './rebyonok/dnevnik.js?v=21';
+import { razvitieRoutes } from './rebyonok/razvitie.js?v=21';
+import { skazkiRoutes } from './rebyonok/skazki.js?v=21';
+import { zdorovyeRoutes } from './rebyonok/zdorovye.js?v=21';
+import { rostRoutes } from './rebyonok/rost.js?v=21';
+import { momentyRoutes } from './rebyonok/momenty.js?v=21';
+import { istoriyaRoutes } from './rebyonok/istoriya.js?v=21';
+import { etapyRoutes } from './rebyonok/etapy.js?v=21';
 
 export const routes = [
   ...homeRoutes, ...dnevnikRoutes, ...razvitieRoutes, ...skazkiRoutes, ...zdorovyeRoutes, ...rostRoutes, ...momentyRoutes, ...istoriyaRoutes, ...etapyRoutes,
@@ -59,5 +59,9 @@ export function searchItems(state) {
   for (const x of TALES) items.push({ title: x.title, sub: 'Сказка', path: '/rebyonok/skazka/' + x.id, text: [x.alt, x.author, x.about].filter(Boolean).join(' ') });
   for (const x of SKILLS) items.push({ title: x.h1, sub: 'Когда начинает', path: '/rebyonok/razvitie/kogda/' + x.slug, text: x.chip + ' ' + (x.v || '') });
   for (const x of POST_BIRTH) items.push({ title: x.title, sub: 'Документы после рождения', path: '/rebyonok/dokumenty', text: x.deadline || '' });
+  // Своё, что записано на этом телефоне: моменты, дела, кружки
+  for (const x of (state.moments || []).filter((y) => y.text)) items.push({ title: x.text.slice(0, 70), sub: 'Момент', path: '/rebyonok/momenty', text: x.text });
+  for (const x of (state.tasks || []).filter((y) => y.title)) items.push({ title: x.title, sub: 'Дело в дневнике', path: '/rebyonok/dnevnik', text: x.title });
+  for (const e of Object.values(state.etapy || {})) for (const c of (e.clubs || [])) items.push({ title: c.name, sub: 'Кружок', path: '/rebyonok/kruzhki', text: [c.place, c.bring].filter(Boolean).join(' ') });
   return items;
 }

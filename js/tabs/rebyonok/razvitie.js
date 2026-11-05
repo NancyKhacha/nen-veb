@@ -1,16 +1,16 @@
 // «Ребёнок → Развитие» (экраны 5, 6): ориентиры возраста с датой отметки, лист «Видели?»,
 // занятия лентой, заметка для педиатра, наблюдения, «Когда начинает» и страницы справочника.
-import { html, useState } from '../../lib.js?v=20';
-import { useStore, getState, update, now, uid } from '../../store.js?v=20';
-import { Header, Back, SecTitle, Row, Ill, Pill, SaveButton, Field, openSheet, closeSheet, toast } from '../../ui.js?v=20';
-import { DAY, dateLong, ageMonths, isPreterm, childAgeLine, startOfDay, dayKey } from '../../age.js?v=20';
-import { CDC } from '../../content/reference.js?v=20';
-import { activitiesFor, activityById, activityOfDay } from '../../content/activities.js?v=20';
-import { SKILLS, CARE, ACT_EARLY, FAQ } from '../../content/rebyonok-spravka.js?v=20';
-import { go } from '../../router.js?v=20';
-import { track } from '../../stats.js?v=20';
-import { R, rUpdate, forChild, bornChild, nameOf, Seg, FeedCard, isOffline, tasksOf, cap , NotBorn } from './util.js?v=20';
-import { openNewMoment } from './momenty.js?v=20';
+import { html, useState } from '../../lib.js?v=21';
+import { useStore, getState, update, now, uid } from '../../store.js?v=21';
+import { Header, Back, SecTitle, Row, Ill, Pill, SaveButton, Field, openSheet, closeSheet, toast } from '../../ui.js?v=21';
+import { DAY, dateLong, ageMonths, isPreterm, childAgeLine, startOfDay, dayKey } from '../../age.js?v=21';
+import { CDC } from '../../content/reference.js?v=21';
+import { activitiesFor, activityById, activityOfDay } from '../../content/activities.js?v=21';
+import { SKILLS, CARE, ACT_EARLY, FAQ } from '../../content/rebyonok-spravka.js?v=21';
+import { go } from '../../router.js?v=21';
+import { track } from '../../stats.js?v=21';
+import { R, rUpdate, forChild, bornChild, nameOf, Seg, FeedCard, isOffline, tasksOf, cap , NotBorn } from './util.js?v=21';
+import { openNewMoment } from './momenty.js?v=21';
 
 // Листы CDC по возрасту и подписи к ним
 export const SHEETS = Object.entries(CDC).map(([key, v]) => ({ key, m: v.m, items: v.domains.flatMap((d) => d.items.map((it) => ({ ...it, domain: d.title }))), domains: v.domains })).sort((a, b) => a.m - b.m);

@@ -1,11 +1,11 @@
 // Общие детали экранов — те же, что в Фигме: шапка, строка, карточка, лист, сообщение, меню.
-import { html, useState, useEffect } from './lib.js?v=20';
-import { useStore, activeChild, update, isSaved, toggleSaved, usePhoto, now } from './store.js?v=20';
-import { childAgeLine, pl } from './age.js?v=20';
-import { go, back, current } from './router.js?v=20';
-import { track } from './stats.js?v=20';
-import { usePlayer } from './player.js?v=20';
-import { cover, coverOfUrl } from './content/covers.js?v=20';
+import { html, useState, useEffect } from './lib.js?v=21';
+import { useStore, activeChild, update, isSaved, toggleSaved, usePhoto, now } from './store.js?v=21';
+import { childAgeLine, pl } from './age.js?v=21';
+import { go, back, current, match } from './router.js?v=21';
+import { track } from './stats.js?v=21';
+import { usePlayer } from './player.js?v=21';
+import { cover, coverOfUrl } from './content/covers.js?v=21';
 
 // ——— Лист поверх экрана и сообщение внизу ———
 let overlay = { sheet: null, toast: null };
@@ -87,9 +87,11 @@ export function setNewsCheck(fn) { newsCheck = fn; }
 const ROOTS = ['/segodnya', '/rebyonok', '/dlya-sebya', '/moy-nen'];
 const rootOf = (path) => { const r = '/' + (path.split('/')[1] || ''); return ROOTS.includes(r) ? r : '/segodnya'; };
 const Chevron = () => html`<svg class="chev-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>`;
+// Если истории нет (открыли по ссылке) — в начало своей вкладки: статья из «Мой НЭН» — в «Мой НЭН»
+const homeOf = (path) => { const m = match(path); return (m && m.route && m.route.tab) || rootOf(path); };
 export function BackArrow() {
   const path = current().path;
-  return html`<button class="back-arrow" aria-label="Назад" onClick=${() => { track('назад:шапка'); back(rootOf(path)); }}><${Chevron} /></button>`;
+  return html`<button class="back-arrow" aria-label="Назад" onClick=${() => { track('назад:шапка'); back(homeOf(path)); }}><${Chevron} /></button>`;
 }
 
 export function Header({ newsDot }) {
@@ -167,7 +169,7 @@ export function ChildSwitcher() {
 export function Back({ title, to, right }) {
   return html`
     <div class="back between">
-      <button class="back-btn" onClick=${() => (to ? go(to) : back(rootOf(current().path)))}><${Chevron} />Назад</button>
+      <button class="back-btn" onClick=${() => (to ? go(to) : back(homeOf(current().path)))}><${Chevron} />Назад</button>
       ${right || ''}
     </div>
     ${title && html`<h1 class="h1" style="font-size:24px">${title}</h1>`}`;
@@ -271,7 +273,9 @@ export function SaveButton({ item, label = 'Сохранить' }) {
 // и сообщением, а ночью — вместе со всем, кроме записи.
 export function AskButton() {
   const o = useOverlay();
+  const s = useStore();
   if (o.sheet || o.toast) return null;
+  if (s.records.some((r) => r.end == null && ['sleep', 'feed', 'walk'].includes(r.type))) return null;
   return html`<button class="ask-fab" onClick=${() => { track('помощник:кнопка'); go('/sprosit'); }}><${Spark} />Спросить</button>`;
 }
 
