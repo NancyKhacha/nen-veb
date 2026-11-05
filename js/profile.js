@@ -33,6 +33,7 @@ function Profile() {
       </div>
       <${SecTitle}>Проверка<//>
       <div class="rows">
+        <${Row} title="Посмотреть первый вход" sub="Пройти его ещё раз, как в первый день. Записи не тронутся" onClick=${startPreview} />
         <${Row} title="Для исследования" sub=${`Участник ${statsCode()} · отчёт за неделю`} onClick=${() => go('/profil/issledovanie')} />
       </div>
       <p class="tiny">Пробная веб-версия приложения НЭН. Всё, что вы записываете, хранится только на этом телефоне.</p>

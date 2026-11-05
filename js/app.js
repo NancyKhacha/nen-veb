@@ -63,7 +63,8 @@ function App() {
 
   useEffect(() => {
     if (!s.onboarded && !free) go('/start', { replace: true });
-    else if (s.onboarded && (path === '/' || path === '' || (path === '/start' && !isPreview()))) go('/segodnya', { replace: true });
+    // Первый вход пройден: его шаги открываются только показом (не «назад» в анкету ребёнка)
+    else if (s.onboarded && !isPreview() && (path === '/' || path === '' || ['/start', '/start/rebyonok', '/start/zhdyom', '/start/temy'].includes(path))) go('/segodnya', { replace: true });
   }, [s.onboarded, path]);
 
   const m = match(path) || match('/segodnya');
