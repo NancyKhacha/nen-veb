@@ -1,12 +1,12 @@
 // «Идея на сегодня» — экран 8 и карточка на главном. Рецепт открыт всем, без входа.
-import { html } from '../../lib.js?v=24';
-import { useStore } from '../../store.js?v=24';
-import { Ill } from '../../ui.js?v=24';
-import { go } from '../../router.js?v=24';
-import { track } from '../../stats.js?v=24';
-import { ARTICLES } from '../../content/articles.js?v=24';
-import { recipeById } from '../../content/moy-nen-kuhnya.js?v=24';
-import { Inner, ideaToday, openSite, useOffline } from './util.js?v=24';
+import { html } from '../../lib.js?v=25';
+import { useStore } from '../../store.js?v=25';
+import { Ill } from '../../ui.js?v=25';
+import { go } from '../../router.js?v=25';
+import { track } from '../../stats.js?v=25';
+import { ARTICLES } from '../../content/articles.js?v=25';
+import { recipeById } from '../../content/moy-nen-kuhnya.js?v=25';
+import { Inner, ideaToday, openSite, useOffline } from './util.js?v=25';
 
 const line = (r) => r.line || `Из подборки НЭН «${r.source.title}».`;
 const openIdea = (r) => { track('мой-нэн:идея'); go('/moy-nen/ideya?id=' + r.id); };

@@ -1,13 +1,13 @@
 // Вкладка «Мой НЭН» — Фигма «35 · V3 · Мой НЭН», бриф docs/razdely/moy-nen.md.
 // Что почитать и что продолжить: статьи НЭН, «Сегодня в НЭН», «Идея на сегодня», Школа и Клуб.
 // Экраны — в папке moy-nen/; читалка /statya/:id — общая для всех вкладок.
-import { homeRoutes } from './moy-nen/home.js?v=24';
-import { readerRoutes, articleSearch } from './moy-nen/reader.js?v=24';
-import { pochitatRoutes } from './moy-nen/pochitat.js?v=24';
-import { kursRoutes } from './moy-nen/kurs.js?v=24';
-import { klubRoutes } from './moy-nen/klub.js?v=24';
-import { ideyaRoutes } from './moy-nen/ideya.js?v=24';
-import { stripHere } from './moy-nen/util.js?v=24';
+import { homeRoutes } from './moy-nen/home.js?v=25';
+import { readerRoutes, articleSearch } from './moy-nen/reader.js?v=25';
+import { pochitatRoutes } from './moy-nen/pochitat.js?v=25';
+import { kursRoutes } from './moy-nen/kurs.js?v=25';
+import { klubRoutes } from './moy-nen/klub.js?v=25';
+import { ideyaRoutes } from './moy-nen/ideya.js?v=25';
+import { stripHere } from './moy-nen/util.js?v=25';
 
 // Полоса записи — как на «Сегодня»: с трёх лет на этой вкладке её нет (экран 9).
 // Тёмная тема ночью — как у всех вкладок: отдельного ночного экрана нет.

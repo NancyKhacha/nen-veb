@@ -1,33 +1,33 @@
 // Вкладка «Сегодня» — Фигма «32 · V3 · Сегодня», экраны 1–17, и «36 · V3 · Первый вход», экраны 4, 6, 8.
 // Что показать, решают этап, возраст (у недоношенных до двух лет — исправленный), время суток и записи.
-import { html, useState, useEffect } from '../lib.js?v=24';
-import { useStore, useTick, update, now, activeChild } from '../store.js?v=24';
-import { DAY, startOfDay, dayKey, ageMonths, dateWithWeekday, pl, partOfDay, durShort } from '../age.js?v=24';
-import { summaryLine, finishRecord, SIDE } from '../records.js?v=24';
-import { Plaques, OtherSheet, finishSleep, finishFeed } from '../strip.js?v=24';
-import { Header, Back, Row, SecTitle, Ill, SaveButton, Field, openSheet, toast } from '../ui.js?v=24';
-import { go } from '../router.js?v=24';
-import { track } from '../stats.js?v=24';
-import { playNoise, usePlayer, stop as stopPlayer } from '../player.js?v=24';
-import { FACTS, factsFor, factById } from '../content/facts.js?v=24';
-import { activitiesFor } from '../content/activities.js?v=24';
-import { articleById } from '../content/articles.js?v=24';
-import { PREP } from '../content/segodnya-expecting.js?v=24';
+import { html, useState, useEffect } from '../lib.js?v=25';
+import { useStore, useTick, update, now, activeChild } from '../store.js?v=25';
+import { DAY, startOfDay, dayKey, ageMonths, dateWithWeekday, pl, partOfDay, durShort } from '../age.js?v=25';
+import { summaryLine, finishRecord, SIDE } from '../records.js?v=25';
+import { Plaques, OtherSheet, finishSleep, finishFeed } from '../strip.js?v=25';
+import { Header, Back, Row, SecTitle, Ill, SaveButton, Field, openSheet, toast } from '../ui.js?v=25';
+import { go } from '../router.js?v=25';
+import { track } from '../stats.js?v=25';
+import { playNoise, usePlayer, stop as stopPlayer } from '../player.js?v=25';
+import { FACTS, factsFor, factById } from '../content/facts.js?v=25';
+import { activitiesFor } from '../content/activities.js?v=25';
+import { articleById } from '../content/articles.js?v=25';
+import { PREP } from '../content/segodnya-expecting.js?v=25';
 import {
   ROUTES, seg, stageOf, splitFact, articleByUrl, shortUrl, hash, lowerFirst,
   sleepNormLine, promiseLine, firstHint, FIRST_WEEKS, everNightSleep, anyRecords, hardSleepWeek,
   factsOfDay, activityPick, activityTitle, activityText, articlePool, nenToday, newInAge,
   calendarVaccine, plannedVaccines, calendarCheckup, tasksOf, isVisit, whenLine, dayPlan, urgentItem,
   weekDays, expectingWeek, weekArticle, nextClubLive, newsItems, hasNews,
-} from './segodnya/logic.js?v=24';
+} from './segodnya/logic.js?v=25';
 import {
   setSeg, markOpened, WeekStrip, Total, Note, DayCard, Feed, ThisWeek, WeatherCard,
   NewTaskSheet, TaskSheet, VaccineSheet, CheckupSheet,
-} from './segodnya/parts.js?v=24';
-import { refreshWeather, useOnline } from './segodnya/weather.js?v=24';
-import { KidsBar } from '../ui.js?v=24';
-import { clubsOn, checkupNow, sadLine } from './rebyonok/etapy.js?v=24';
-import { sectionOn, schoolSeason } from '../stages.js?v=24';
+} from './segodnya/parts.js?v=25';
+import { refreshWeather, useOnline } from './segodnya/weather.js?v=25';
+import { KidsBar } from '../ui.js?v=25';
+import { clubsOn, checkupNow, sadLine } from './rebyonok/etapy.js?v=25';
+import { sectionOn, schoolSeason } from '../stages.js?v=25';
 
 // ——— «Важно сейчас» по возрасту: кружки сегодня, профосмотр, сад, запись в школу (журнал, 5 ноября) ———
 function StageToday({ child, s, t }) {

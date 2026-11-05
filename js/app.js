@@ -1,23 +1,23 @@
 // Каркас: какой экран показать, шапка, полоса записи, меню, листы и сообщения.
-import { html, render, useEffect, useState } from './lib.js?v=24';
-import { useStore, now, getState, storage } from './store.js?v=24';
-import { addRoutes, match, useRoute, go } from './router.js?v=24';
-import { Menu, OverlayHost, AskButton, openSheet } from './ui.js?v=24';
-import { RecordHub, RunningPill } from './strip.js?v=24';
-import { MiniPlayer } from './player.js?v=24';
-import { partOfDay } from './age.js?v=24';
-import { trackOpen } from './stats.js?v=24';
-import { onboardingRoutes, isPreview, markPreview, endPreview } from './onboarding.js?v=24';
-import { back } from './router.js?v=24';
-import { commonRoutes, setTabModules } from './common.js?v=24';
-import { profileRoutes } from './profile.js?v=24';
-import { semyaRoutes } from './semya.js?v=24';
-import { Header, setNewsCheck } from './ui.js?v=24';
+import { html, render, useEffect, useState } from './lib.js?v=25';
+import { useStore, now, getState, storage } from './store.js?v=25';
+import { addRoutes, match, useRoute, go } from './router.js?v=25';
+import { Menu, OverlayHost, AskButton, openSheet } from './ui.js?v=25';
+import { RecordHub, RunningPill } from './strip.js?v=25';
+import { MiniPlayer } from './player.js?v=25';
+import { partOfDay } from './age.js?v=25';
+import { trackOpen } from './stats.js?v=25';
+import { onboardingRoutes, isPreview, markPreview, endPreview, FIRST_LINE, FIRST_BODY } from './onboarding.js?v=25';
+import { back } from './router.js?v=25';
+import { commonRoutes, setTabModules } from './common.js?v=25';
+import { profileRoutes } from './profile.js?v=25';
+import { semyaRoutes } from './semya.js?v=25';
+import { Header, setNewsCheck } from './ui.js?v=25';
 
 // Вкладки грузятся по отдельности: ошибка в одной не роняет остальные
 const TABS = [['segodnya', '/segodnya', 'Сегодня'], ['rebyonok', '/rebyonok', 'Ребёнок'], ['dlya-sebya', '/dlya-sebya', 'Для себя'], ['moy-nen', '/moy-nen', 'Мой НЭН']];
 const mods = await Promise.all(TABS.map(async ([file, path, label]) => {
-  try { return await import(`./tabs/${file}.js?v=24`); }
+  try { return await import(`./tabs/${file}.js?v=25`); }
   catch (e) {
     console.error('Вкладка не загрузилась:', file, e);
     const Broken = () => html`<div class="screen"><${Header} /><p class="lead">«${label}» сейчас обновляется. Загляните чуть позже — записи на месте.</p></div>`;
@@ -34,23 +34,38 @@ addRoutes(profileRoutes);
 addRoutes(semyaRoutes);
 addRoutes(commonRoutes);
 
-// Экран загрузки: логотип НЭН и одна строка о том, что это (журнал, 4 ноября).
-// Один раз за запуск, полторы секунды; касание пропускает.
+// Экран загрузки: логотип НЭН и под названием — что это за приложение (журнал, 4 и 5 ноября).
+// Один раз за запуск; касание пропускает. В первый раз (и в показе первого входа) — весь текст
+// и четыре секунды, чтобы успеть прочитать; потом — одна строка и полторы секунды.
 function Splash() {
-  const [st, setSt] = useState(() => { try { return sessionStorage.getItem('nen-splash') ? 'gone' : 'on'; } catch (e) { return 'on'; } });
+  const pokaz = /pokaz=1/.test(location.hash);
+  const [full] = useState(() => pokaz || !getState().onboarded);
+  const [st, setSt] = useState(() => { if (pokaz) return 'on'; try { return sessionStorage.getItem('nen-splash') ? 'gone' : 'on'; } catch (e) { return 'on'; } });
   useEffect(() => {
     if (st !== 'on') return undefined;
     try { sessionStorage.setItem('nen-splash', '1'); } catch (e) { /* без хранилища тоже покажем */ }
-    const t1 = setTimeout(() => setSt('out'), 1500);
-    const t2 = setTimeout(() => setSt('gone'), 1950);
+    const hold = full ? 4000 : 1500;
+    const t1 = setTimeout(() => setSt('out'), hold);
+    const t2 = setTimeout(() => setSt('gone'), hold + 450);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
   if (st === 'gone') return null;
+  const cls = 'splash' + (full ? ' full' : '') + (st === 'out' ? ' out' : '');
+  // В первый раз заставка стоит ровно как верх первого экрана: исчезая, она оставляет текст на месте,
+  // а под ним появляются варианты «Это для вас, если»
+  if (full) return html`
+    <div class=${cls} role="status" onClick=${() => setSt('gone')}>
+      <div class="solo">
+        <div class="onb-logo"><img src="img/logo.svg" alt="НЭН" /></div>
+        <h1 class="h1">Нет, это нормально</h1>
+        <p class="onb-first"><b>${FIRST_LINE}</b>${FIRST_BODY}</p>
+      </div>
+    </div>`;
   return html`
-    <div class=${'splash' + (st === 'out' ? ' out' : '')} role="status" onClick=${() => setSt('gone')}>
+    <div class=${cls} role="status" onClick=${() => setSt('gone')}>
       <img src="img/logo.svg" alt="НЭН" />
       <div class="t">Нет, это нормально</div>
-      <div class="s">Первое приложение, которое растёт вместе с ребёнком</div>
+      <div class="s">${FIRST_LINE}</div>
     </div>`;
 }
 
@@ -114,7 +129,7 @@ let lastErr = 0;
 const showErr = (msg) => {
   if (Date.now() - lastErr < 4000) return;
   lastErr = Date.now();
-  import('./ui.js?v=24').then(({ toast }) => toast({ text: `Не получилось. Если повторится, пришлите снимок экрана: ${String(msg).slice(0, 120)}`, ms: 7000 }));
+  import('./ui.js?v=25').then(({ toast }) => toast({ text: `Не получилось. Если повторится, пришлите снимок экрана: ${String(msg).slice(0, 120)}`, ms: 7000 }));
 };
 window.addEventListener('error', (e) => showErr(e.message || e.error));
 window.addEventListener('unhandledrejection', (e) => showErr((e.reason && (e.reason.message || e.reason.name)) || e.reason));

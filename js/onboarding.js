@@ -1,10 +1,10 @@
 // Первый вход — Фигма «36 · V3 · Первый вход», экраны 1, 2, 3, 7, 9, 10, 11.
-import { html, useState } from './lib.js?v=24';
-import { useStore, update, uid, getState, replaceAll, savePhoto, now } from './store.js?v=24';
-import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy } from './age.js?v=24';
-import { go, back, current } from './router.js?v=24';
-import { Row, Pill, Field, toast, GestStepper, gestShort } from './ui.js?v=24';
-import { track } from './stats.js?v=24';
+import { html, useState } from './lib.js?v=25';
+import { useStore, update, uid, getState, replaceAll, savePhoto, now } from './store.js?v=25';
+import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy } from './age.js?v=25';
+import { go, back, current } from './router.js?v=25';
+import { Row, Pill, Field, toast, GestStepper, gestShort } from './ui.js?v=25';
+import { track } from './stats.js?v=25';
 
 export const TOPICS = [
   ['sleep', 'Сон'], ['food', 'Еда'], ['development', 'Развитие'],
@@ -15,6 +15,10 @@ const Dots = ({ n }) => html`<div class="onb-dots" aria-label=${`Шаг ${n} и�
 
 // Показ первого входа: пройти его заново и ничего не поменять в записях.
 // «Профиль → Для исследования → Посмотреть первый вход» или ссылка #/start?pokaz=1.
+// Что это за приложение — под названием на заставке и на первом экране (журнал, 5 ноября)
+export const FIRST_LINE = 'Первое приложение, которое растёт вместе с ребёнком';
+export const FIRST_BODY = 'Сон и кормления, врачи и прививки, сад, кружки и школа — в одном месте, с первого дня до выпускного. А редакция НЭН объяснит, что нормально.';
+
 const PREVIEW = 'nen-pokaz';
 let previewChild = null;
 export const isPreview = () => { try { return sessionStorage.getItem(PREVIEW) === '1'; } catch (e) { return false; } };
@@ -57,8 +61,7 @@ function Start() {
     <div class="solo">
       <div class="onb-logo"><img src="img/logo.svg" alt="НЭН" /></div>
       <h1 class="h1">Нет, это нормально</h1>
-      <p class="lead">Для родителей, которые хотят разобраться, а не соответствовать.</p>
-      <p class="onb-first"><b>Первое приложение, которое растёт вместе с ребёнком</b>Сон и кормления, врачи и прививки, сад, кружки и школа — в одном месте, с первого дня до выпускного. А редакция НЭН объяснит, что нормально.</p>
+      <p class="onb-first"><b>${FIRST_LINE}</b>${FIRST_BODY}</p>
       <div class="sec-title center">Это для вас, если</div>
       <div class="onb-stage">
         <${Row} title="Ребёнок уже родился" sub="и каждый день приносит новые вопросы" onClick=${pick('born', '/start/rebyonok')} />

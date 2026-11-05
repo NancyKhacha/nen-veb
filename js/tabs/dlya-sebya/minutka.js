@@ -1,12 +1,12 @@
 // «Минутка для себя»: практика идёт по шагам текста. Аудио ещё не записано, поэтому в общем плеере
 // играет тишина — так практика занимает тот же мини-плеер над полосой, что шум, и, как в приложении,
 // останавливает шум ребёнка (плеер один). Пауза и «Выключить» мини-плеера останавливают и практику.
-import { useState, useEffect } from '../../lib.js?v=24';
-import { update, getState, toggleSaved, isSaved } from '../../store.js?v=24';
-import { play, stop, toggle, playing, usePlayer } from '../../player.js?v=24';
-import { toast } from '../../ui.js?v=24';
-import { track } from '../../stats.js?v=24';
-import { PRACTICES, practiceById } from '../../content/dlya-sebya-minutka.js?v=24';
+import { useState, useEffect } from '../../lib.js?v=25';
+import { update, getState, toggleSaved, isSaved } from '../../store.js?v=25';
+import { play, stop, toggle, playing, usePlayer } from '../../player.js?v=25';
+import { toast } from '../../ui.js?v=25';
+import { track } from '../../stats.js?v=25';
+import { PRACTICES, practiceById } from '../../content/dlya-sebya-minutka.js?v=25';
 
 export { PRACTICES, practiceById };
 export const PLAYER_ID = 'minutka';

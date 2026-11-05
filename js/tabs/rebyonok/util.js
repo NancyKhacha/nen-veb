@@ -1,13 +1,13 @@
 // «Ребёнок»: общие детали раздела — своё хранилище, неделя, строки с точкой и кружком,
 // переключатель, «График», прививки, болезнь, воспоминания.
-import { html, useState } from '../../lib.js?v=24';
-import { getState, update, activeChild, now, uid } from '../../store.js?v=24';
-import { DAY, startOfDay, dayKey, weekdayShort, weekdayLong, dateLong, hhmm, ageMonths, isPreterm, diffYMD, pl } from '../../age.js?v=24';
-import { recordsOf, hasRecords, daySummary, describe, breastLine, SIDE, DIAPER, POTTY } from '../../records.js?v=24';
-import { VACCINES, vaccineDate } from '../../content/reference.js?v=24';
-import { go } from '../../router.js?v=24';
-import { track } from '../../stats.js?v=24';
-import { openSheet, closeSheet, toast, Pill, Header } from '../../ui.js?v=24';
+import { html, useState } from '../../lib.js?v=25';
+import { getState, update, activeChild, now, uid } from '../../store.js?v=25';
+import { DAY, startOfDay, dayKey, weekdayShort, weekdayLong, dateLong, hhmm, ageMonths, isPreterm, diffYMD, pl } from '../../age.js?v=25';
+import { recordsOf, hasRecords, daySummary, describe, breastLine, SIDE, DIAPER, POTTY } from '../../records.js?v=25';
+import { VACCINES, vaccineDate } from '../../content/reference.js?v=25';
+import { go } from '../../router.js?v=25';
+import { track } from '../../stats.js?v=25';
+import { openSheet, closeSheet, toast, Pill, Header } from '../../ui.js?v=25';
 
 // ——— Своё пространство в хранилище: s.rebyonok ———
 // ms: { childId: { cdcId: { st: 'no', at } } } — «Ещё нет» (а «Видели» — в s.done['cdc:<child>:<id>'])

@@ -1,17 +1,17 @@
 // «Сегодня»: что показать человеку прямо сейчас — по этапу, возрасту, времени суток и записям.
 // Здесь только расчёты по состоянию на телефоне; экраны — в segodnya.js и parts.js.
-import { getState, now, activeChild } from '../../store.js?v=24';
+import { getState, now, activeChild } from '../../store.js?v=25';
 import {
   DAY, startOfDay, dayKey, ageMonths, ageDays, diffYMD, isPreterm, correctedDob, partOfDay, pl,
   ageAt, dateWithWeekday, dateLong, weekdayLong, hhmm, pregnancyWeek, dur,
-} from '../../age.js?v=24';
-import { yesterdaySleep, sleepNorm, hasRecords, recordsOf } from '../../records.js?v=24';
-import { factsFor } from '../../content/facts.js?v=24';
-import { activitiesFor } from '../../content/activities.js?v=24';
-import { ARTICLES, articlesFor } from '../../content/articles.js?v=24';
-import { weekLines } from '../../content/weekly.js?v=24';
-import { VACCINES, CDC } from '../../content/reference.js?v=24';
-import { genitive } from '../../onboarding.js?v=24';
+} from '../../age.js?v=25';
+import { yesterdaySleep, sleepNorm, hasRecords, recordsOf } from '../../records.js?v=25';
+import { factsFor } from '../../content/facts.js?v=25';
+import { activitiesFor } from '../../content/activities.js?v=25';
+import { ARTICLES, articlesFor } from '../../content/articles.js?v=25';
+import { weekLines } from '../../content/weekly.js?v=25';
+import { VACCINES, CDC } from '../../content/reference.js?v=25';
+import { genitive } from '../../onboarding.js?v=25';
 
 const H = 3600e3;
 export const hash = (s) => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h); };

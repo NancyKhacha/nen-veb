@@ -1,6 +1,6 @@
 // Записи дневника: сон и кормление грудью идут таймером, остальное — одним касанием.
-import { getState, update, uid, now } from './store.js?v=24';
-import { DAY, startOfDay, dur, durShort, ageMonths, hhmm, relDay, pl } from './age.js?v=24';
+import { getState, update, uid, now } from './store.js?v=25';
+import { DAY, startOfDay, dur, durShort, ageMonths, hhmm, relDay, pl } from './age.js?v=25';
 
 export const TYPES = {
   sleep: { label: 'Сон', timer: true },

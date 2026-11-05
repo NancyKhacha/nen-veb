@@ -143,21 +143,22 @@ body.night .bottom { background: rgba(20, 18, 28, 0.82); }
 /* Экран загрузки: логотип и одна строка о том, что это */
 .splash { position: absolute; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 32px;
   background: radial-gradient(90% 60% at 20% 15%, #ffd3e0 0%, rgba(255, 211, 224, 0) 70%), radial-gradient(90% 60% at 85% 90%, #cfe4fd 0%, rgba(207, 228, 253, 0) 70%), linear-gradient(180deg, #fff6f9 0%, #f4eefb 55%, #eaf2fe 100%);
-  text-align: center; animation: fade .3s ease-out; transition: opacity .45s ease; }
+  text-align: center; transition: opacity .45s ease; }
 .splash.out { opacity: 0; pointer-events: none; }
-.splash img { width: 148px; height: auto; }
+.splash:not(.full) img { width: 148px; height: auto; }
+.splash.full { justify-content: flex-start; align-items: stretch; gap: 0; padding: var(--safe-t) 0 0; text-align: left; }
 .splash .t { font-size: 28px; font-weight: 500; letter-spacing: -0.5px; line-height: 1.2; color: var(--ink); }
-.splash .s { font-size: 16px; color: var(--muted); line-height: 1.45; max-width: 300px; }
+.splash .s { font-size: 18px; font-weight: 600; line-height: 1.3; color: var(--ink); max-width: 300px; margin-top: -6px; }
 
 /* Первый вход: один вопрос на экран, крупный заголовок по центру */
 .solo { gap: 16px; padding: 12px 20px calc(20px + var(--safe-b)); }
 .solo .h1 { text-align: center; margin-top: 8px; }
 .solo > .lead { text-align: center; color: var(--muted); font-size: 16px; }
 .solo .back { min-height: 40px; }
-.onb-logo { display: flex; justify-content: center; padding: 16px 0 4px; }
+.onb-logo { display: flex; justify-content: center; padding: 28px 0 4px; }
 .onb-logo img { width: 112px; height: auto; }
 .onb-stage { display: flex; flex-direction: column; gap: 10px; }
-.onb-stage .row { background: var(--bg); border: 0; border-radius: 22px; padding: 13px 18px; box-shadow: var(--shadow); }
+.onb-stage .row { background: var(--bg); border: 0; border-radius: 22px; padding: 16px 18px; box-shadow: var(--shadow); }
 .onb-stage .row-title { font-size: 17px; font-weight: 600; }
 .onb-dots { display: flex; justify-content: center; gap: 6px; padding-top: 4px; }
 .onb-dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--faint); }
@@ -380,5 +381,5 @@ body.night .allergy-box { background: #3a3020; color: #f3dfa8; }
   radial-gradient(110% 90% at 0% 100%, rgba(255, 164, 192, 0.45) 0%, rgba(255, 164, 192, 0) 62%), #fff; }
 .ds-cry-a { position: absolute; right: 14px; top: 10px; font-size: 30px; font-weight: 700; letter-spacing: -1px; color: rgba(65, 55, 107, 0.16); transform: rotate(-6deg); }
 body.night .ds-cry { background: var(--bg); }
-.onb-first { text-align: center; font-size: 15px; line-height: 1.45; color: var(--ink); margin: -4px 8px 2px; padding: 10px 14px; border-radius: 18px; background: linear-gradient(var(--bg), var(--bg)) padding-box, var(--brand) border-box; border: 1.5px solid transparent; }
-.onb-first b { display: block; font-size: 17px; font-weight: 600; line-height: 1.3; margin-bottom: 4px; }
+.onb-first { text-align: center; font-size: 16px; line-height: 1.45; color: var(--muted); margin: -6px 6px 4px; }
+.onb-first b { display: block; font-size: 18px; font-weight: 600; line-height: 1.3; color: var(--ink); margin-bottom: 8px; }
