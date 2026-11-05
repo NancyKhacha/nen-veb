@@ -1,10 +1,10 @@
 // Первый вход — Фигма «36 · V3 · Первый вход», экраны 1, 2, 3, 7, 9, 10, 11.
-import { html, useState } from './lib.js?v=17';
-import { useStore, update, uid, getState, replaceAll, savePhoto, now } from './store.js?v=17';
-import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy } from './age.js?v=17';
-import { go, back, current } from './router.js?v=17';
-import { Row, Pill, Field, toast, GestStepper, gestShort } from './ui.js?v=17';
-import { track } from './stats.js?v=17';
+import { html, useState } from './lib.js?v=18';
+import { useStore, update, uid, getState, replaceAll, savePhoto, now } from './store.js?v=18';
+import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy } from './age.js?v=18';
+import { go, back, current } from './router.js?v=18';
+import { Row, Pill, Field, toast, GestStepper, gestShort } from './ui.js?v=18';
+import { track } from './stats.js?v=18';
 
 export const TOPICS = [
   ['sleep', 'Сон'], ['food', 'Еда'], ['development', 'Развитие'],

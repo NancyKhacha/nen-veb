@@ -1,15 +1,15 @@
 // Профиль родителя — всё служебное: дети, темы, кнопки записи, копия, вход, «Для исследования».
-import { html, useState } from './lib.js?v=17';
-import { useStore, update, uid, getState, resetAll, savePhoto, now, storage } from './store.js?v=17';
-import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy, childAgeLine } from './age.js?v=17';
-import { go, back } from './router.js?v=17';
-import { Back, Row, SecTitle, Pill, Field, Avatar, toast, confirmAction, GestStepper } from './ui.js?v=17';
-import { TOPICS, Transfer, startPreview } from './onboarding.js?v=17';
-import { familyLine } from './semya.js?v=17';
-import { TodayTiles } from './tabs/rebyonok/istoriya.js?v=17';
-import { quickTypes, recordAllowed } from './stages.js?v=17';
-import { ageMonths } from './age.js?v=17';
-import { statsReport, statsCode, resetStats, track } from './stats.js?v=17';
+import { html, useState } from './lib.js?v=18';
+import { useStore, update, uid, getState, resetAll, savePhoto, now, storage } from './store.js?v=18';
+import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy, childAgeLine } from './age.js?v=18';
+import { go, back } from './router.js?v=18';
+import { Back, Row, SecTitle, Pill, Field, Avatar, toast, confirmAction, GestStepper } from './ui.js?v=18';
+import { TOPICS, Transfer, startPreview } from './onboarding.js?v=18';
+import { familyLine } from './semya.js?v=18';
+import { TodayTiles } from './tabs/rebyonok/istoriya.js?v=18';
+import { quickTypes, recordAllowed } from './stages.js?v=18';
+import { ageMonths } from './age.js?v=18';
+import { statsReport, statsCode, resetStats, track } from './stats.js?v=18';
 
 function Profile() {
   const s = useStore();

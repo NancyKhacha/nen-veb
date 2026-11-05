@@ -1,12 +1,12 @@
 // Читалка статьи НЭН — экраны 3 и 13. Общая для всех вкладок: /statya/:id.
 // Статьи веб-версии вшиты в сборку и читаются без сети; экран 13 — для того, чего в сборке нет.
-import { html, useEffect } from '../../lib.js?v=17';
-import { useStore, isSaved } from '../../store.js?v=17';
-import { dateLong } from '../../age.js?v=17';
-import { SecTitle, SaveButton, Ill } from '../../ui.js?v=17';
-import { track } from '../../stats.js?v=17';
-import { articleById, ARTICLES } from '../../content/articles.js?v=17';
-import { Inner, ArticleRow, readingFor, todays, savedItem, useOffline, openSite } from './util.js?v=17';
+import { html, useEffect } from '../../lib.js?v=18';
+import { useStore, isSaved } from '../../store.js?v=18';
+import { dateLong } from '../../age.js?v=18';
+import { SecTitle, SaveButton, Ill } from '../../ui.js?v=18';
+import { track } from '../../stats.js?v=18';
+import { articleById, ARTICLES } from '../../content/articles.js?v=18';
+import { Inner, ArticleRow, readingFor, todays, savedItem, useOffline, openSite } from './util.js?v=18';
 
 const fullDate = (iso) => { const [y, m, d] = iso.split('-').map(Number); return `${dateLong(new Date(y, m - 1, d).getTime())} ${y}`; };
 

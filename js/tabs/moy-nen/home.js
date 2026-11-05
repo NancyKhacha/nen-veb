@@ -2,18 +2,18 @@
 // Сверху — что начато (урок, эфир), потом продукты НЭН (Школа, Клуб), потом статьи и идея дня
 // (журнал, 5 ноября: было — продукты в конце).
 // Состояния для показа: #/moy-nen?sostoyanie=pusto | bez-seti | pervyy-zapusk | bez-akkaunta
-import { html } from '../../lib.js?v=17';
-import { useStore, activeChild, now } from '../../store.js?v=17';
-import { Header, Row, SecTitle, Ill, SaveButton } from '../../ui.js?v=17';
-import { go } from '../../router.js?v=17';
-import { track } from '../../stats.js?v=17';
-import { playNoise } from '../../player.js?v=17';
+import { html } from '../../lib.js?v=18';
+import { useStore, activeChild, now } from '../../store.js?v=18';
+import { Header, Row, SecTitle, Ill, SaveButton } from '../../ui.js?v=18';
+import { go } from '../../router.js?v=18';
+import { track } from '../../stats.js?v=18';
+import { playNoise } from '../../player.js?v=18';
 import {
   access, useOffline, readingFor, todays, freshToday, ideaToday, openArticle, ArticleRow, savedItem, courseFor,
-} from './util.js?v=17';
-import { ContinueCard, SchoolRow } from './kurs.js?v=17';
-import { ClubBlock, ClubInvite } from './klub.js?v=17';
-import { IdeaCard } from './ideya.js?v=17';
+} from './util.js?v=18';
+import { ContinueCard, SchoolRow } from './kurs.js?v=18';
+import { ClubBlock, ClubInvite } from './klub.js?v=18';
+import { IdeaCard } from './ideya.js?v=18';
 
 // Первая статья для возраста — карточкой
 function ArticleCard({ a }) {

@@ -2,15 +2,15 @@
 // документы ребёнка в одном месте (журнал, 5 ноября). Правила возраста — stages.js, тексты — content/etapy.js.
 // В веб-версии всё хранится на телефоне, в state.etapy[childId]. В приложении таких разделов пока нет:
 // это новые данные — решать Марии (сейчас там есть «К школе» с пяти лет и дела дня).
-import { html, useState, useEffect } from '../../lib.js?v=17';
-import { useStore, update, uid, now, activeChild } from '../../store.js?v=17';
-import { Header, Row, SecTitle, Pill, Field, openSheet, closeSheet, toast } from '../../ui.js?v=17';
-import { dateLong, ageMonths, startOfDay, DAY } from '../../age.js?v=17';
-import { go } from '../../router.js?v=17';
-import { track } from '../../stats.js?v=17';
-import { SAD, SHKOLA, DOCS, CHECKUPS_BY_AGE } from '../../content/etapy.js?v=17';
-import { bornChild, nameOf, NotBorn } from './util.js?v=17';
-import { findItems } from '../../common.js?v=17';
+import { html, useState, useEffect } from '../../lib.js?v=18';
+import { useStore, update, uid, now, activeChild } from '../../store.js?v=18';
+import { Header, Row, SecTitle, Pill, Field, openSheet, closeSheet, toast } from '../../ui.js?v=18';
+import { dateLong, ageMonths, startOfDay, DAY } from '../../age.js?v=18';
+import { go } from '../../router.js?v=18';
+import { track } from '../../stats.js?v=18';
+import { SAD, SHKOLA, DOCS, CHECKUPS_BY_AGE } from '../../content/etapy.js?v=18';
+import { bornChild, nameOf, NotBorn } from './util.js?v=18';
+import { findItems } from '../../common.js?v=18';
 
 const E = (s, child) => ((s.etapy || {})[child.id]) || {};
 const setE = (child, fn) => update((d) => { d.etapy = d.etapy || {}; d.etapy[child.id] = d.etapy[child.id] || {}; fn(d.etapy[child.id]); });
@@ -168,7 +168,7 @@ function VseDokumenty() {
   if (!child) return html`<${NotBorn} title="Документы ребёнка" text="Список появится, когда малыш родится." />`;
   const e = E(s, child);
   const m = ageMonths(child, now());
-  const list = DOCS.filter((d) => d.id !== 'doc-passport' || m >= 150).filter((d) => d.id !== 'doc-026' || m >= 12).filter((d) => d.id !== 'doc-cert' || m >= 24).filter((d) => d.id !== 'doc-sport' || m >= 24);
+  const list = DOCS.filter((d) => d.id !== 'doc-passport' || m >= 150).filter((d) => d.id !== 'doc-026' || m >= 12).filter((d) => d.id !== 'doc-cert' || m >= 24).filter((d) => d.id !== 'doc-sport' || m >= 24).filter((d) => d.id !== 'doc-mantu' || m >= 12).filter((d) => d.id !== 'doc-pmpk' || m >= 36);
   const have = list.filter((d) => (e.done || {})[d.id]).length;
   return html`
     <div class="screen">
@@ -208,7 +208,11 @@ export const docsCount = (child, s) => { const e = E(s, child); return DOCS.filt
 // Ближайший профосмотр: за два месяца до и полгода после нужного возраста
 export function checkupNow(child, t = now()) {
   const m = ageMonths(child, t);
-  return CHECKUPS_BY_AGE.find((c) => m >= c.m - 2 && m < c.m + 10) || null;
+  const c = CHECKUPS_BY_AGE.find((x) => m >= x.m - 2 && m < x.m + 10);
+  if (c) return c;
+  // После 10 лет — раз в год; в 13 лет добавляется гинеколог или уролог-андролог (приказ № 211н)
+  if (m >= 130 && m < 216 && m % 12 >= 10) { const y = Math.floor(m / 12) + 1; return { m: y * 12, title: `Осмотр в ${y} лет`, who: 'Педиатр и врачи по возрасту — список в поликлинике.', note: y === 13 ? 'В 13 лет добавляется гинеколог или уролог-андролог.' : '' }; }
+  return null;
 }
 
 export const etapyRoutes = [

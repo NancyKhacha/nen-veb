@@ -1,11 +1,11 @@
 // Общие детали экранов — те же, что в Фигме: шапка, строка, карточка, лист, сообщение, меню.
-import { html, useState, useEffect } from './lib.js?v=17';
-import { useStore, activeChild, update, isSaved, toggleSaved, usePhoto, now } from './store.js?v=17';
-import { childAgeLine, pl } from './age.js?v=17';
-import { go, back, current } from './router.js?v=17';
-import { track } from './stats.js?v=17';
-import { usePlayer } from './player.js?v=17';
-import { cover, coverOfUrl } from './content/covers.js?v=17';
+import { html, useState, useEffect } from './lib.js?v=18';
+import { useStore, activeChild, update, isSaved, toggleSaved, usePhoto, now } from './store.js?v=18';
+import { childAgeLine, pl } from './age.js?v=18';
+import { go, back, current } from './router.js?v=18';
+import { track } from './stats.js?v=18';
+import { usePlayer } from './player.js?v=18';
+import { cover, coverOfUrl } from './content/covers.js?v=18';
 
 // ——— Лист поверх экрана и сообщение внизу ———
 let overlay = { sheet: null, toast: null };

@@ -1,11 +1,11 @@
 // «Ребёнок → Моменты» (экраны 11, 14): воспоминание, месяцы лентами, книга «Первый год», лист «Новый момент».
-import { html, useState } from '../../lib.js?v=17';
-import { useStore, getState, update, now, uid, savePhoto, usePhoto } from '../../store.js?v=17';
-import { Header, SecTitle, Row, Ill, Pill, Field, openSheet, closeSheet, toast } from '../../ui.js?v=17';
-import { DAY, dateLong, diffYMD, startOfDay } from '../../age.js?v=17';
-import { go } from '../../router.js?v=17';
-import { track } from '../../stats.js?v=17';
-import { bornChild, nameOf, momentsOf, momentTitle, momentMore, memory, inFirstYear, cap , NotBorn } from './util.js?v=17';
+import { html, useState } from '../../lib.js?v=18';
+import { useStore, getState, update, now, uid, savePhoto, usePhoto } from '../../store.js?v=18';
+import { Header, SecTitle, Row, Ill, Pill, Field, openSheet, closeSheet, toast } from '../../ui.js?v=18';
+import { DAY, dateLong, diffYMD, startOfDay } from '../../age.js?v=18';
+import { go } from '../../router.js?v=18';
+import { track } from '../../stats.js?v=18';
+import { bornChild, nameOf, momentsOf, momentTitle, momentMore, memory, inFirstYear, cap , NotBorn } from './util.js?v=18';
 
 const MONTHS = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
 const ORD = ['первый', 'второй', 'третий', 'четвёртый', 'пятый', 'шестой', 'седьмой', 'восьмой', 'девятый', 'десятый', 'одиннадцатый', 'двенадцатый'];
