@@ -1,11 +1,11 @@
 // Общие детали экранов — те же, что в Фигме: шапка, строка, карточка, лист, сообщение, меню.
-import { html, useState, useEffect } from './lib.js?v=16';
-import { useStore, activeChild, update, isSaved, toggleSaved, usePhoto, now } from './store.js?v=16';
-import { childAgeLine, pl } from './age.js?v=16';
-import { go, back, current } from './router.js?v=16';
-import { track } from './stats.js?v=16';
-import { usePlayer } from './player.js?v=16';
-import { cover, coverOfUrl } from './content/covers.js?v=16';
+import { html, useState, useEffect } from './lib.js?v=17';
+import { useStore, activeChild, update, isSaved, toggleSaved, usePhoto, now } from './store.js?v=17';
+import { childAgeLine, pl } from './age.js?v=17';
+import { go, back, current } from './router.js?v=17';
+import { track } from './stats.js?v=17';
+import { usePlayer } from './player.js?v=17';
+import { cover, coverOfUrl } from './content/covers.js?v=17';
 
 // ——— Лист поверх экрана и сообщение внизу ———
 let overlay = { sheet: null, toast: null };
@@ -119,6 +119,22 @@ export function Header({ newsDot }) {
         <button class="icon-btn" aria-label="Сохранённое" onClick=${() => { track('шапка:сердечко'); go('/sohranyonnoe'); }}><${Heart} /></button>
         <button class="icon-btn" aria-label="Профиль" onClick=${() => { track('шапка:профиль'); go('/profil'); }}><${Person} /></button>
       </div>
+    </div>`;
+}
+
+// Несколько детей: полоска с каждым — касание переключает весь экран на него (журнал, 5 ноября)
+export function KidsBar({ compact }) {
+  const s = useStore();
+  if (s.children.length < 2) return null;
+  const cur = activeChild(s);
+  const pick = (id) => { if (cur && cur.id === id) return; track('дети:переключить'); update((d) => { d.activeChildId = id; }); };
+  return html`
+    <div class=${'kids-bar' + (compact ? ' compact' : '')} role="tablist" aria-label="Дети">
+      ${s.children.map((c) => html`
+        <button role="tab" aria-selected=${cur && cur.id === c.id} class=${'kid' + (cur && cur.id === c.id ? ' on' : '')} onClick=${() => pick(c.id)}>
+          <${Avatar} child=${c} size=${compact ? 24 : 28} /><span>${c.name || (c.expecting ? 'Малыш' : 'Ребёнок')}</span>
+        </button>`)}
+      ${!compact && html`<button class="kid add" aria-label="Добавить ребёнка" onClick=${() => { track('дети:добавить'); go('/profil/rebyonok/novyy'); }}>＋</button>`}
     </div>`;
 }
 

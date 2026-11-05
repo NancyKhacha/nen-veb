@@ -1,13 +1,15 @@
 // Профиль родителя — всё служебное: дети, темы, кнопки записи, копия, вход, «Для исследования».
-import { html, useState } from './lib.js?v=16';
-import { useStore, update, uid, getState, resetAll, savePhoto, now, storage } from './store.js?v=16';
-import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy, childAgeLine } from './age.js?v=16';
-import { go, back } from './router.js?v=16';
-import { Back, Row, SecTitle, Pill, Field, Avatar, toast, confirmAction, GestStepper } from './ui.js?v=16';
-import { TOPICS, Transfer, startPreview } from './onboarding.js?v=16';
-import { familyLine } from './semya.js?v=16';
-import { TodayTiles } from './tabs/rebyonok/istoriya.js?v=16';
-import { statsReport, statsCode, resetStats, track } from './stats.js?v=16';
+import { html, useState } from './lib.js?v=17';
+import { useStore, update, uid, getState, resetAll, savePhoto, now, storage } from './store.js?v=17';
+import { parseDate, maskDate, ageText, expectingLine, startOfDay, ddmmyyyy, childAgeLine } from './age.js?v=17';
+import { go, back } from './router.js?v=17';
+import { Back, Row, SecTitle, Pill, Field, Avatar, toast, confirmAction, GestStepper } from './ui.js?v=17';
+import { TOPICS, Transfer, startPreview } from './onboarding.js?v=17';
+import { familyLine } from './semya.js?v=17';
+import { TodayTiles } from './tabs/rebyonok/istoriya.js?v=17';
+import { quickTypes, recordAllowed } from './stages.js?v=17';
+import { ageMonths } from './age.js?v=17';
+import { statsReport, statsCode, resetStats, track } from './stats.js?v=17';
 
 function Profile() {
   const s = useStore();
@@ -84,7 +86,7 @@ function ChildCard({ params }) {
       ${!isNew && !c.expecting && html`
         <div class="child-top"><${Avatar} child=${c} /><span class="small">${childAgeLine(c)}</span></div>
         <${SecTitle}>Сегодня<//>
-        <${TodayTiles} child=${c} types=${ageMonthsOf(c) < 12 ? ['sleep', 'feed', 'diaper'] : ['sleep', 'food', 'potty']} />
+        ${quickTypes(ageMonthsOf(c)).length > 0 && html`<${TodayTiles} child=${c} types=${quickTypes(ageMonthsOf(c))} />`}
         <div class="rows">
           <${Row} title="Дневник по дням" sub="Что было и что в планах" onClick=${() => { track('карточка:дневник'); go('/rebyonok/dnevnik'); }} />
           <${Row} title="Рост" sub="Вес, рост, окружность головы — график" onClick=${() => { track('карточка:рост'); go('/rebyonok/rost'); }} />
@@ -124,12 +126,15 @@ function Buttons() {
   const s = useStore();
   const hidden = s.settings.hiddenButtons || [];
   const toggle = (k) => update((d) => { const h = d.settings.hiddenButtons || []; d.settings.hiddenButtons = h.includes(k) ? h.filter((x) => x !== k) : [...h, k]; });
-  const items = [['sleep', 'Сон'], ['feed', 'Кормление'], ['diaper', 'Подгузник'], ['food', 'Еда'], ['potty', 'Горшок']];
+  const child = (s.children.find((c) => c.id === s.activeChildId) || s.children[0]);
+  const m = child && !child.expecting ? ageMonths(child, now()) : 0;
+  const items = [['sleep', 'Сон'], ['feed', 'Кормление'], ['diaper', 'Подгузник'], ['food', 'Еда'], ['potty', 'Горшок']].filter(([k]) => quickTypes(m).includes(k) || (k === 'potty' && recordAllowed('potty', m) && m < 36));
   return html`
     <div class="screen">
       <${Back} title="Быстрая запись" />
-      <p class="lead">Что показывать в «Записать» и на «Ребёнке». Что не записываете — уберите, прошлые записи останутся.</p>
-      <div class="pills">${items.map(([k, l]) => html`<${Pill} on=${!hidden.includes(k)} onClick=${() => toggle(k)}>${l}<//>`)}</div>
+      ${items.length ? html`<p class="lead">Что показывать в «Записать» и на «Ребёнке». Что не записываете — уберите, прошлые записи останутся.</p>
+      <div class="pills">${items.map(([k, l]) => html`<${Pill} on=${!hidden.includes(k)} onClick=${() => toggle(k)}>${l}<//>`)}</div>`
+      : html`<p class="lead">С трёх лет быстрых записей нет: сон и еду дошкольника почти никто не записывает. Всё нужное — в «＋ Записать»: кружки, дела, температура, к врачу, моменты.</p>`}
     </div>`;
 }
 

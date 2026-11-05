@@ -1,13 +1,14 @@
 // Запись: лист «Записать» по левой кнопке меню (журнал, 5 ноября: полосы над меню больше нет),
 // плашки идущей записи и листы «Кормление», «Поправить» и формы остальных записей.
-import { html, useState, useRef } from './lib.js?v=16';
-import { useStore, useTick, activeChild, update, now, getState, savePhoto, uid } from './store.js?v=16';
-import { ageMonths, clock, hhmm, dur } from './age.js?v=16';
-import { addRecord, finishRecord, removeRecord, editRecord, switchSide, lastOf, ongoing, sinceLine, describe, whenText, recentTypes, sideTimes, breastLine, SIDE, DIAPER, POTTY } from './records.js?v=16';
-import { openSheet, closeSheet, toast, Pill, Field } from './ui.js?v=16';
-import { playNoise, usePlayer, playing, stop as stopPlayer } from './player.js?v=16';
-import { track } from './stats.js?v=16';
-import { go } from './router.js?v=16';
+import { html, useState, useRef } from './lib.js?v=17';
+import { useStore, useTick, activeChild, update, now, getState, savePhoto, uid } from './store.js?v=17';
+import { ageMonths, clock, hhmm, dur, startOfDay } from './age.js?v=17';
+import { addRecord, finishRecord, removeRecord, editRecord, switchSide, lastOf, ongoing, sinceLine, describe, whenText, recentTypes, sideTimes, breastLine, SIDE, DIAPER, POTTY } from './records.js?v=17';
+import { openSheet, closeSheet, toast, Pill, Field, KidsBar } from './ui.js?v=17';
+import { playNoise, usePlayer, playing, stop as stopPlayer } from './player.js?v=17';
+import { track } from './stats.js?v=17';
+import { go } from './router.js?v=17';
+import { quickTypes, recordAllowed } from './stages.js?v=17';
 
 // Для кого запись: выбранный ребёнок, а у близнецов в режиме «Оба» — каждый
 export function targets(s = getState()) {
@@ -113,14 +114,12 @@ const LABEL = { sleep: 'Сон', feed: 'Кормление', diaper: 'Подгу
 // Какие кнопки у этого возраста
 export function stripButtons(child, s = getState()) {
   if (!child || child.expecting) return { buttons: [], line: false };
+  // По возрасту — stages.js: до года сон, кормление, подгузник; на втором году — еда вместо
+  // кормления; на третьем — горшок вместо подгузника; с трёх лет быстрых записей нет
   const m = ageMonths(child, now());
   const hidden = s.settings.hiddenButtons || [];
-  let buttons;
-  let line = false;
-  if (m < 12) buttons = ['sleep', 'feed', 'diaper'];
-  else if (m < 36) buttons = ['sleep', 'food', 'potty'];
-  else { line = true; const r = recentTypes(child.id); buttons = ['potty', 'sleep', 'food'].filter((t) => r.includes(t)); }
-  return { buttons: buttons.filter((b) => !hidden.includes(b)), line };
+  const buttons = quickTypes(m);
+  return { buttons: buttons.filter((b) => !hidden.includes(b)), line: m >= 36 };
 }
 
 // Долгое нажатие — сразу «Поправить» последнюю запись
@@ -183,9 +182,10 @@ export function RecordHub() {
   const child = activeChild(s);
   const born = child && !child.expecting;
   const { buttons } = stripButtons(child, s);
-  const types = born ? (buttons.length ? buttons : ['sleep', 'food', 'potty']) : [];
+  const types = born ? buttons : [];
   return html`
-    <div class="h2">Записать</div>
+    <div class="h2">Записать${s.children.length > 1 && child ? html` <span class="hub-for">для ${child.name || 'малыша'}</span>` : ''}</div>
+    ${s.children.length > 1 && html`<${KidsBar} compact />`}
     <div class="rows hub">
       <button class="row" onClick=${() => { track('записать:заметка'); closeSheet(); go('/zametka'); }}>
         <span class="row-text"><span class="row-title">Заметка</span><span class="row-sub">Мысль, вопрос к врачу — своими словами</span></span><span class="hub-add" aria-hidden="true">＋</span>
@@ -427,21 +427,32 @@ function otherItems(s, child) {
   // Болеет — температура или лекарство за последние трое суток: эти записи первыми
   const sick = child && s.records.some((r) => r.childId === child.id && (r.type === 'temp' || r.type === 'med') && r.start > now() - 3 * 864e5);
   // Бутылочка, грудь, сцеживание, а до года и прикорм — во вкладках листа «Кормление» (замечание Марии Даниной)
+  // Что записывают в этом возрасте — stages.js (RECORD_AGES): грудь — до трёх лет, подгузник — до четырёх,
+  // горшок — до пяти; кружки и дела — у дошкольников и школьников
   let items = [
     ...(m >= 12 ? [['feed', 'Кормление', 'Грудь, бутылочка, сцеживание'], ['solids', 'Прикорм', 'Что попробовали']] : []),
     ...(m >= 12 ? [['diaper', 'Подгузник', 'Мокрый, грязный или оба'], ['sleep', 'Сон', 'Таймер или задним числом'], ['potty', 'Горшок', 'Получилось, мимо, посидели']] : []),
+    ['task', 'Дело или напоминание', 'Справка, оплата, родительское собрание'],
+    ['club', 'Кружок или секция', 'Дни, время, что взять с собой'],
     ['visit', 'К врачу', 'Когда и к кому — напомним накануне'],
-    ['measure', 'Замер', 'Вес, рост, окружность головы'],
-    ['moment', 'Момент', 'Фото, фраза, что-то впервые'],
+    ['measure', 'Замер', m < 36 ? 'Вес, рост, окружность головы' : 'Вес и рост'],
+    ['moment', 'Момент', m < 36 ? 'Фото, фраза, что-то впервые' : 'Фото, фраза, рисунок, победа'],
     ['temp', 'Температура', 'Градусы и время'],
     ['med', 'Лекарство', 'Название и время'],
     ['walk', 'Прогулка', 'Таймер или задним числом'],
     ['bath', 'Купание', 'Одним касанием'],
-  ];
+  ].filter(([k]) => recordAllowed(k, m));
   if (sick) items = [...items.filter(([k]) => k === 'temp' || k === 'med'), ...items.filter(([k]) => k !== 'temp' && k !== 'med')];
   return items;
 }
-const openOther = (k) => { track('запись:другая:' + k); if (k === 'visit') { closeSheet(); go('/rebyonok/zdorovye?zapis=1'); return; } if (k === 'feed') { tapFeed(); return; } openSheet(OtherForm, { kind: k }); };
+const openOther = (k) => {
+  track('запись:другая:' + k);
+  if (k === 'visit') { closeSheet(); go('/rebyonok/zdorovye?zapis=1'); return; }
+  if (k === 'feed') { tapFeed(); return; }
+  if (k === 'club') { closeSheet(); go('/rebyonok/kruzhki?novyy=1'); return; }
+  if (k === 'task') { const c = activeChild(getState()); import('./tabs/rebyonok/dnevnik.js?v=17').then((mod) => mod.openNewTask(c, startOfDay(now()))); return; }
+  openSheet(OtherForm, { kind: k });
+};
 // Прежний лист «Другая запись» — теперь тот же «Записать»: один список на всё
 export const OtherSheet = (props) => RecordHub(props);
 

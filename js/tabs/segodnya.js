@@ -1,30 +1,70 @@
 // Вкладка «Сегодня» — Фигма «32 · V3 · Сегодня», экраны 1–17, и «36 · V3 · Первый вход», экраны 4, 6, 8.
 // Что показать, решают этап, возраст (у недоношенных до двух лет — исправленный), время суток и записи.
-import { html, useState, useEffect } from '../lib.js?v=16';
-import { useStore, useTick, update, now, activeChild } from '../store.js?v=16';
-import { DAY, startOfDay, dayKey, ageMonths, dateWithWeekday, pl, partOfDay, durShort } from '../age.js?v=16';
-import { summaryLine, finishRecord, SIDE } from '../records.js?v=16';
-import { Plaques, OtherSheet, finishSleep, finishFeed } from '../strip.js?v=16';
-import { Header, Back, Row, SecTitle, Ill, SaveButton, Field, openSheet, toast } from '../ui.js?v=16';
-import { go } from '../router.js?v=16';
-import { track } from '../stats.js?v=16';
-import { playNoise, usePlayer, stop as stopPlayer } from '../player.js?v=16';
-import { FACTS, factsFor, factById } from '../content/facts.js?v=16';
-import { activitiesFor } from '../content/activities.js?v=16';
-import { articleById } from '../content/articles.js?v=16';
-import { PREP } from '../content/segodnya-expecting.js?v=16';
+import { html, useState, useEffect } from '../lib.js?v=17';
+import { useStore, useTick, update, now, activeChild } from '../store.js?v=17';
+import { DAY, startOfDay, dayKey, ageMonths, dateWithWeekday, pl, partOfDay, durShort } from '../age.js?v=17';
+import { summaryLine, finishRecord, SIDE } from '../records.js?v=17';
+import { Plaques, OtherSheet, finishSleep, finishFeed } from '../strip.js?v=17';
+import { Header, Back, Row, SecTitle, Ill, SaveButton, Field, openSheet, toast } from '../ui.js?v=17';
+import { go } from '../router.js?v=17';
+import { track } from '../stats.js?v=17';
+import { playNoise, usePlayer, stop as stopPlayer } from '../player.js?v=17';
+import { FACTS, factsFor, factById } from '../content/facts.js?v=17';
+import { activitiesFor } from '../content/activities.js?v=17';
+import { articleById } from '../content/articles.js?v=17';
+import { PREP } from '../content/segodnya-expecting.js?v=17';
 import {
   ROUTES, seg, stageOf, splitFact, articleByUrl, shortUrl, hash, lowerFirst,
   sleepNormLine, promiseLine, firstHint, FIRST_WEEKS, everNightSleep, anyRecords, hardSleepWeek,
   factsOfDay, activityPick, activityTitle, activityText, articlePool, nenToday, newInAge,
   calendarVaccine, plannedVaccines, calendarCheckup, tasksOf, isVisit, whenLine, dayPlan, urgentItem,
   weekDays, expectingWeek, weekArticle, nextClubLive, newsItems, hasNews,
-} from './segodnya/logic.js?v=16';
+} from './segodnya/logic.js?v=17';
 import {
   setSeg, markOpened, WeekStrip, Total, Note, DayCard, Feed, ThisWeek, WeatherCard,
   NewTaskSheet, TaskSheet, VaccineSheet, CheckupSheet,
-} from './segodnya/parts.js?v=16';
-import { refreshWeather, useOnline } from './segodnya/weather.js?v=16';
+} from './segodnya/parts.js?v=17';
+import { refreshWeather, useOnline } from './segodnya/weather.js?v=17';
+import { KidsBar } from '../ui.js?v=17';
+import { clubsOn, checkupNow, sadLine } from './rebyonok/etapy.js?v=17';
+import { sectionOn, schoolSeason } from '../stages.js?v=17';
+
+// ——— «Важно сейчас» по возрасту: кружки сегодня, профосмотр, сад, запись в школу (журнал, 5 ноября) ———
+function StageToday({ child, s, t }) {
+  const m = ageMonths(child, t);
+  const rows = [];
+  for (const c of clubsOn(child, s, t)) rows.push(html`<${Row} key=${'club' + c.id} title=${`${c.time ? c.time + ' · ' : ''}${c.name}`} sub=${[c.bring && 'взять: ' + c.bring, c.place].filter(Boolean).join(' · ') || 'сегодня'} onClick=${() => { track('сегодня:кружок'); go('/rebyonok/kruzhki'); }} />`);
+  const ch = m >= 36 ? checkupNow(child, t) : null;
+  if (ch) rows.push(html`<${Row} key="checkup" title=${ch.title} sub=${ch.note || 'кого пройти — в «Здоровье»'} onClick=${() => { track('сегодня:профосмотр'); go('/rebyonok/zdorovye'); }} />`);
+  const e = (s.etapy || {})[child.id] || {};
+  const month = new Date(t).getMonth();
+  const ss = !e.schoolGoes && !(e.done || {})['shkola-apply'] ? schoolSeason(child, t) : null;
+  if (ss) rows.push(html`<${Row} key="school" title=${ss.title} sub=${ss.sub} onClick=${() => { track('сегодня:школа'); go('/rebyonok/shkola'); }} />`);
+  if (sectionOn('sad', m) && m < 48 && !e.sadGoes) {
+    const l = sadLine(child, s);
+    if (!(e.done || {})['sad-queue'] || (month >= 3 && month <= 5)) rows.push(html`<${Row} key="sad" title=${'Детский сад: ' + l.v.toLowerCase()} sub=${l.sub} onClick=${() => { track('сегодня:сад'); go('/rebyonok/sad'); }} />`);
+  }
+  if (!rows.length) return null;
+  return html`<${SecTitle}>Важно сейчас<//><div class="rows">${rows}</div>`;
+}
+
+// ——— Все дети сегодня: одна строка на каждого, касание — переключиться ———
+function KidsToday({ s, t }) {
+  const kids = s.children.filter((c) => !c.expecting);
+  if (kids.length < 2) return null;
+  const cur = activeChild(s);
+  const line = (c) => {
+    const m = ageMonths(c, t);
+    const sum = m < 36 ? summaryLine(c.id, c, startOfDay(t), t, 'Сегодня') : null;
+    if (sum) return sum.replace(/^Сегодня:\s*/, '');
+    const cl = clubsOn(c, s, t);
+    if (cl.length) return cl.map((x) => `${x.time ? x.time + ' ' : ''}${x.name}`).join(', ');
+    return m < 36 ? 'пока без записей' : 'ничего не запланировано';
+  };
+  return html`
+    <${SecTitle}>Все дети сегодня<//>
+    <div class="rows kids-today">${kids.map((c) => html`<${Row} key=${c.id} title=${c.name + (cur && cur.id === c.id ? ' · сейчас на экране' : '')} sub=${line(c)} onClick=${() => { track('сегодня:все-дети'); update((d) => { d.activeChildId = c.id; }); }} />`)}</div>`;
+}
 
 export { hasNews, NewTaskSheet };
 
@@ -256,7 +296,9 @@ function DayScreen({ s, child, t }) {
     ${both ? html`<${TwinPlaques} />` : html`<${Plaques} />`}
     ${evening ? html`<${EveningCard} child=${child} />` : summary}
     ${evening && summary}
+    <${StageToday} child=${child} s=${s} t=${t} />
     <${ThisWeek} items=${week} onAdd=${() => { track('сегодня:добавить-дело'); openSheet(NewTaskSheet, { childId: child.id }); }} />
+    <${KidsToday} s=${s} t=${t} />
     <${WeatherCard} child=${child} />
     ${!evening && html`<${DayCard} card=${big} />`}
     <${Feed} cards=${feed} />`;
@@ -340,7 +382,7 @@ function Home() {
   if (stage === 'none') body = html`<${NoChildScreen} s=${s} t=${t} />`;
   else if (stage === 'expecting') body = html`<${ExpectingScreen} s=${s} child=${child} t=${t} />`;
   else body = html`<${DayScreen} s=${s} child=${child} t=${t} />`;
-  return html`<div class="screen sg"><${Header} newsDot=${hasNews(s, t)} />${body}</div>`;
+  return html`<div class="screen sg"><${Header} newsDot=${hasNews(s, t)} />${s.children.length > 1 && html`<${KidsBar} />`}${body}</div>`;
 }
 
 // ——— Факт «Нет, это нормально» ———

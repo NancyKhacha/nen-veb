@@ -1,21 +1,22 @@
 // Вкладка «Ребёнок» — Фигма, страница «33 · V3 · Ребёнок», бриф docs/razdely/rebyonok.md.
 // Дашборд — блок на каждый раздел с фактом о ребёнке; разделы — в папке rebyonok/.
-import { activitiesFor } from '../content/activities.js?v=16';
-import { TALES, SONGS } from '../content/rebyonok-skazki.js?v=16';
-import { SYMPTOMS, SKILLS, POST_BIRTH } from '../content/rebyonok-spravka.js?v=16';
-import { activeChild, now } from '../store.js?v=16';
-import { ageMonths } from '../age.js?v=16';
-import { homeRoutes } from './rebyonok/home.js?v=16';
-import { dnevnikRoutes } from './rebyonok/dnevnik.js?v=16';
-import { razvitieRoutes } from './rebyonok/razvitie.js?v=16';
-import { skazkiRoutes } from './rebyonok/skazki.js?v=16';
-import { zdorovyeRoutes } from './rebyonok/zdorovye.js?v=16';
-import { rostRoutes } from './rebyonok/rost.js?v=16';
-import { momentyRoutes } from './rebyonok/momenty.js?v=16';
-import { istoriyaRoutes } from './rebyonok/istoriya.js?v=16';
+import { activitiesFor } from '../content/activities.js?v=17';
+import { TALES, SONGS } from '../content/rebyonok-skazki.js?v=17';
+import { SYMPTOMS, SKILLS, POST_BIRTH } from '../content/rebyonok-spravka.js?v=17';
+import { activeChild, now } from '../store.js?v=17';
+import { ageMonths } from '../age.js?v=17';
+import { homeRoutes } from './rebyonok/home.js?v=17';
+import { dnevnikRoutes } from './rebyonok/dnevnik.js?v=17';
+import { razvitieRoutes } from './rebyonok/razvitie.js?v=17';
+import { skazkiRoutes } from './rebyonok/skazki.js?v=17';
+import { zdorovyeRoutes } from './rebyonok/zdorovye.js?v=17';
+import { rostRoutes } from './rebyonok/rost.js?v=17';
+import { momentyRoutes } from './rebyonok/momenty.js?v=17';
+import { istoriyaRoutes } from './rebyonok/istoriya.js?v=17';
+import { etapyRoutes } from './rebyonok/etapy.js?v=17';
 
 export const routes = [
-  ...homeRoutes, ...dnevnikRoutes, ...razvitieRoutes, ...skazkiRoutes, ...zdorovyeRoutes, ...rostRoutes, ...momentyRoutes, ...istoriyaRoutes,
+  ...homeRoutes, ...dnevnikRoutes, ...razvitieRoutes, ...skazkiRoutes, ...zdorovyeRoutes, ...rostRoutes, ...momentyRoutes, ...istoriyaRoutes, ...etapyRoutes,
 ];
 
 // Что найдёт поиск: разделы, занятия возраста, симптомы, сказки и колыбельные, «Когда начинает», документы
@@ -41,6 +42,10 @@ const SECTIONS = [
   ['Сказки и звуки', 'Колыбельные, шум, потешки, сказки', '/rebyonok/skazki', 'сказки колыбельные белый шум розовый шум уснуть'],
   ['Ваш голос', 'Запишите колыбельную своим голосом', '/rebyonok/skazki/golos', 'голос запись'],
   ['Документы после рождения', 'Свидетельство, СНИЛС, ОМС, пособия', '/rebyonok/dokumenty', 'документы пособие маткапитал госуслуги'],
+  ['Детский сад', 'Очередь, направление, медкарта 026/у, адаптация', '/rebyonok/sad', 'сад садик очередь направление 026 адаптация воспитатель'],
+  ['Школа', 'Запись в 1 класс, медкарта, контакты учителя', '/rebyonok/shkola', 'школа первый класс запись 1 апреля учитель'],
+  ['Кружки и секции', 'Дни, время, что взять, оплата', '/rebyonok/kruzhki', 'кружок секция бассейн танцы музыка расписание'],
+  ['Документы ребёнка', 'Свидетельство, СНИЛС, полис, прививочный сертификат, справки', '/rebyonok/vse-dokumenty', 'документы справка полис снилс паспорт загранпаспорт сертификат'],
 ];
 
 export function searchItems(state) {

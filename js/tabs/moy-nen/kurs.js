@@ -1,15 +1,15 @@
 // Школа НЭН — экраны 2 и 5: «Продолжить» на главном, курс «Первый год с малышом», урок.
 // В веб-версии курсы не работают: купленный курс — для примера, по флагу «С курсом» в «Для исследования».
-import { html, useState, useEffect } from '../../lib.js?v=16';
-import { useStore, getState, activeChild, now } from '../../store.js?v=16';
-import { dateLong, pl } from '../../age.js?v=16';
-import { Row, SecTitle, Ill, toast } from '../../ui.js?v=16';
-import { go } from '../../router.js?v=16';
-import { track } from '../../stats.js?v=16';
+import { html, useState, useEffect } from '../../lib.js?v=17';
+import { useStore, getState, activeChild, now } from '../../store.js?v=17';
+import { dateLong, pl } from '../../age.js?v=17';
+import { Row, SecTitle, Ill, toast } from '../../ui.js?v=17';
+import { go } from '../../router.js?v=17';
+import { track } from '../../stats.js?v=17';
 import {
   setMN, access, useOffline, Inner, FIRSTYEAR, FIRSTYEAR_URL, PERESTAN, courseFor, passedLessons, passedCount,
   childName, dat, gen, openSite, mn,
-} from './util.js?v=16';
+} from './util.js?v=17';
 
 const lessonTitle = (n) => FIRSTYEAR[n - 1].title;
 const nowLabel = (c) => { if (!c) return 'Начало курса'; const d = dat(childName(c)); return d ? `${d} сейчас` : 'Сейчас'; };

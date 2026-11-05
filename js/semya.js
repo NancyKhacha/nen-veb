@@ -2,12 +2,12 @@
 // Как в приложении (app/src/family): приглашение кодом из 8 символов или ссылкой, у каждого свой вход
 // по почте, родитель подтверждает участника и может закрыть доступ. Медкарта бабушке — только если откроют.
 // В веб-версии записи живут на одном телефоне, поэтому приглашение показывает путь, но дневники не связывает.
-import { html, useState } from './lib.js?v=16';
-import { useStore, update, activeChild, now } from './store.js?v=16';
-import { Back, Row, SecTitle, Field, openSheet, closeSheet, toast } from './ui.js?v=16';
-import { go } from './router.js?v=16';
-import { track } from './stats.js?v=16';
-import { genitive } from './onboarding.js?v=16';
+import { html, useState } from './lib.js?v=17';
+import { useStore, update, activeChild, now } from './store.js?v=17';
+import { Back, Row, SecTitle, Field, openSheet, closeSheet, toast } from './ui.js?v=17';
+import { go } from './router.js?v=17';
+import { track } from './stats.js?v=17';
+import { genitive } from './onboarding.js?v=17';
 
 export const ROLES = {
   parent: { who: 'второго родителя', title: 'Второй родитель', sub: 'Видит и записывает всё, как вы' },
