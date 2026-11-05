@@ -1,30 +1,30 @@
 // Вкладка «Сегодня» — Фигма «32 · V3 · Сегодня», экраны 1–17, и «36 · V3 · Первый вход», экраны 4, 6, 8.
 // Что показать, решают этап, возраст (у недоношенных до двух лет — исправленный), время суток и записи.
-import { html, useState, useEffect } from '../lib.js';
-import { useStore, useTick, update, now, activeChild } from '../store.js';
-import { DAY, startOfDay, dayKey, ageMonths, dateWithWeekday, pl, partOfDay, durShort } from '../age.js';
-import { summaryLine, finishRecord, SIDE } from '../records.js';
-import { Plaques, OtherSheet, finishSleep, finishFeed } from '../strip.js';
-import { Header, Back, Row, SecTitle, Ill, SaveButton, Field, openSheet, toast } from '../ui.js';
-import { go } from '../router.js';
-import { track } from '../stats.js';
-import { playNoise, usePlayer, stop as stopPlayer } from '../player.js';
-import { FACTS, factsFor, factById } from '../content/facts.js';
-import { activitiesFor } from '../content/activities.js';
-import { articleById } from '../content/articles.js';
-import { PREP } from '../content/segodnya-expecting.js';
+import { html, useState, useEffect } from '../lib.js?v=16';
+import { useStore, useTick, update, now, activeChild } from '../store.js?v=16';
+import { DAY, startOfDay, dayKey, ageMonths, dateWithWeekday, pl, partOfDay, durShort } from '../age.js?v=16';
+import { summaryLine, finishRecord, SIDE } from '../records.js?v=16';
+import { Plaques, OtherSheet, finishSleep, finishFeed } from '../strip.js?v=16';
+import { Header, Back, Row, SecTitle, Ill, SaveButton, Field, openSheet, toast } from '../ui.js?v=16';
+import { go } from '../router.js?v=16';
+import { track } from '../stats.js?v=16';
+import { playNoise, usePlayer, stop as stopPlayer } from '../player.js?v=16';
+import { FACTS, factsFor, factById } from '../content/facts.js?v=16';
+import { activitiesFor } from '../content/activities.js?v=16';
+import { articleById } from '../content/articles.js?v=16';
+import { PREP } from '../content/segodnya-expecting.js?v=16';
 import {
   ROUTES, seg, stageOf, splitFact, articleByUrl, shortUrl, hash, lowerFirst,
   sleepNormLine, promiseLine, firstHint, FIRST_WEEKS, everNightSleep, anyRecords, hardSleepWeek,
   factsOfDay, activityPick, activityTitle, activityText, articlePool, nenToday, newInAge,
   calendarVaccine, plannedVaccines, calendarCheckup, tasksOf, isVisit, whenLine, dayPlan, urgentItem,
   weekDays, expectingWeek, weekArticle, nextClubLive, newsItems, hasNews,
-} from './segodnya/logic.js';
+} from './segodnya/logic.js?v=16';
 import {
   setSeg, markOpened, WeekStrip, Total, Note, DayCard, Feed, ThisWeek, WeatherCard,
   NewTaskSheet, TaskSheet, VaccineSheet, CheckupSheet,
-} from './segodnya/parts.js';
-import { refreshWeather, useOnline } from './segodnya/weather.js';
+} from './segodnya/parts.js?v=16';
+import { refreshWeather, useOnline } from './segodnya/weather.js?v=16';
 
 export { hasNews, NewTaskSheet };
 

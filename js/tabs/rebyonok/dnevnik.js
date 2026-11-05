@@ -1,15 +1,15 @@
 // «Ребёнок → Дневник» (экран 4, вид «Неделя» — экран 18 «Сегодня», «Сон за неделю» — экран 12):
 // что было — строками с точкой, что в планах — с кружком; «Получилось?», «Новое дело».
-import { html, useState } from '../../lib.js';
-import { useStore, getState, now } from '../../store.js';
-import { Header, SecTitle, Row, Pill, Field, openSheet, closeSheet, toast } from '../../ui.js';
-import { DAY, startOfDay, dayKey, fromKey, dateLong, weekdayShort, weekdayLong, hhmm, ageMonths } from '../../age.js';
-import { recordsOf, daySummary, sleepNorm, yesterdaySleep } from '../../records.js';
-import { EditSheet } from '../../strip.js';
-import { go } from '../../router.js';
-import { track } from '../../stats.js';
+import { html, useState } from '../../lib.js?v=16';
+import { useStore, getState, now } from '../../store.js?v=16';
+import { Header, SecTitle, Row, Pill, Field, openSheet, closeSheet, toast } from '../../ui.js?v=16';
+import { DAY, startOfDay, dayKey, fromKey, dateLong, weekdayShort, weekdayLong, hhmm, ageMonths } from '../../age.js?v=16';
+import { recordsOf, daySummary, sleepNorm, yesterdaySleep } from '../../records.js?v=16';
+import { EditSheet } from '../../strip.js?v=16';
+import { go } from '../../router.js?v=16';
+import { track } from '../../stats.js?v=16';
 import { bornChild, nameOf, Seg, WeekStrip, DotRow, dayTitle, plansOn, doneTasksOn, tasksOf, addTask, setTask, removeTask, timeOf,
-  recTitle, recTime, dayTotal, durNoPad, openVaccine, vaccineSub, monthsWord, cap , NotBorn } from './util.js';
+  recTitle, recTime, dayTotal, durNoPad, openVaccine, vaccineSub, monthsWord, cap , NotBorn } from './util.js?v=16';
 
 const to = (d, extra = '') => go(`/rebyonok/dnevnik?den=${dayKey(d)}${extra}`);
 

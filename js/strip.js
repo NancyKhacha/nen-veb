@@ -1,13 +1,13 @@
 // Запись: лист «Записать» по левой кнопке меню (журнал, 5 ноября: полосы над меню больше нет),
 // плашки идущей записи и листы «Кормление», «Поправить» и формы остальных записей.
-import { html, useState, useRef } from './lib.js';
-import { useStore, useTick, activeChild, update, now, getState, savePhoto, uid } from './store.js';
-import { ageMonths, clock, hhmm, dur } from './age.js';
-import { addRecord, finishRecord, removeRecord, editRecord, switchSide, lastOf, ongoing, sinceLine, describe, whenText, recentTypes, sideTimes, breastLine, SIDE, DIAPER, POTTY } from './records.js';
-import { openSheet, closeSheet, toast, Pill, Field } from './ui.js';
-import { playNoise, usePlayer, playing, stop as stopPlayer } from './player.js';
-import { track } from './stats.js';
-import { go } from './router.js';
+import { html, useState, useRef } from './lib.js?v=16';
+import { useStore, useTick, activeChild, update, now, getState, savePhoto, uid } from './store.js?v=16';
+import { ageMonths, clock, hhmm, dur } from './age.js?v=16';
+import { addRecord, finishRecord, removeRecord, editRecord, switchSide, lastOf, ongoing, sinceLine, describe, whenText, recentTypes, sideTimes, breastLine, SIDE, DIAPER, POTTY } from './records.js?v=16';
+import { openSheet, closeSheet, toast, Pill, Field } from './ui.js?v=16';
+import { playNoise, usePlayer, playing, stop as stopPlayer } from './player.js?v=16';
+import { track } from './stats.js?v=16';
+import { go } from './router.js?v=16';
 
 // Для кого запись: выбранный ребёнок, а у близнецов в режиме «Оба» — каждый
 export function targets(s = getState()) {

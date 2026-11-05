@@ -1,21 +1,21 @@
 // «Ребёнок» — дашборд (экраны 1–3, 13, 16–18, 20, 21): блок на каждый раздел, под названием — факт о ребёнке.
 // Порядок один для всех: Дневник, Здоровье, Рост, Развитие, Моменты, Сказки и звуки, в первый год — Документы.
-import { html } from '../../lib.js';
-import { useStore, update, now, activeChild } from '../../store.js';
-import { Header, Row, SecTitle, Avatar } from '../../ui.js';
-import { DAY, startOfDay, dateLong, hhmm, ageMonths, isPreterm, dayKey, expectingLine } from '../../age.js';
-import { articlesFor } from '../../content/articles.js';
-import { go } from '../../router.js';
-import { track } from '../../stats.js';
+import { html } from '../../lib.js?v=16';
+import { useStore, update, now, activeChild } from '../../store.js?v=16';
+import { Header, Row, SecTitle, Avatar } from '../../ui.js?v=16';
+import { DAY, startOfDay, dateLong, hhmm, ageMonths, isPreterm, dayKey, expectingLine } from '../../age.js?v=16';
+import { articlesFor } from '../../content/articles.js?v=16';
+import { go } from '../../router.js?v=16';
+import { track } from '../../stats.js?v=16';
 import { bornChild, nameOf, WeekStrip, BlockTitle, FeedCard, lastDoneVaccine, vaccineGroups, vaccineSub, measures, measureLine, illness,
-  momentsOf, memory, monthBirthday, ageWords, inFirstYear, cap } from './util.js';
-import { lastSeen, currentSheet, sheetGen } from './razvitie.js';
-import { MomentCard, openNewMoment } from './momenty.js';
-import { talesFav } from './skazki.js';
-import { docsLine } from './zdorovye.js';
-import { TodayTiles } from './istoriya.js';
-import { FamilyNudge } from '../../semya.js';
-import { POST_BIRTH as POST } from '../../content/rebyonok-spravka.js';
+  momentsOf, memory, monthBirthday, ageWords, inFirstYear, cap } from './util.js?v=16';
+import { lastSeen, currentSheet, sheetGen } from './razvitie.js?v=16';
+import { MomentCard, openNewMoment } from './momenty.js?v=16';
+import { talesFav } from './skazki.js?v=16';
+import { docsLine } from './zdorovye.js?v=16';
+import { TodayTiles } from './istoriya.js?v=16';
+import { FamilyNudge } from '../../semya.js?v=16';
+import { POST_BIRTH as POST } from '../../content/rebyonok-spravka.js?v=16';
 
 // Переключатель близнецов — без «Оба»: история у каждого своя
 function TwinPills({ child, s }) {

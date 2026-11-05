@@ -1,10 +1,10 @@
 // «Почитать — все» — экран 4: «Сегодня в НЭН» за неделю и все статьи для возраста, новые сверху.
-import { html, useState } from '../../lib.js';
-import { useStore, isSaved, now } from '../../store.js';
-import { dayKey } from '../../age.js';
-import { SecTitle } from '../../ui.js';
-import { freshWeek } from '../../content/articles.js';
-import { Inner, ArticleRow, readingFor } from './util.js';
+import { html, useState } from '../../lib.js?v=16';
+import { useStore, isSaved, now } from '../../store.js?v=16';
+import { dayKey } from '../../age.js?v=16';
+import { SecTitle } from '../../ui.js?v=16';
+import { freshWeek } from '../../content/articles.js?v=16';
+import { Inner, ArticleRow, readingFor } from './util.js?v=16';
 
 const savedSub = (a) => (isSaved('article', a.id) ? '✓ Сохранено' : null);
 

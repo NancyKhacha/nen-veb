@@ -1,7 +1,7 @@
 // Плеер: шум, колыбельные, сказки и практики. Один на всё приложение, мини-плеер — над полосой записи.
-import { html, useState, useEffect } from './lib.js';
-import { track } from './stats.js';
-import { go } from './router.js';
+import { html, useState, useEffect } from './lib.js?v=16';
+import { track } from './stats.js?v=16';
+import { go } from './router.js?v=16';
 
 let audio = null;
 let cur = null; // { id, title, sub, src, loop, until, route } — route: куда ведёт касание мини-плеера

@@ -1,18 +1,18 @@
 // Вкладка «Ребёнок» — Фигма, страница «33 · V3 · Ребёнок», бриф docs/razdely/rebyonok.md.
 // Дашборд — блок на каждый раздел с фактом о ребёнке; разделы — в папке rebyonok/.
-import { activitiesFor } from '../content/activities.js';
-import { TALES, SONGS } from '../content/rebyonok-skazki.js';
-import { SYMPTOMS, SKILLS, POST_BIRTH } from '../content/rebyonok-spravka.js';
-import { activeChild, now } from '../store.js';
-import { ageMonths } from '../age.js';
-import { homeRoutes } from './rebyonok/home.js';
-import { dnevnikRoutes } from './rebyonok/dnevnik.js';
-import { razvitieRoutes } from './rebyonok/razvitie.js';
-import { skazkiRoutes } from './rebyonok/skazki.js';
-import { zdorovyeRoutes } from './rebyonok/zdorovye.js';
-import { rostRoutes } from './rebyonok/rost.js';
-import { momentyRoutes } from './rebyonok/momenty.js';
-import { istoriyaRoutes } from './rebyonok/istoriya.js';
+import { activitiesFor } from '../content/activities.js?v=16';
+import { TALES, SONGS } from '../content/rebyonok-skazki.js?v=16';
+import { SYMPTOMS, SKILLS, POST_BIRTH } from '../content/rebyonok-spravka.js?v=16';
+import { activeChild, now } from '../store.js?v=16';
+import { ageMonths } from '../age.js?v=16';
+import { homeRoutes } from './rebyonok/home.js?v=16';
+import { dnevnikRoutes } from './rebyonok/dnevnik.js?v=16';
+import { razvitieRoutes } from './rebyonok/razvitie.js?v=16';
+import { skazkiRoutes } from './rebyonok/skazki.js?v=16';
+import { zdorovyeRoutes } from './rebyonok/zdorovye.js?v=16';
+import { rostRoutes } from './rebyonok/rost.js?v=16';
+import { momentyRoutes } from './rebyonok/momenty.js?v=16';
+import { istoriyaRoutes } from './rebyonok/istoriya.js?v=16';
 
 export const routes = [
   ...homeRoutes, ...dnevnikRoutes, ...razvitieRoutes, ...skazkiRoutes, ...zdorovyeRoutes, ...rostRoutes, ...momentyRoutes, ...istoriyaRoutes,

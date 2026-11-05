@@ -1,23 +1,23 @@
 // Каркас: какой экран показать, шапка, полоса записи, меню, листы и сообщения.
-import { html, render, useEffect, useState } from './lib.js';
-import { useStore, now, getState, storage } from './store.js';
-import { addRoutes, match, useRoute, go } from './router.js';
-import { Menu, OverlayHost, AskButton, openSheet } from './ui.js';
-import { RecordHub, RunningPill } from './strip.js';
-import { MiniPlayer } from './player.js';
-import { partOfDay } from './age.js';
-import { trackOpen } from './stats.js';
-import { onboardingRoutes, isPreview, markPreview, endPreview } from './onboarding.js';
-import { back } from './router.js';
-import { commonRoutes, setTabModules } from './common.js';
-import { profileRoutes } from './profile.js';
-import { semyaRoutes } from './semya.js';
-import { Header, setNewsCheck } from './ui.js';
+import { html, render, useEffect, useState } from './lib.js?v=16';
+import { useStore, now, getState, storage } from './store.js?v=16';
+import { addRoutes, match, useRoute, go } from './router.js?v=16';
+import { Menu, OverlayHost, AskButton, openSheet } from './ui.js?v=16';
+import { RecordHub, RunningPill } from './strip.js?v=16';
+import { MiniPlayer } from './player.js?v=16';
+import { partOfDay } from './age.js?v=16';
+import { trackOpen } from './stats.js?v=16';
+import { onboardingRoutes, isPreview, markPreview, endPreview } from './onboarding.js?v=16';
+import { back } from './router.js?v=16';
+import { commonRoutes, setTabModules } from './common.js?v=16';
+import { profileRoutes } from './profile.js?v=16';
+import { semyaRoutes } from './semya.js?v=16';
+import { Header, setNewsCheck } from './ui.js?v=16';
 
 // Вкладки грузятся по отдельности: ошибка в одной не роняет остальные
 const TABS = [['segodnya', '/segodnya', 'Сегодня'], ['rebyonok', '/rebyonok', 'Ребёнок'], ['dlya-sebya', '/dlya-sebya', 'Для себя'], ['moy-nen', '/moy-nen', 'Мой НЭН']];
 const mods = await Promise.all(TABS.map(async ([file, path, label]) => {
-  try { return await import(`./tabs/${file}.js`); }
+  try { return await import(`./tabs/${file}.js?v=16`); }
   catch (e) {
     console.error('Вкладка не загрузилась:', file, e);
     const Broken = () => html`<div class="screen"><${Header} /><p class="lead">«${label}» сейчас обновляется. Загляните чуть позже — записи на месте.</p></div>`;
@@ -114,7 +114,7 @@ let lastErr = 0;
 const showErr = (msg) => {
   if (Date.now() - lastErr < 4000) return;
   lastErr = Date.now();
-  import('./ui.js').then(({ toast }) => toast({ text: `Не получилось. Если повторится, пришлите снимок экрана: ${String(msg).slice(0, 120)}`, ms: 7000 }));
+  import('./ui.js?v=16').then(({ toast }) => toast({ text: `Не получилось. Если повторится, пришлите снимок экрана: ${String(msg).slice(0, 120)}`, ms: 7000 }));
 };
 window.addEventListener('error', (e) => showErr(e.message || e.error));
 window.addEventListener('unhandledrejection', (e) => showErr((e.reason && (e.reason.message || e.reason.name)) || e.reason));
